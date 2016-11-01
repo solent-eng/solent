@@ -3,17 +3,17 @@ Codebase oriented around creating massively concurrent roguelike systems.
 This will not be limited to games, but games will be possible.
 
 
-= Solent client
+# Solent client
 
 
-== Some dependencies to get for ubuntu
+## Some dependencies to get for ubuntu
 
 ````
 sudo apt-get install libportmidi-dev
 ````
 
 
-== Set up a virtual environment.
+## Set up a virtual environment.
 
 ````
 virtualenv -p python3 venv
@@ -28,14 +28,14 @@ pip install hg+http://bitbucket.org/pygame/pygame
 ````
 
 
-== Install our code into it
+## Install our code into it
 
 ````
 pushd solent.client; pip install -e .; popd
 ````
 
 
-== Things to try once it is installed
+## Things to try once it is installed
 
 ````
 python3 -m solent.client.games.sandbox.py
@@ -44,7 +44,7 @@ python3 -m solent.client.games.sandbox.py --gui
 ````
 
 
-== Packaging instructions
+## Packaging instructions
 
 ````
 create a source client:
