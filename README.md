@@ -38,9 +38,9 @@ pushd solent.client; pip install -e .; popd
 == Things to try once it is installed
 
 ````
-python3 -m solent.client.games.swamp_monster.py
+python3 -m solent.client.games.sandbox.py
 
-python3 -m solent.client.games.swamp_monster.py --gui
+python3 -m solent.client.games.sandbox.py --gui
 ````
 
 
