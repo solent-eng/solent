@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [[ -e venv ]]; then
+    rm -rf venv
+fi
+
+virtualenv -p python3 venv
+
+pushd venv; . bin/activate; popd
+
+# local fork I use to save from downloading again
+pip install /home/cturner/opt/20161029.memlab.cturner.aa.pygame.clone/pygame
+#pip install hg+http://bitbucket.org/pygame/pygame
+
+echo
+echo "now do this:"
+echo "  pushd venv; . bin/activate; popd"
+echo
+
