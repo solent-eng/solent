@@ -1,6 +1,11 @@
 Codebase oriented around creating massively concurrent roguelike systems.
 
-This will not be limited to games, but games will be possible.
+The concurrency model is to be based on the work of Josh Levine
+(http://www.josh.com/notes/island-ecn-10th-birthday/).
+
+Hence, this will not be limited to games.
+
+But. It will be possible to build awesomely big games on it.
 
 
 # Solent client
