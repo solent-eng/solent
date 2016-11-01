@@ -8,17 +8,17 @@ from solent.client.constants import *
 class GridFabric(object):
     def __init__(self):
         self.cross = ('+', SOL_CPAIR_BLUE_T)
-        self.vert = ('-', SOL_CPAIR_BLUE_T)
-        self.horiz = ('|', SOL_CPAIR_BLUE_T)
+        self.horiz = ('-', SOL_CPAIR_BLUE_T)
+        self.vert = ('|', SOL_CPAIR_BLUE_T)
     def get_sigil(self, s, e):
-        seven = (s%2 == 0)
-        eeven = (e%2 == 0)
+        seven = (s%8 == 0)
+        eeven = (e%8 == 0)
         if seven and eeven:
             return self.cross
         if seven:
-            return self.vert
-        if eeven:
             return self.horiz
+        if eeven:
+            return self.vert
         return None
 
 class TerminalFabric(object):

@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# This script 
+#
 
 pushd ../venv
 . bin/activate
@@ -6,10 +9,9 @@ popd
 
 pip install -e .
 
-#python -m solent.client.games.sandbox --win
+python -m solent.client.games.sandbox --win
 #python -m solent.client.games.sandbox --tty
-
-python -m solent.client.games.demo_experience --win
+#python -m solent.client.games.demo_experience --win
 #python -m solent.client.games.demo_experience --tty
 
 rm -rf solent.client.egg-info

@@ -3,8 +3,8 @@
 # Intends to demonstrate basic use of the experience class
 #
 
-from .rleng.experience import experience_new
-from .rleng.menu import menu_new
+from .librl.experience import experience_new
+from .librl.menu import menu_new
 
 from solent.client.term.curses_term import curses_term_start, curses_term_end
 from solent.client.term.window_term import window_term_start, window_term_end
@@ -17,6 +17,11 @@ import traceback
 C_GAME_WIDTH = 78
 C_GAME_HEIGHT = 25
 
+def create_menu():
+    menu = menu_new()
+    menu.add('1', 'sample', lambda: None)
+    return menu
+
 def main():
     if '--tty' in sys.argv:
         fn_device_start = curses_term_start
@@ -28,7 +33,7 @@ def main():
         print('ERROR: specify --tty or --win')
         sys.exit(1)
     try:
-        menu = menu_new()
+        menu = create_menu()
         #
         term_shape = fn_device_start(
             game_width=C_GAME_WIDTH,

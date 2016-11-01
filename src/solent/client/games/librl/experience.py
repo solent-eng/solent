@@ -6,9 +6,10 @@
 from .menu import menu_new
 
 from solent.client.term.cgrid import cgrid_new
+from solent.client.term.scope import scope_new
 
 class Experience(object):
-    def __init__(self, keystream, grid_display, cgrid, menu):
+    def __init__(self, keystream, grid_display, cgrid, scope, menu):
         '''
         keystream: get this from a term_shape
         grid_display: get this from a term_shape
@@ -18,6 +19,8 @@ class Experience(object):
         self.keystream = keystream
         self.grid_display = grid_display
         self.cgrid = cgrid
+        self.scope = scope
+        self.menu = menu
         #
         # initial display
     def go(self):
@@ -26,7 +29,7 @@ class Experience(object):
         self._redraw_all()
         while True:
             self.t += 1
-            game_player_turn(self)
+            game_player_turn()
             self._redraw_all()
     def _redraw_menu(self):
         # xxx
@@ -45,10 +48,14 @@ def experience_new(term_shape, width, height, menu):
     cgrid = cgrid_new(
         width=width,
         height=height)
+    scope = scope_new(
+        margin_h=3,
+        margin_w=5)
     ob = Experience(
         keystream=term_shape.get_keystream(),
         grid_display=term_shape.get_grid_display(),
         cgrid=cgrid,
+        scope=scope,
         menu=menu)
     return ob
 
