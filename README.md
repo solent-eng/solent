@@ -13,8 +13,8 @@ But. It will be possible to build awesomely big games on it.
 
 The concurrency model will be a homage to the work of Josh Levine
 (http://www.josh.com/notes/island-ecn-10th-birthday/). The project has been
-developed from scratch in a clean-room setting on a bedrock of gnu/linux and
-the python programming language.
+developed from scratch on top of of gnu/linux and the python programming
+language. The target platform is python3 on non-specific unix.
 
 
 # Solent client
