@@ -3,10 +3,13 @@
 # runs a demo game in the background.
 #
 
-from .menu import menu_new
-
+from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
 from solent.client.term.scope import scope_new
+from solent.exceptions import SolentQuitException
+
+CPAIR_MENU_BORDER = SOL_CPAIR_BLACK_CYAN
+CPAIR_MENU_TEXT = SOL_CPAIR_T_WHITE
 
 class Experience(object):
     def __init__(self, keystream, grid_display, cgrid, scope, menu):
@@ -22,19 +25,63 @@ class Experience(object):
         self.scope = scope
         self.menu = menu
         #
-        # initial display
+        # initialise the menu grid
+        self.menu_border_cgrid = None;
+        self.menu_content_cgrid = None
+        self.__init_menu()
+    def __init_menu(self):
+        lines = self.menu.get_lines()
+        longest_line = 0
+        #
+        # prepare the menu border
+        self.menu_border_cgrid = cgrid_new(
+            width=longest_line+4,
+            height=len(lines)+4)
+        horiz = '-'*longest_line
+        blank = ' '*longest_line
+        for idx, l in enumerate(lines):
+            if idx in (0, len(lines)-1):
+                self.menu_border_cgrid.put(
+                    drop=idx,
+                    rest=0,
+                    s=horiz,
+                    cpair=CPAIR_MENU_BORDER)
+            else:
+                self.menu_border_cgrid.put(
+                    drop=idx,
+                    rest=0,
+                    s=blank,
+                    cpair=CPAIR_MENU_BORDER)
+        #
+        # prepare the menu content
+        for l in lines:
+            longest_line = max( [longest_line, len(l)] )
+        self.menu_content_cgrid = cgrid_new(
+            width=longest_line,
+            height=len(lines))
+        for idx, l in enumerate(lines):
+            self.menu_content_cgrid.put(
+                drop=idx,
+                rest=0,
+                s=l,
+                cpair=CPAIR_MENU_TEXT)
     def go(self):
         # draw instructions
         #
         self._redraw_all()
         while True:
-            self.t += 1
-            game_player_turn()
+            c = self.keystream.next()
+            if 'Q' == c:
+                raise SolentQuitException()
             self._redraw_all()
-    def _redraw_menu(self):
+    def _redraw_background_game(self):
         # xxx
         pass
+    def _redraw_menu(self):
+        self.cgrid.blit(self.menu_border_cgrid)
+        self.cgrid.blit(self.menu_content_cgrid)
     def _redraw_all(self):
+        self._redraw_background_game()
         self._redraw_menu()
         self.scope.populate_cgrid(
             cgrid=self.cgrid,

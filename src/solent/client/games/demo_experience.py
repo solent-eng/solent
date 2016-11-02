@@ -17,11 +17,26 @@ import traceback
 C_GAME_WIDTH = 78
 C_GAME_HEIGHT = 25
 
+
+# --------------------------------------------------------
+#   :menu
+# --------------------------------------------------------
+def menu_item_sample():
+    pass
+
+def menu_item_quit():
+    raise SolentQuitException()
+
 def create_menu():
     menu = menu_new()
-    menu.add('1', 'sample', lambda: None)
+    menu.add('1', 'sample', menu_item_sample)
+    menu.add('2', 'quit', menu_item_quit)
     return menu
 
+
+# --------------------------------------------------------
+#   :alg
+# --------------------------------------------------------
 def main():
     if '--tty' in sys.argv:
         fn_device_start = curses_term_start

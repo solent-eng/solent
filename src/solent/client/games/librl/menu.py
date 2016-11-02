@@ -20,6 +20,12 @@ class Menu(object):
         return self.d[key][0]
     def get_callback(self, key):
         return self.d[key][1]
+    def get_lines(self):
+        sb = []
+        for k, v in self.d.items():
+            (text, fn_callback) = v
+            sb.append('[%s] %s'%(k, text))
+        return '\n'.join(sb)
 
 def menu_new():
     ob = Menu()

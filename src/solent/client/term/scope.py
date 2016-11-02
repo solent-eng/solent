@@ -41,14 +41,14 @@ class Scope(object):
         s_nail_e = self.centre_e - half_w
         #
         # coords of the bottom right point we will render
-        s_beyond_s = s_nail_s + height
-        s_beyond_e = s_nail_e + width
+        s_peri_s = s_nail_s + height
+        s_peri_e = s_nail_e + width
         #
         # coords within the margin
         m_nail_s = s_nail_s + self.margin_h
         m_nail_e = s_nail_e + self.margin_w
-        m_beyond_s = s_beyond_s - self.margin_h
-        m_beyond_e = s_beyond_e - self.margin_w
+        m_peri_s = s_peri_s - self.margin_h
+        m_peri_e = s_peri_e - self.margin_w
         #
         # our focus point
         meep_s = self.meep.s
@@ -64,11 +64,11 @@ class Scope(object):
         adjust_e = 0
         if meep_s < m_nail_s:
             adjust_s -= self.adjust_h
-        if meep_s >= m_beyond_s:
+        if meep_s >= m_peri_s:
             adjust_s += self.adjust_h
         if meep_e < m_nail_e:
             adjust_e -= self.adjust_w
-        if meep_e >= m_beyond_e:
+        if meep_e >= m_peri_e:
             adjust_e += self.adjust_w
         #
         # do we need to repoint?
@@ -87,8 +87,8 @@ class Scope(object):
         cgrid.clear()
         #
         # // fabric
-        for (drop, south) in enumerate(range(s_nail_s, s_beyond_s)):
-            for (rest, east) in enumerate(range(s_nail_e, s_beyond_e)):
+        for (drop, south) in enumerate(range(s_nail_s, s_peri_s)):
+            for (rest, east) in enumerate(range(s_nail_e, s_peri_e)):
                 tpl = fabric.get_sigil(
                     s=south,
                     e=east)
@@ -105,11 +105,11 @@ class Scope(object):
         for meep in meeps:
             if meep.s < s_nail_s:
                 continue
-            if meep.s >= s_beyond_s:
+            if meep.s >= s_peri_s:
                 continue
             if meep.e < s_nail_e:
                 continue
-            if meep.e >= s_beyond_e:
+            if meep.e >= s_peri_e:
                 continue
             cgrid.put(
                 rest=meep.e - s_nail_e,
