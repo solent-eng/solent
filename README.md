@@ -12,10 +12,9 @@ Hence, this will not be limited to games.
 But. It will be possible to build awesomely big games on it.
 
 The concurrency model will be a homage to the work of Josh Levine
-(http://www.josh.com/notes/island-ecn-10th-birthday/), and influenced by
-publicly available information about the workings of the Nasdaq architecture.
-The project has been developed from scratch in a clean-room setting on a
-bedrock of gnu/linux and the python programming language.
+(http://www.josh.com/notes/island-ecn-10th-birthday/). The project has been
+developed from scratch in a clean-room setting on a bedrock of gnu/linux and
+the python programming language.
 
 
 # Solent client
