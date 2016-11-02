@@ -1,11 +1,21 @@
-Codebase oriented around creating massively concurrent roguelike systems.
+Codebase oriented around creating massively concurrent roguelike systems. This
+project is still in its early days. What's here seeks to be accessible, but
+there's not much here.
 
-The concurrency model is to be based on the work of Josh Levine
-(http://www.josh.com/notes/island-ecn-10th-birthday/).
+At the time of writing I'm focused on checking in client code. I've got a
+sequencer architecture sitting here that I'll eventually be checking in. But
+I'm building out from the client because I'd like the project to be community
+accessible, not just a dump of my development directory.
 
 Hence, this will not be limited to games.
 
 But. It will be possible to build awesomely big games on it.
+
+The concurrency model will be a homage to the work of Josh Levine
+(http://www.josh.com/notes/island-ecn-10th-birthday/), and influenced by
+publicly available information about the workings of the Nasdaq architecture.
+The project has been developed from scratch in a clean-room setting on a
+bedrock of gnu/linux and the python programming language.
 
 
 # Solent client
