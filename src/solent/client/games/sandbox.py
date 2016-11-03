@@ -3,7 +3,7 @@
 # Intends to demonstrate usage for classes within this package and children.
 #
 
-from .librl.game import game_new
+from .turnlib.game import game_new
 
 from solent.client.term.curses_term import curses_term_start, curses_term_end
 from solent.client.term.window_term import window_term_start, window_term_end

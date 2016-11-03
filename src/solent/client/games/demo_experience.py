@@ -3,8 +3,8 @@
 # Intends to demonstrate basic use of the experience class
 #
 
-from .librl.experience import experience_new
-from .librl.menu import menu_new
+from .turnlib.experience import experience_new
+from .turnlib.menu import menu_new
 
 from solent.client.term.curses_term import curses_term_start, curses_term_end
 from solent.client.term.window_term import window_term_start, window_term_end
