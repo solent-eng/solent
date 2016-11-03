@@ -1,24 +1,37 @@
-Codebase oriented around creating massively concurrent roguelike systems. This
-project is still in its early days. What's here seeks to be accessible, but
-there's not much here.
+# Overview
 
-At the time of writing I'm focused on checking in client code. I've got a
-sequencer architecture sitting here that I'll eventually be checking in. But
-I'm building out from the client because I'd like the project to be community
-accessible, not just a dump of my development directory.
-
-Hence, this will not be limited to games.
-
-But. It will be possible to build awesomely big games on it.
+Codebase oriented around creating massively concurrent roguelike systems.
 
 The concurrency model will be a homage to the work of Josh Levine
 (http://www.josh.com/notes/island-ecn-10th-birthday/). The project has been
 developed from scratch on top of of gnu/linux and the python programming
 language. The target platform is python3 on non-specific unix.
 
+## Status
 
-# Solent client
+The code released in this repository is is not yet in a form where it will
+feel accessible to anyone who checks it out.
 
+There are several components sitting on my disk, and I'm in the process of
+trying to bring each to a point where I can release it. These are the kinds of
+components in play:
+
+    * Client code (terminal that can run in the tty or a window)
+
+    * Network engine (see http://github.com/cratuki/eng)
+
+    * Sequencer architecture build on the network engine
+
+    * Deployment coordination for the sequencer
+
+I've started by releasing client code, with a loose plan to work backwards
+through the stack from here. I figure I'll get the client code to a point
+where someone who knew python could come along and use it to easily implement
+a 7-day roguelike. This is not really a major focus of the project but it's an
+achievable and well-fenced goal that forces me to get part of the codebase to
+a public-release standard.
+
+# Solent client notes
 
 ## Some dependencies to get for ubuntu
 

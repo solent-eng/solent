@@ -17,20 +17,30 @@ import traceback
 C_GAME_WIDTH = 78
 C_GAME_HEIGHT = 25
 
+TITLE = '[demo_experience]'
+
 
 # --------------------------------------------------------
 #   :menu
 # --------------------------------------------------------
-def menu_item_sample():
-    pass
+def menu_item_enter_game():
+    raise Exception('xxx menu_item_enter_game')
+
+def menu_item_load_game():
+    raise Exception('xxx menu_item_load_game')
+
+def menu_item_save_game():
+    raise Exception('xxx menu_item_save_game')
 
 def menu_item_quit():
     raise SolentQuitException()
 
 def create_menu():
     menu = menu_new()
-    menu.add('1', 'sample', menu_item_sample)
-    menu.add('2', 'quit', menu_item_quit)
+    menu.add('g', 'go', menu_item_enter_game)
+    menu.add('l', 'load', menu_item_load_game)
+    menu.add('s', 'save', menu_item_save_game)
+    menu.add('q', 'quit', menu_item_quit)
     return menu
 
 
@@ -58,6 +68,7 @@ def main():
             term_shape=term_shape,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT,
+            title=TITLE,
             menu=menu)
         experience.go()
     except SolentQuitException:

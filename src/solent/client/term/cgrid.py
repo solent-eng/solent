@@ -112,7 +112,7 @@ def cgrid_console_print(cgrid):
         peri = nail + cgrid.width
         spots = cgrid.spots[nail:peri]
         line = ''.join( [s.c for s in spots] )
-        print line
+        print('%2s|%s'%(h, line))
 
 def cgrid_populate(cgrid, c):
     for drop in range(cgrid.height):
@@ -122,9 +122,25 @@ def cgrid_populate(cgrid, c):
             s=c*cgrid.height,
             cpair=DEFAULT_CPAIR)
 
+TESTS = []
+def test(fn):
+    global TESTS
+    def go():
+        print('// --------------------------------------------------------')
+        print('//  %s'%fn.__name__)
+        print('// --------------------------------------------------------')
+        fn()
+        print('')
+    TESTS.append(go)
+    return go
+
+def run_tests():
+    global TESTS
+    for t in TESTS:
+        t()
+
+@test
 def test_a():
-    print('//--------------------------------------------------------')
-    print('// test_a')
     print('//two simple grids')
     grid_a = cgrid_new(5, 5)
     cgrid_populate(grid_a, '-')
@@ -134,9 +150,8 @@ def test_a():
     cgrid_populate(grid_b, '|')
     cgrid_console_print(grid_b)
 
+@test
 def test_b():
-    print('//--------------------------------------------------------')
-    print('// test_b')
     print('//grid_b onto grid_a')
     grid_a = cgrid_new(5, 5)
     cgrid_populate(grid_a, '*')
@@ -155,10 +170,9 @@ def test_b():
     grid_a.blit(grid_b)
     cgrid_console_print(grid_a)
 
+@test
 def test_c():
-    print('//--------------------------------------------------------')
-    print('// test_c')
-    print('//truncated copy')
+    print('//truncated copy right')
     grid_a = cgrid_new(5, 5)
     zyx = [chr(i+65) for i in range(26)]
     zyx.reverse()
@@ -188,10 +202,9 @@ def test_c():
         nail=(1,3))
     cgrid_console_print(grid_a)
 
+@test
 def test_d():
-    print('//--------------------------------------------------------')
-    print('// test_d')
-    print('//truncated copy')
+    print('//truncated copy bottom')
     grid_a = cgrid_new(5, 5)
     zyx = [chr(i+65) for i in range(26)]
     zyx.reverse()
@@ -221,11 +234,39 @@ def test_d():
         nail=(3,1))
     cgrid_console_print(grid_a)
 
+@test
+def test_e():
+    print('//no nail')
+    grid_a = cgrid_new(5, 5)
+    zyx = [chr(i+65) for i in range(26)]
+    zyx.reverse()
+    for i in range(25):
+        l = zyx[i]
+        drop = i / 5
+        rest = i % 5
+        grid_a.put(
+            drop=drop,
+            rest=rest,
+            s=l.lower(),
+            cpair=DEFAULT_CPAIR)
+    #
+    grid_b = cgrid_new(3, 3)
+    grid_b.put(0, 0, '0', DEFAULT_CPAIR)
+    grid_b.put(0, 1, '1', DEFAULT_CPAIR)
+    grid_b.put(0, 2, '2', DEFAULT_CPAIR)
+    grid_b.put(1, 0, '3', DEFAULT_CPAIR)
+    grid_b.put(1, 1, '4', DEFAULT_CPAIR)
+    grid_b.put(1, 2, '5', DEFAULT_CPAIR)
+    grid_b.put(2, 0, '6', DEFAULT_CPAIR)
+    grid_b.put(2, 1, '7', DEFAULT_CPAIR)
+    grid_b.put(2, 2, '8', DEFAULT_CPAIR)
+    #
+    grid_a.blit(
+        src_cgrid=grid_b)
+    cgrid_console_print(grid_a)
+
 if __name__ == '__main__':
-    test_a()
-    test_b()
-    test_c()
-    test_d()
+    run_tests()
 
 
 
