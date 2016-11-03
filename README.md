@@ -7,6 +7,12 @@ The concurrency model will be a homage to the work of Josh Levine
 developed from scratch on top of of gnu/linux and the python programming
 language. The target platform is python3 on non-specific unix.
 
+## Community
+
+Except where specifically marked, the codebase will be licensed exclusively
+under the GPL. I'd like to grow a community around this code that follows in
+the spirit of _Social Architecture_ by Pieter Hintjens.
+
 ## Status
 
 The code released in this repository is is not yet in a form where it will
@@ -16,13 +22,13 @@ There are several components sitting on my disk, and I'm in the process of
 trying to bring each to a point where I can release it. These are the kinds of
 components in play:
 
-    * Client code (terminal that can run in the tty or a window)
+* Client code (terminal that can run in the tty or a window)
 
-    * Network engine (see http://github.com/cratuki/eng)
+* Network engine (not yet upgraded to python3, see http://github.com/cratuki/eng.)
 
-    * Sequencer architecture build on the network engine
+* Sequencer architecture built on the network engine
 
-    * Deployment coordination for the sequencer
+* Deployment coordination for the sequencer
 
 I've started by releasing client code, with a loose plan to work backwards
 through the stack from here. I figure I'll get the client code to a point
