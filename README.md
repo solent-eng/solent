@@ -37,7 +37,7 @@ a 7-day roguelike. This is not really a major focus of the project but it's an
 achievable and well-fenced goal that forces me to get part of the codebase to
 a public-release standard.
 
-# Solent client notes
+# Getting Started
 
 ## Some dependencies to get for ubuntu
 
@@ -86,4 +86,42 @@ create a source client:
 install to current virtualenv:
     pip install -e .
 ````
+
+# directions
+
+## solent.client
+
+### generic client
+
+It's intended that the client should be a generic interface to applications.
+Client could connect to remote (server) applications. Or the apps could run in
+the same process as client, but offering a consistent look and feel based off
+sigils and thin-client interaction. (Think of it solent.client as being a bit
+like a web browser, In a web browser, the building blocks are blocks of
+free-flowing text and images. In solent.client, the building blocks are
+character sigils, and a grid.)
+
+### touch interface
+
+Consider this: if the client could function as a touch interface or
+keyboard-driven interface with no extra work required from the application
+developer.
+
+The challenge here is to flesh out a single touchable text widget, probably
+something that required a modification to the definition of cgrid and keyboard
+stream. (i.e. the cgrid would populate keyboard stream in response to
+activity). With a single well-defined structure here, the rest becomes a
+simple matter of implementation.
+
+### oled-oriented layout system
+
+Some high-end laptops now come with an OLED screen. In this screen, black
+background is achieved by unpowered pixels.
+
+See directions/000.layout.optimised.for.oled for a demonstration of a frame
+layout system
+
+
+
+
 
