@@ -13,17 +13,15 @@
 from solent.client.constants import *
 
 class Scope(object):
-    def __init__(self, margin_h, margin_w):
+    def __init__(self, meep, margin_h, margin_w):
+        self.meep = meep
         self.margin_h = margin_h
         self.margin_w = margin_w
         #
-        self.meep = None
         self.adjust_h = 3
         self.adjust_w = 3
         self.centre_s = 0
         self.centre_e = 0
-    def follow(self, meep):
-        self.meep = meep
     def populate_cgrid(self, cgrid, fabric, meeps):
         if None == self.meep:
             raise Exception("need to follow a meep")
@@ -117,8 +115,9 @@ class Scope(object):
                 s=meep.c,
                 cpair=meep.cpair)
 
-def scope_new(margin_h, margin_w):
+def scope_new(meep, margin_h, margin_w):
     ob = Scope(
+        meep=meep,
         margin_h=margin_h,
         margin_w=margin_w)
     return ob

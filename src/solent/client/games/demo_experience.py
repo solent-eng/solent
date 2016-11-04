@@ -3,11 +3,13 @@
 # Intends to demonstrate basic use of the experience class
 #
 
-from .turnlib.game_console import game_console_new
+from .turnlib.rogue_console import rogue_console_new
 from .turnlib.menu import menu_new
+from .turnlib.fabric import fabric_new_grid
 
 from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
+from solent.client.term.meep import meep_new
 from solent.client.term.curses_term import curses_term_start, curses_term_end
 from solent.client.term.window_term import window_term_start, window_term_end
 from solent.exceptions import SolentQuitException
@@ -36,7 +38,7 @@ CPAIR_MENU_TEXT = SOL_CPAIR_T_WHITE
 CPAIR_TITLE = SOL_CPAIR_T_WHITE
 
 class ExperienceConsole(object):
-    def __init__(self, title, game_console):
+    def __init__(self, title, console):
         '''
         cgrid
             the memory to be used for rendering activity
@@ -47,10 +49,10 @@ class ExperienceConsole(object):
             this console
         '''
         self.title = title
-        self.game_console = game_console
+        self.console = console
         #
         # no harm reusing it
-        self.cgrid = self.game_console.cgrid
+        self.cgrid = self.console.cgrid
         self.b_in_game = False
         #
         self.menu = self.__init_menu()
@@ -137,7 +139,7 @@ class ExperienceConsole(object):
     def mi_quit(self):
         raise SolentQuitException()
     #
-    def accept(self, console_regulator, key):
+    def accept(self, key):
         if '' == key:
             return
         elif ord(key) == 27 and self.b_in_game:
@@ -145,7 +147,7 @@ class ExperienceConsole(object):
         elif ord(key) == 27:
             self.b_in_game = True
         elif self.b_in_game:
-            self.game_console.accept(
+            self.console.accept(
                 key=key)
         else:
             if not self.menu.has_key(key):
@@ -154,7 +156,7 @@ class ExperienceConsole(object):
             fn()
     def redraw(self, grid_display):
         if self.b_in_game:
-            self.game_console.redraw(
+            self.console.redraw(
                 grid_display=grid_display)
         else:
             self._redraw_title()
@@ -162,10 +164,10 @@ class ExperienceConsole(object):
             grid_display.update(
                 cgrid=self.cgrid)
 
-def experience_console_new(title, game_console):
+def experience_console_new(title, console):
     ob = ExperienceConsole(
         title=title,
-        game_console=game_console)
+        console=console)
     return ob
 
 
@@ -183,7 +185,6 @@ class ConsoleRegulator(object):
         self.console.redraw(self.grid_display)
         while True:
             self.console.accept(
-                console_regulator=self,
                 key=self.keystream.next())
             self.console.redraw(self.grid_display)
 
@@ -192,6 +193,107 @@ def console_regulator_new(keystream, grid_display, console):
         keystream=keystream,
         grid_display=grid_display,
         console=console)
+    return ob
+
+
+# --------------------------------------------------------
+#   :game
+# --------------------------------------------------------
+class SampleRogueGame(object):
+    def __init__(self, player):
+        self.player = player
+        self.fabric = fabric_new_grid()
+        #
+        self.meeps = []
+        self.meeps.append(
+            meep_new(
+                s=0,
+                e=0,
+                c='<',
+                cpair=SOL_CPAIR_WHITE_T))
+        self.meeps.append(
+            meep_new(
+                s=-2,
+                e=-2,
+                c='|',
+                cpair=SOL_CPAIR_WHITE_T))
+        self.meeps.append(
+            meep_new(
+                s=-3,
+                e=0,
+                c='|',
+                cpair=SOL_CPAIR_WHITE_T))
+        self.meeps.append(
+            meep_new(
+                s=-2,
+                e=2,
+                c='|',
+                cpair=SOL_CPAIR_WHITE_T))
+        self.meeps.append(
+            meep_new(
+                s=0,
+                e=-3,
+                c='|',
+                cpair=SOL_CPAIR_WHITE_T))
+        self.meeps.append(
+            meep_new(
+                s=0,
+                e=3,
+                c='|',
+                cpair=SOL_CPAIR_WHITE_T))
+        self.meeps.append(
+            meep_new(
+                s=2,
+                e=-2,
+                c='|',
+                cpair=SOL_CPAIR_WHITE_T))
+        self.meeps.append(
+            meep_new(
+                s=3,
+                e=0,
+                c='|',
+                cpair=SOL_CPAIR_WHITE_T))
+        self.meeps.append(
+            meep_new(
+                s=2,
+                e=2,
+                c='|',
+                cpair=SOL_CPAIR_WHITE_T))
+        self.meeps.append(self.player)
+    def rogue_move_nw(self, meep):
+        meep.s += -1
+        meep.e += -1
+    def rogue_move_nn(self, meep):
+        meep.s += -1
+        meep.e += 0
+    def rogue_move_ne(self, meep):
+        meep.s += -1
+        meep.e += 1
+    def rogue_move_ww(self, meep):
+        meep.s += 0
+        meep.e += -1
+    def rogue_move_ee(self, meep):
+        meep.s += 0
+        meep.e += 1
+    def rogue_move_sw(self, meep):
+        meep.s += 1
+        meep.e += -1
+    def rogue_move_ss(self, meep):
+        meep.s += 1
+        meep.e += 0
+    def rogue_move_se(self, meep):
+        meep.s += 1
+        meep.e += 1
+
+def sample_rogue_game_new():
+    player = meep_new(
+        s=0,
+        e=0,
+        c='@',
+        cpair=SOL_CPAIR_RED_T)
+    #
+    ob = SampleRogueGame(
+        player=player)
     return ob
 
 
@@ -209,12 +311,15 @@ def main():
         print('ERROR: specify --tty or --win')
         sys.exit(1)
     try:
-        game_console = game_console_new(
+        rogue_game = sample_rogue_game_new()
+        #
+        rogue_console = rogue_console_new(
+            rogue_game=rogue_game,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
         experience_console = experience_console_new(
             title=TITLE,
-            game_console=game_console)
+            console=rogue_console)
         #
         term_shape = fn_device_start(
             game_width=C_GAME_WIDTH,
