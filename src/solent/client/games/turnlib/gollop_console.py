@@ -7,8 +7,6 @@ from .logbook import logbook_new
 
 from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
-from solent.client.term.meep import meep_new
-from solent.client.term.scope import scope_new
 from solent.exceptions import SolentQuitException
 
 from collections import deque
@@ -29,19 +27,13 @@ class GollopConsole(object):
         self.logbook = logbook
         #
         self.scope = scope_new(
-            cursor_meep=gollop_game.get_cursor(),
+            cursor_glyph=gollop_game.get_cursor(),
             margin_h=3,
             margin_w=5)
         #
         self.t = 0
         #
         self.status_entries = deque()
-    def main_loop(self):
-        self._redraw_all()
-        while True:
-            self.t += 1
-            self._player_turn()
-            self._redraw_all()
     def _plot_status_messages(self):
         # filter new logbook entries into our local store
         for se in self.status_entries: se.turns += 1
@@ -70,7 +62,7 @@ class GollopConsole(object):
     def redraw(self, grid_display):
         self.scope.populate_cgrid(
             cgrid=self.cgrid,
-            meeps=self.gollop_game.get_meeps(),
+            glyphs=self.gollop_game.get_glyphs(),
             fabric=self.gollop_game.fabric)
         self._plot_status_messages()
         grid_display.update(

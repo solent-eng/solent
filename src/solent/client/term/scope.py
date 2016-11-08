@@ -1,8 +1,8 @@
 #
-# scope: used to plot a grid around a meep. The scope follows a meep. It has
-# some neat margin functionality in it. Rather than the meep always being at
+# scope: used to plot a grid around a glyph. The scope follows a glyph. It has
+# some neat margin functionality in it. Rather than the glyph always being at
 # the centre of the screen, the scope has margins. The scope only repoints
-# when the meep moves beyond the margins of the grid that's in focus.
+# when the glyph moves beyond the margins of the grid that's in focus.
 #
 # This is nice for the user, because the screen stays fairly consistent,
 # rather than moving around all the time. It's also handy for rendering
@@ -13,19 +13,19 @@
 from solent.client.constants import *
 
 class Scope(object):
-    def __init__(self, cursor_meep, margin_h, margin_w):
-        self.cursor_meep = cursor_meep
+    def __init__(self, perspective, margin_h, margin_w):
         self.margin_h = margin_h
         self.margin_w = margin_w
+        self.perspective = perspective
         #
         self.adjust_h = 3
         self.adjust_w = 3
         self.centre_s = 0
         self.centre_e = 0
-    def populate_cgrid(self, cgrid, fabric, meeps):
+    def populate_cgrid(self, cgrid, fabric, glyphs):
         #
-        # meep preparation
-        # ----------------
+        # glyph preparation
+        # -----------------
         #
         height = cgrid.height
         width = cgrid.width
@@ -47,24 +47,24 @@ class Scope(object):
         m_peri_e = s_peri_e - self.margin_w
         #
         # our focus point
-        meep_s = self.cursor_meep.s
-        meep_e = self.cursor_meep.e
+        glyph_s = self.perspective.cursor_glyph.s
+        glyph_e = self.perspective.cursor_glyph.e
         #
         # do we need to re-point the scope?
         # ---------------------------------
-        # check to see that the meep is within margins of the current scope.
+        # check to see that the glyph is within margins of the current scope.
         # If we need to adjust then re-point the scope, and then call this
         # function again.
         #
         adjust_s = 0
         adjust_e = 0
-        if meep_s < m_nail_s:
+        if glyph_s < m_nail_s:
             adjust_s -= self.adjust_h
-        if meep_s >= m_peri_s:
+        if glyph_s >= m_peri_s:
             adjust_s += self.adjust_h
-        if meep_e < m_nail_e:
+        if glyph_e < m_nail_e:
             adjust_e -= self.adjust_w
-        if meep_e >= m_peri_e:
+        if glyph_e >= m_peri_e:
             adjust_e += self.adjust_w
         #
         # do we need to repoint?
@@ -74,7 +74,7 @@ class Scope(object):
             self.populate_cgrid(
                 cgrid=cgrid,
                 fabric=fabric,
-                meeps=meeps)
+                glyphs=glyphs)
             return
         #
         # display
@@ -97,32 +97,32 @@ class Scope(object):
                     s=c,
                     cpair=cpair)
         #
-        # // meeps
-        for meep in meeps:
-            if meep.s < s_nail_s:
+        # // glyphs
+        for glyph in glyphs:
+            if glyph.s < s_nail_s:
                 continue
-            if meep.s >= s_peri_s:
+            if glyph.s >= s_peri_s:
                 continue
-            if meep.e < s_nail_e:
+            if glyph.e < s_nail_e:
                 continue
-            if meep.e >= s_peri_e:
+            if glyph.e >= s_peri_e:
                 continue
             cgrid.put(
-                rest=meep.e - s_nail_e,
-                drop=meep.s - s_nail_s,
-                s=meep.c,
-                cpair=meep.cpair)
+                rest=glyph.e - s_nail_e,
+                drop=glyph.s - s_nail_s,
+                s=glyph.c,
+                cpair=glyph.cpair)
         #
-        # // ensure the cursor meep is on top
+        # // ensure the cursor glyph is on top
         cgrid.put(
-            rest=self.cursor_meep.e - s_nail_e,
-            drop=self.cursor_meep.s - s_nail_s,
-            s=self.cursor_meep.c,
-            cpair=self.cursor_meep.cpair)
+            rest=self.perspective.cursor_glyph.e - s_nail_e,
+            drop=self.perspective.cursor_glyph.s - s_nail_s,
+            s=self.perspective.cursor_glyph.c,
+            cpair=self.perspective.cursor_glyph.cpair)
 
-def scope_new(cursor_meep, margin_h, margin_w):
+def scope_new(perspective, margin_h, margin_w):
     ob = Scope(
-        cursor_meep=cursor_meep,
+        perspective=perspective,
         margin_h=margin_h,
         margin_w=margin_w)
     return ob

@@ -6,12 +6,12 @@
 from .turnlib.rogue_console import rogue_console_new
 from .turnlib.gollop_console import gollop_console_new
 from .turnlib.menu import menu_new
-from .turnlib.fabric import fabric_new_grid
+from .turnlib.rogue_plane import rogue_plane_new
 
 from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
-from solent.client.term.meep import meep_new
 from solent.client.term.curses_term import curses_term_start, curses_term_end
+from solent.client.term.perspective import perspective_new
 from solent.client.term.window_term import window_term_start, window_term_end
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
@@ -208,19 +208,19 @@ def console_regulator_new(keystream, grid_display, console):
 # --------------------------------------------------------
 class GollopGame(object):
     def __init__(self):
-        self._meeps = [
-            meep_new(
+        self._glyphs = [
+            glyph_new(
                 s=0,
                 e=0,
                 c='O',
                 cpair=SOL_CPAIR_WHITE_T)
         ]
-        self._cursor = self._meeps[0]
+        self._cursor = self._glyphs[0]
         self.fabric = fabric_new_grid()
     def get_cursor(self):
         return self._cursor
-    def get_meeps(self):
-        return self._meeps
+    def get_glyphs(self):
+        return self._glyphs
     def gollop_cursor_move_nw(self):
         self._cursor.s += -1
         self._cursor.e += -1
@@ -257,108 +257,67 @@ def gollop_game_new():
 #   :rogue_game
 # --------------------------------------------------------
 class RogueGame(object):
-    def __init__(self, player):
-        self.player = player
-        self.fabric = fabric_new_grid()
-        #
-        self._meeps = []
-        self._meeps.append(
-            meep_new(
-                s=0,
-                e=0,
-                c='<',
-                cpair=SOL_CPAIR_WHITE_T))
-        self._meeps.append(
-            meep_new(
-                s=-2,
-                e=-2,
-                c='|',
-                cpair=SOL_CPAIR_WHITE_T))
-        self._meeps.append(
-            meep_new(
-                s=-3,
-                e=0,
-                c='|',
-                cpair=SOL_CPAIR_WHITE_T))
-        self._meeps.append(
-            meep_new(
-                s=-2,
-                e=2,
-                c='|',
-                cpair=SOL_CPAIR_WHITE_T))
-        self._meeps.append(
-            meep_new(
-                s=0,
-                e=-3,
-                c='|',
-                cpair=SOL_CPAIR_WHITE_T))
-        self._meeps.append(
-            meep_new(
-                s=0,
-                e=3,
-                c='|',
-                cpair=SOL_CPAIR_WHITE_T))
-        self._meeps.append(
-            meep_new(
-                s=2,
-                e=-2,
-                c='|',
-                cpair=SOL_CPAIR_WHITE_T))
-        self._meeps.append(
-            meep_new(
-                s=3,
-                e=0,
-                c='|',
-                cpair=SOL_CPAIR_WHITE_T))
-        self._meeps.append(
-            meep_new(
-                s=2,
-                e=2,
-                c='|',
-                cpair=SOL_CPAIR_WHITE_T))
-        self._meeps.append(self.player)
-    def get_meeps(self):
-        return self._meeps
-    def move_nw(self, meep):
-        meep.s += -1
-        meep.e += -1
-    def move_nn(self, meep):
-        meep.s += -1
-        meep.e += 0
-    def move_ne(self, meep):
-        meep.s += -1
-        meep.e += 1
-    def move_ww(self, meep):
-        meep.s += 0
-        meep.e += -1
-    def move_ee(self, meep):
-        meep.s += 0
-        meep.e += 1
-    def move_sw(self, meep):
-        meep.s += 1
-        meep.e += -1
-    def move_ss(self, meep):
-        meep.s += 1
-        meep.e += 0
-    def move_se(self, meep):
-        meep.s += 1
-        meep.e += 1
+    def __init__(self, rogue_plane, player_glyph):
+        self.rogue_plane = rogue_plane
+        self.player_glyph = player_glyph
 
-def rogue_game_new():
-    player = meep_new(
-        s=0,
-        e=0,
-        c='@',
-        cpair=SOL_CPAIR_RED_T)
-    #
+def rogue_game_new(rogue_plane, player_glyph):
     ob = RogueGame(
-        player=player)
+        rogue_plane=rogue_plane,
+        player_glyph=player_glyph)
     return ob
 
 
 # --------------------------------------------------------
 #   :alg
 # --------------------------------------------------------
+def prep_plane(rogue_plane):
+    rogue_plane.create_glyph(
+        s=0,
+        e=0,
+        c='<',
+        cpair=SOL_CPAIR_WHITE_T)
+    rogue_plane.create_glyph(
+        s=-2,
+        e=-2,
+        c='|',
+        cpair=SOL_CPAIR_WHITE_T)
+    rogue_plane.create_glyph(
+        s=-3,
+        e=0,
+        c='|',
+        cpair=SOL_CPAIR_WHITE_T)
+    rogue_plane.create_glyph(
+        s=-2,
+        e=2,
+        c='|',
+        cpair=SOL_CPAIR_WHITE_T)
+    rogue_plane.create_glyph(
+        s=0,
+        e=-3,
+        c='|',
+        cpair=SOL_CPAIR_WHITE_T)
+    rogue_plane.create_glyph(
+        s=0,
+        e=3,
+        c='|',
+        cpair=SOL_CPAIR_WHITE_T)
+    rogue_plane.create_glyph(
+        s=2,
+        e=-2,
+        c='|',
+        cpair=SOL_CPAIR_WHITE_T)
+    rogue_plane.create_glyph(
+        s=3,
+        e=0,
+        c='|',
+        cpair=SOL_CPAIR_WHITE_T)
+    rogue_plane.create_glyph(
+        s=2,
+        e=2,
+        c='|',
+        cpair=SOL_CPAIR_WHITE_T)
+
 def main():
     if '--tty' in sys.argv:
         fn_device_start = curses_term_start
@@ -370,11 +329,26 @@ def main():
         print('ERROR: specify --tty or --win')
         sys.exit(1)
     try:
-        rogue_game = rogue_game_new()
-        rogue_console = rogue_console_new(
-            rogue_game=rogue_game,
+        rogue_plane = rogue_plane_new()
+        prep_plane(
+            rogue_plane=rogue_plane)
+        #
+        player_glyph = rogue_plane.create_glyph(
+            s=0,
+            e=0,
+            c='@',
+            cpair=SOL_CPAIR_RED_T)
+        rogue_game = rogue_game_new(
+            rogue_plane=rogue_plane,
+            player_glyph=player_glyph)
+        #
+        perspective = perspective_new(
+            cursor_glyph=player_glyph,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
+        rogue_console = rogue_console_new(
+            rogue_game=rogue_game,
+            perspective=perspective)
         '''
         gollop_game = gollop_game_new()
         gollop_console = gollop_console_new(
