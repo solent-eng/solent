@@ -4,6 +4,7 @@
 #
 
 from .turnlib.rogue_console import rogue_console_new
+from .turnlib.gollop_console import gollop_console_new
 from .turnlib.menu import menu_new
 from .turnlib.fabric import fabric_new_grid
 
@@ -65,7 +66,8 @@ class ExperienceConsole(object):
         self.__init_menu_grid()
     def __init_menu(self):
         menu = menu_new()
-        menu.add('g', 'go', self.mi_enter_game)
+        menu.add('c', 'continue', self.mi_continue_game)
+        menu.add('n', 'new', self.mi_new_game)
         menu.add('l', 'load', self.mi_load_game)
         menu.add('s', 'save', self.mi_save_game)
         menu.add('q', 'quit', self.mi_quit)
@@ -90,7 +92,7 @@ class ExperienceConsole(object):
         # prepare the menu border
         self.menu_cgrid = cgrid_new(
             width=longest_line+4,
-            height=len(lines)+4)
+            height=len(lines)+2)
         horiz = ' '*(longest_line+4)
         blank = ' '*(longest_line+4)
         menu_border_height = len(lines)+2
@@ -130,7 +132,12 @@ class ExperienceConsole(object):
             src_cgrid=self.menu_cgrid,
             nail=nail)
     #
-    def mi_enter_game(self):
+    def to_menu(self):
+        self.b_in_game = False
+    def mi_continue_game(self):
+        self.b_in_game = True
+    def mi_new_game(self):
+        print('xxx new game')
         self.b_in_game = True
     def mi_load_game(self):
         print('xxx mi_load_game')
@@ -143,7 +150,7 @@ class ExperienceConsole(object):
         if '' == key:
             return
         elif ord(key) == 27 and self.b_in_game:
-            self.b_in_game = False
+            self.to_menu()
         elif ord(key) == 27:
             self.b_in_game = True
         elif self.b_in_game:
@@ -197,69 +204,121 @@ def console_regulator_new(keystream, grid_display, console):
 
 
 # --------------------------------------------------------
-#   :game
+#   :gollop_game
 # --------------------------------------------------------
-class SampleRogueGame(object):
+class GollopGame(object):
+    def __init__(self):
+        self._meeps = [
+            meep_new(
+                s=0,
+                e=0,
+                c='O',
+                cpair=SOL_CPAIR_WHITE_T)
+        ]
+        self._cursor = self._meeps[0]
+        self.fabric = fabric_new_grid()
+    def get_cursor(self):
+        return self._cursor
+    def get_meeps(self):
+        return self._meeps
+    def gollop_cursor_move_nw(self):
+        self._cursor.s += -1
+        self._cursor.e += -1
+    def gollop_cursor_move_nn(self):
+        self._cursor.s += -1
+        self._cursor.e += 0
+    def gollop_cursor_move_ne(self):
+        self._cursor.s += -1
+        self._cursor.e += 1
+    def gollop_cursor_move_ww(self):
+        self._cursor.s += 0
+        self._cursor.e += -1
+    def gollop_cursor_move_ee(self):
+        self._cursor.s += 0
+        self._cursor.e += 1
+    def gollop_cursor_move_sw(self):
+        self._cursor.s += 1
+        self._cursor.e += -1
+    def gollop_cursor_move_ss(self):
+        self._cursor.s += 1
+        self._cursor.e += 0
+    def gollop_cursor_move_se(self):
+        self._cursor.s += 1
+        self._cursor.e += 1
+    def gollop_cursor_select(self):
+        print('xxx gollop_select')
+
+def gollop_game_new():
+    ob = GollopGame()
+    return ob
+
+
+# --------------------------------------------------------
+#   :rogue_game
+# --------------------------------------------------------
+class RogueGame(object):
     def __init__(self, player):
         self.player = player
         self.fabric = fabric_new_grid()
         #
-        self.meeps = []
-        self.meeps.append(
+        self._meeps = []
+        self._meeps.append(
             meep_new(
                 s=0,
                 e=0,
                 c='<',
                 cpair=SOL_CPAIR_WHITE_T))
-        self.meeps.append(
+        self._meeps.append(
             meep_new(
                 s=-2,
                 e=-2,
                 c='|',
                 cpair=SOL_CPAIR_WHITE_T))
-        self.meeps.append(
+        self._meeps.append(
             meep_new(
                 s=-3,
                 e=0,
                 c='|',
                 cpair=SOL_CPAIR_WHITE_T))
-        self.meeps.append(
+        self._meeps.append(
             meep_new(
                 s=-2,
                 e=2,
                 c='|',
                 cpair=SOL_CPAIR_WHITE_T))
-        self.meeps.append(
+        self._meeps.append(
             meep_new(
                 s=0,
                 e=-3,
                 c='|',
                 cpair=SOL_CPAIR_WHITE_T))
-        self.meeps.append(
+        self._meeps.append(
             meep_new(
                 s=0,
                 e=3,
                 c='|',
                 cpair=SOL_CPAIR_WHITE_T))
-        self.meeps.append(
+        self._meeps.append(
             meep_new(
                 s=2,
                 e=-2,
                 c='|',
                 cpair=SOL_CPAIR_WHITE_T))
-        self.meeps.append(
+        self._meeps.append(
             meep_new(
                 s=3,
                 e=0,
                 c='|',
                 cpair=SOL_CPAIR_WHITE_T))
-        self.meeps.append(
+        self._meeps.append(
             meep_new(
                 s=2,
                 e=2,
                 c='|',
                 cpair=SOL_CPAIR_WHITE_T))
-        self.meeps.append(self.player)
+        self._meeps.append(self.player)
+    def get_meeps(self):
+        return self._meeps
     def rogue_move_nw(self, meep):
         meep.s += -1
         meep.e += -1
@@ -285,14 +344,14 @@ class SampleRogueGame(object):
         meep.s += 1
         meep.e += 1
 
-def sample_rogue_game_new():
+def rogue_game_new():
     player = meep_new(
         s=0,
         e=0,
         c='@',
         cpair=SOL_CPAIR_RED_T)
     #
-    ob = SampleRogueGame(
+    ob = RogueGame(
         player=player)
     return ob
 
@@ -311,15 +370,22 @@ def main():
         print('ERROR: specify --tty or --win')
         sys.exit(1)
     try:
-        rogue_game = sample_rogue_game_new()
+        #rogue_game = rogue_game_new()
+        #rogue_console = rogue_console_new(
+        #    rogue_game=rogue_game,
+        #    width=C_GAME_WIDTH,
+        #    height=C_GAME_HEIGHT)
         #
-        rogue_console = rogue_console_new(
-            rogue_game=rogue_game,
+        gollop_game = gollop_game_new()
+        gollop_console = gollop_console_new(
+            gollop_game=gollop_game,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
+        #
         experience_console = experience_console_new(
             title=TITLE,
-            console=rogue_console)
+            #console=rogue_console)
+            console=gollop_console)
         #
         term_shape = fn_device_start(
             game_width=C_GAME_WIDTH,

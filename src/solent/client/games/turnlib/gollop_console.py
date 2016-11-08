@@ -1,6 +1,6 @@
 #
 # console that follows roguelike conventions and can interact with a
-# rogue_game.
+# gollop_game.
 #
 
 from .logbook import logbook_new
@@ -22,14 +22,14 @@ class StatusEntry(object):
         #
         self.turns = 0
 
-class RogueConsole(object):
-    def __init__(self, rogue_game, cgrid, logbook):
-        self.rogue_game = rogue_game
+class GollopConsole(object):
+    def __init__(self, gollop_game, cgrid, logbook):
+        self.gollop_game = gollop_game
         self.cgrid = cgrid
         self.logbook = logbook
         #
         self.scope = scope_new(
-            cursor_meep=rogue_game.player,
+            cursor_meep=gollop_game.get_cursor(),
             margin_h=3,
             margin_w=5)
         #
@@ -70,8 +70,8 @@ class RogueConsole(object):
     def redraw(self, grid_display):
         self.scope.populate_cgrid(
             cgrid=self.cgrid,
-            meeps=self.rogue_game.get_meeps(),
-            fabric=self.rogue_game.fabric)
+            meeps=self.gollop_game.get_meeps(),
+            fabric=self.gollop_game.fabric)
         self._plot_status_messages()
         grid_display.update(
             cgrid=self.cgrid)
@@ -79,31 +79,28 @@ class RogueConsole(object):
         fn = None
         #
         # direction processing
-        movement = { 'q':   self.rogue_game.rogue_move_nw
-                   , 'w':   self.rogue_game.rogue_move_nn
-                   , 'e':   self.rogue_game.rogue_move_ne
-                   , 'a':   self.rogue_game.rogue_move_ww
-                   , 'd':   self.rogue_game.rogue_move_ee
-                   , 'z':   self.rogue_game.rogue_move_sw
-                   , 'x':   self.rogue_game.rogue_move_ss
-                   , 'c':   self.rogue_game.rogue_move_se
+        movement = { 'q':   self.gollop_game.gollop_cursor_move_nw
+                   , 'w':   self.gollop_game.gollop_cursor_move_nn
+                   , 'e':   self.gollop_game.gollop_cursor_move_ne
+                   , 'a':   self.gollop_game.gollop_cursor_move_ww
+                   , 'd':   self.gollop_game.gollop_cursor_move_ee
+                   , 'z':   self.gollop_game.gollop_cursor_move_sw
+                   , 'x':   self.gollop_game.gollop_cursor_move_ss
+                   , 'c':   self.gollop_game.gollop_cursor_move_se
+                   , 's':   self.gollop_game.gollop_cursor_select
                    }
         if key in movement:
-            movement[key](
-                meep=self.rogue_game.player)
-            self.logbook.log(
-                t=self.t,
-                s='t %s: player moved to %ss%se'%(self.t, self.rogue_game.player.s, self.rogue_game.player.e))
+            movement[key]()
             return
 
-def rogue_console_new(rogue_game, width, height):
+def gollop_console_new(gollop_game, width, height):
     cgrid = cgrid_new(
         width=width,
         height=height)
     logbook = logbook_new(
         capacity=100)
-    ob = RogueConsole(
-        rogue_game=rogue_game,
+    ob = GollopConsole(
+        gollop_game=gollop_game,
         cgrid=cgrid,
         logbook=logbook)
     return ob

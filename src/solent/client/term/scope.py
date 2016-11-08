@@ -13,8 +13,8 @@
 from solent.client.constants import *
 
 class Scope(object):
-    def __init__(self, meep, margin_h, margin_w):
-        self.meep = meep
+    def __init__(self, cursor_meep, margin_h, margin_w):
+        self.cursor_meep = cursor_meep
         self.margin_h = margin_h
         self.margin_w = margin_w
         #
@@ -23,8 +23,6 @@ class Scope(object):
         self.centre_s = 0
         self.centre_e = 0
     def populate_cgrid(self, cgrid, fabric, meeps):
-        if None == self.meep:
-            raise Exception("need to follow a meep")
         #
         # meep preparation
         # ----------------
@@ -49,8 +47,8 @@ class Scope(object):
         m_peri_e = s_peri_e - self.margin_w
         #
         # our focus point
-        meep_s = self.meep.s
-        meep_e = self.meep.e
+        meep_s = self.cursor_meep.s
+        meep_e = self.cursor_meep.e
         #
         # do we need to re-point the scope?
         # ---------------------------------
@@ -114,10 +112,17 @@ class Scope(object):
                 drop=meep.s - s_nail_s,
                 s=meep.c,
                 cpair=meep.cpair)
+        #
+        # // ensure the cursor meep is on top
+        cgrid.put(
+            rest=self.cursor_meep.e - s_nail_e,
+            drop=self.cursor_meep.s - s_nail_s,
+            s=self.cursor_meep.c,
+            cpair=self.cursor_meep.cpair)
 
-def scope_new(meep, margin_h, margin_w):
+def scope_new(cursor_meep, margin_h, margin_w):
     ob = Scope(
-        meep=meep,
+        cursor_meep=cursor_meep,
         margin_h=margin_h,
         margin_w=margin_w)
     return ob
