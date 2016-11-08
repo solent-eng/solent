@@ -9,9 +9,9 @@ language. The target platform is python3 on non-specific unix.
 
 ## Community
 
-Except where specifically marked, the codebase will be licensed exclusively
-under the GPL. I'd like to grow a community around this code that follows in
-the spirit of _Social Architecture_ by Pieter Hintjens.
+Except where specifically marked, the codebase will be licensed under the
+LGPL. I'd like to grow a community around this code that follows in the spirit
+of _Social Architecture_ by Pieter Hintjens.
 
 ## Status
 
