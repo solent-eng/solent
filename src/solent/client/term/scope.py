@@ -22,7 +22,7 @@ class Scope(object):
         self.adjust_w = 3
         self.centre_s = 0
         self.centre_e = 0
-    def populate_cgrid(self, cgrid, fabric, glyphs):
+    def populate_cgrid(self, cgrid, glyphs):
         #
         # glyph preparation
         # -----------------
@@ -73,7 +73,6 @@ class Scope(object):
             self.centre_e += adjust_e
             self.populate_cgrid(
                 cgrid=cgrid,
-                fabric=fabric,
                 glyphs=glyphs)
             return
         #
@@ -81,21 +80,6 @@ class Scope(object):
         # -------
         #
         cgrid.clear()
-        #
-        # // fabric
-        for (drop, south) in enumerate(range(s_nail_s, s_peri_s)):
-            for (rest, east) in enumerate(range(s_nail_e, s_peri_e)):
-                tpl = fabric.get_sigil(
-                    s=south,
-                    e=east)
-                if None == tpl:
-                    continue
-                (c, cpair) = tpl
-                cgrid.put(
-                    rest=rest,
-                    drop=drop,
-                    s=c,
-                    cpair=cpair)
         #
         # // glyphs
         for glyph in glyphs:

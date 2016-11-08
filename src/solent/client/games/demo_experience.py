@@ -3,9 +3,9 @@
 # Intends to demonstrate basic use of the experience class
 #
 
+from .turnlib.experience_console import experience_console_new
 from .turnlib.rogue_console import rogue_console_new
 from .turnlib.gollop_console import gollop_console_new
-from .turnlib.menu import menu_new
 from .turnlib.rogue_plane import rogue_plane_new
 
 from solent.client.constants import *
@@ -25,158 +25,6 @@ C_GAME_WIDTH = 78
 C_GAME_HEIGHT = 25
 
 TITLE = '[demo_experience]'
-
-
-# --------------------------------------------------------
-#   :experience_console
-# --------------------------------------------------------
-#
-# Responsible for displaying a menu, and exposing interaction points with it.
-# This acts as a pipeline for keyboard input and display events. Where the
-# game is running, it just passes the events through to the game.
-#
-CPAIR_MENU_BORDER = SOL_CPAIR_BLACK_CYAN
-CPAIR_MENU_TEXT = SOL_CPAIR_T_WHITE
-CPAIR_TITLE = SOL_CPAIR_T_WHITE
-
-class ExperienceConsole(object):
-    def __init__(self, title, console):
-        '''
-        cgrid
-            the memory to be used for rendering activity
-        title
-            to display on the console
-        menu
-            instance of menu class that the user interacts with through
-            this console
-        '''
-        self.title = title
-        self.console = console
-        #
-        # no harm reusing it
-        self.cgrid = self.console.cgrid
-        self.b_in_game = False
-        #
-        self.menu = self.__init_menu()
-        self.__init_menu()
-        #
-        self.title_cgrid = None
-        self.__init_title()
-        #
-        self.menu_cgrid = None
-        self.__init_menu_grid()
-    def __init_menu(self):
-        menu = menu_new()
-        menu.add('c', 'continue', self.mi_continue_game)
-        menu.add('n', 'new', self.mi_new_game)
-        menu.add('l', 'load', self.mi_load_game)
-        menu.add('s', 'save', self.mi_save_game)
-        menu.add('q', 'quit', self.mi_quit)
-        return menu
-    def __init_title(self):
-        # Later on we could use something like pyfiglet for this. Better would
-        # be a single distinct font, similar to what Gollop did with rebelstar.
-        self.title_cgrid = cgrid_new(
-            width=len(self.title),
-            height=1)
-        self.title_cgrid.put(
-            drop=0,
-            rest=0,
-            s=self.title,
-            cpair=CPAIR_TITLE)
-    def __init_menu_grid(self):
-        lines = self.menu.get_lines()
-        longest_line = 0
-        for l in lines:
-            longest_line = max( [longest_line, len(l)] )
-        #
-        # prepare the menu border
-        self.menu_cgrid = cgrid_new(
-            width=longest_line+4,
-            height=len(lines)+2)
-        horiz = ' '*(longest_line+4)
-        blank = ' '*(longest_line+4)
-        menu_border_height = len(lines)+2
-        for idx in range(menu_border_height):
-            if idx in (0, menu_border_height-1):
-                self.menu_cgrid.put(
-                    drop=idx,
-                    rest=0,
-                    s=horiz,
-                    cpair=CPAIR_MENU_BORDER)
-            else:
-                line = lines[idx-1]
-                self.menu_cgrid.put(
-                    drop=idx,
-                    rest=0,
-                    s=' ',
-                    cpair=CPAIR_MENU_BORDER)
-                self.menu_cgrid.put(
-                    drop=idx,
-                    rest=1,
-                    s=' %s%s '%(line, ' '*(longest_line-len(line))),
-                    cpair=CPAIR_MENU_TEXT)
-                self.menu_cgrid.put(
-                    drop=idx,
-                    rest=longest_line+3,
-                    s=' ',
-                    cpair=CPAIR_MENU_BORDER)
-    def _redraw_title(self):
-        self.cgrid.blit(
-            src_cgrid=self.title_cgrid,
-            nail=(0, 0))
-    def _redraw_menu(self):
-        menu_drop = int((self.cgrid.height / 2) - (self.menu_cgrid.height / 2))
-        menu_rest = int((self.cgrid.width / 2) - (self.menu_cgrid.width / 2))
-        nail = (menu_drop, menu_rest)
-        self.cgrid.blit(
-            src_cgrid=self.menu_cgrid,
-            nail=nail)
-    #
-    def to_menu(self):
-        self.b_in_game = False
-    def mi_continue_game(self):
-        self.b_in_game = True
-    def mi_new_game(self):
-        print('xxx new game')
-        self.b_in_game = True
-    def mi_load_game(self):
-        print('xxx mi_load_game')
-    def mi_save_game(self):
-        print('xxx mi_save_game')
-    def mi_quit(self):
-        raise SolentQuitException()
-    #
-    def accept(self, key):
-        if '' == key:
-            return
-        elif ord(key) == 27 and self.b_in_game:
-            self.to_menu()
-        elif ord(key) == 27:
-            self.b_in_game = True
-        elif self.b_in_game:
-            self.console.accept(
-                key=key)
-        else:
-            if not self.menu.has_key(key):
-                return
-            fn = self.menu.get_callback(key)
-            fn()
-    def redraw(self, grid_display):
-        if self.b_in_game:
-            self.console.redraw(
-                grid_display=grid_display)
-        else:
-            self._redraw_title()
-            self._redraw_menu()
-            grid_display.update(
-                cgrid=self.cgrid)
-
-def experience_console_new(title, console):
-    ob = ExperienceConsole(
-        title=title,
-        console=console)
-    return ob
 
 
 # --------------------------------------------------------
@@ -205,67 +53,17 @@ def console_regulator_new(keystream, grid_display, console):
 
 
 # --------------------------------------------------------
-#   :gollop_game
-# --------------------------------------------------------
-class GollopGame(object):
-    def __init__(self):
-        self._glyphs = [
-            glyph_new(
-                s=0,
-                e=0,
-                c='O',
-                cpair=SOL_CPAIR_WHITE_T)
-        ]
-        self._cursor = self._glyphs[0]
-        self.fabric = fabric_new_grid()
-    def get_cursor(self):
-        return self._cursor
-    def get_glyphs(self):
-        return self._glyphs
-    def gollop_cursor_move_nw(self):
-        self._cursor.s += -1
-        self._cursor.e += -1
-    def gollop_cursor_move_nn(self):
-        self._cursor.s += -1
-        self._cursor.e += 0
-    def gollop_cursor_move_ne(self):
-        self._cursor.s += -1
-        self._cursor.e += 1
-    def gollop_cursor_move_ww(self):
-        self._cursor.s += 0
-        self._cursor.e += -1
-    def gollop_cursor_move_ee(self):
-        self._cursor.s += 0
-        self._cursor.e += 1
-    def gollop_cursor_move_sw(self):
-        self._cursor.s += 1
-        self._cursor.e += -1
-    def gollop_cursor_move_ss(self):
-        self._cursor.s += 1
-        self._cursor.e += 0
-    def gollop_cursor_move_se(self):
-        self._cursor.s += 1
-        self._cursor.e += 1
-    def gollop_cursor_select(self):
-        print('xxx gollop_select')
-
-def gollop_game_new():
-    ob = GollopGame()
-    return ob
-
-
-# --------------------------------------------------------
 #   :rogue_game
 # --------------------------------------------------------
 class RogueGame(object):
-    def __init__(self, rogue_plane, player_glyph):
+    def __init__(self, rogue_plane, player_meep):
         self.rogue_plane = rogue_plane
-        self.player_glyph = player_glyph
+        self.player_meep = player_meep
 
-def rogue_game_new(rogue_plane, player_glyph):
+def rogue_game_new(rogue_plane, player_meep):
     ob = RogueGame(
         rogue_plane=rogue_plane,
-        player_glyph=player_glyph)
+        player_meep=player_meep)
     return ob
 
 
@@ -273,47 +71,47 @@ def rogue_game_new(rogue_plane, player_glyph):
 #   :alg
 # --------------------------------------------------------
 def prep_plane(rogue_plane):
-    rogue_plane.create_glyph(
+    rogue_plane.create_meep(
         s=0,
         e=0,
         c='<',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_glyph(
+    rogue_plane.create_meep(
         s=-2,
         e=-2,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_glyph(
+    rogue_plane.create_meep(
         s=-3,
         e=0,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_glyph(
+    rogue_plane.create_meep(
         s=-2,
         e=2,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_glyph(
+    rogue_plane.create_meep(
         s=0,
         e=-3,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_glyph(
+    rogue_plane.create_meep(
         s=0,
         e=3,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_glyph(
+    rogue_plane.create_meep(
         s=2,
         e=-2,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_glyph(
+    rogue_plane.create_meep(
         s=3,
         e=0,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_glyph(
+    rogue_plane.create_meep(
         s=2,
         e=2,
         c='|',
@@ -334,20 +132,20 @@ def main():
         prep_plane(
             rogue_plane=rogue_plane)
         #
-        player_glyph = rogue_plane.create_glyph(
+        player_meep = rogue_plane.create_meep(
             s=0,
             e=0,
             c='@',
             cpair=SOL_CPAIR_RED_T)
         rogue_game = rogue_game_new(
             rogue_plane=rogue_plane,
-            player_glyph=player_glyph)
+            player_meep=player_meep)
         #
         cursor = cursor_new(
-            fn_s=lambda: player_glyph.s,
-            fn_e=lambda: player_glyph.e,
-            fn_c=lambda: player_glyph.c,
-            fn_cpair=lambda: player_glyph.cpair)
+            fn_s=lambda: player_meep.s,
+            fn_e=lambda: player_meep.e,
+            fn_c=lambda: player_meep.c,
+            fn_cpair=lambda: player_meep.cpair)
         perspective = perspective_new(
             cursor=cursor,
             width=C_GAME_WIDTH,

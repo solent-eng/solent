@@ -7,6 +7,7 @@ from .logbook import logbook_new
 
 from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
+from solent.client.term.glyph import glyph_new
 from solent.client.term.scope import scope_new
 from solent.exceptions import SolentQuitException
 
@@ -38,7 +39,8 @@ class RogueConsole(object):
         self.status_entries = deque()
     def _plot_status_messages(self):
         # filter new logbook entries into our local store
-        for se in self.status_entries: se.turns += 1
+        for se in self.status_entries:
+            se.turns += 1
         while self.status_entries and self.status_entries[-1].turns > 7:
             self.status_entries.pop()
         for s in self.logbook.recent():
@@ -62,11 +64,23 @@ class RogueConsole(object):
                 s=se.s,
                 cpair=cpair)
     def redraw(self, grid_display):
-        rogue_plane = self.rogue_game.player_glyph.rogue_plane
+        rogue_plane = self.rogue_game.player_meep.rogue_plane
+        meeps = rogue_plane.get_meeps()
+        #
+        # /this seems inefficient, but at least it gives us a clean break
+        # between meeps and glyphs.
+        glyphs = []
+        for meep in meeps:
+            glyphs.append(
+                glyph_new(
+                    s=meep.s,
+                    e=meep.e,
+                    c=meep.c,
+                    cpair=meep.cpair))
+        #
         self.scope.populate_cgrid(
             cgrid=self.cgrid,
-            glyphs=rogue_plane.get_glyphs(),
-            fabric=rogue_plane.fabric)
+            glyphs=meeps)
         self._plot_status_messages()
         grid_display.update(
             cgrid=self.cgrid)
@@ -74,7 +88,7 @@ class RogueConsole(object):
         fn = None
         #
         # direction processing
-        rogue_plane = self.rogue_game.player_glyph.rogue_plane
+        rogue_plane = self.rogue_game.player_meep.rogue_plane
         movement = { 'q':   rogue_plane.move_nw
                    , 'w':   rogue_plane.move_nn
                    , 'e':   rogue_plane.move_ne
@@ -86,10 +100,10 @@ class RogueConsole(object):
                    }
         if key in movement:
             movement[key](
-                glyph=self.rogue_game.player_glyph)
+                meep=self.rogue_game.player_meep)
             self.logbook.log(
                 t=self.t,
-                s='t %s: player_glyph moved to %ss%se'%(self.t, self.rogue_game.player_glyph.s, self.rogue_game.player_glyph.e))
+                s='t %s: player_meep moved to %ss%se'%(self.t, self.rogue_game.player_meep.s, self.rogue_game.player_meep.e))
             return
 
 def rogue_console_new(rogue_game, perspective):

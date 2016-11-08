@@ -4,19 +4,17 @@
 #
 
 class Glyph(object):
-    def __init__(self, s, e, c, cpair, rogue_plane):
+    def __init__(self, s, e, c, cpair):
         self.s = s
         self.e = e
         self.c = c # character
         self.cpair = cpair
-        self.rogue_plane = rogue_plane
 
-def glyph_new(s, e, c, cpair, rogue_plane):
+def glyph_new(s, e, c, cpair):
     ob = Glyph(
         s=s,
         e=e,
         c=c,
-        cpair=cpair,
-        rogue_plane=rogue_plane)
+        cpair=cpair)
     return ob
 
