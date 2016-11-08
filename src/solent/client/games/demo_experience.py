@@ -319,28 +319,28 @@ class RogueGame(object):
         self._meeps.append(self.player)
     def get_meeps(self):
         return self._meeps
-    def rogue_move_nw(self, meep):
+    def move_nw(self, meep):
         meep.s += -1
         meep.e += -1
-    def rogue_move_nn(self, meep):
+    def move_nn(self, meep):
         meep.s += -1
         meep.e += 0
-    def rogue_move_ne(self, meep):
+    def move_ne(self, meep):
         meep.s += -1
         meep.e += 1
-    def rogue_move_ww(self, meep):
+    def move_ww(self, meep):
         meep.s += 0
         meep.e += -1
-    def rogue_move_ee(self, meep):
+    def move_ee(self, meep):
         meep.s += 0
         meep.e += 1
-    def rogue_move_sw(self, meep):
+    def move_sw(self, meep):
         meep.s += 1
         meep.e += -1
-    def rogue_move_ss(self, meep):
+    def move_ss(self, meep):
         meep.s += 1
         meep.e += 0
-    def rogue_move_se(self, meep):
+    def move_se(self, meep):
         meep.s += 1
         meep.e += 1
 
@@ -370,22 +370,23 @@ def main():
         print('ERROR: specify --tty or --win')
         sys.exit(1)
     try:
-        #rogue_game = rogue_game_new()
-        #rogue_console = rogue_console_new(
-        #    rogue_game=rogue_game,
-        #    width=C_GAME_WIDTH,
-        #    height=C_GAME_HEIGHT)
-        #
+        rogue_game = rogue_game_new()
+        rogue_console = rogue_console_new(
+            rogue_game=rogue_game,
+            width=C_GAME_WIDTH,
+            height=C_GAME_HEIGHT)
+        '''
         gollop_game = gollop_game_new()
         gollop_console = gollop_console_new(
             gollop_game=gollop_game,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
+        '''
         #
         experience_console = experience_console_new(
             title=TITLE,
-            #console=rogue_console)
-            console=gollop_console)
+            console=rogue_console)
+            #console=gollop_console)
         #
         term_shape = fn_device_start(
             game_width=C_GAME_WIDTH,

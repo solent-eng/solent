@@ -79,14 +79,14 @@ class RogueConsole(object):
         fn = None
         #
         # direction processing
-        movement = { 'q':   self.rogue_game.rogue_move_nw
-                   , 'w':   self.rogue_game.rogue_move_nn
-                   , 'e':   self.rogue_game.rogue_move_ne
-                   , 'a':   self.rogue_game.rogue_move_ww
-                   , 'd':   self.rogue_game.rogue_move_ee
-                   , 'z':   self.rogue_game.rogue_move_sw
-                   , 'x':   self.rogue_game.rogue_move_ss
-                   , 'c':   self.rogue_game.rogue_move_se
+        movement = { 'q':   self.rogue_game.move_nw
+                   , 'w':   self.rogue_game.move_nn
+                   , 'e':   self.rogue_game.move_ne
+                   , 'a':   self.rogue_game.move_ww
+                   , 'd':   self.rogue_game.move_ee
+                   , 'z':   self.rogue_game.move_sw
+                   , 'x':   self.rogue_game.move_ss
+                   , 'c':   self.rogue_game.move_se
                    }
         if key in movement:
             movement[key](
