@@ -47,8 +47,8 @@ class Scope(object):
         m_peri_e = s_peri_e - self.margin_w
         #
         # our focus point
-        glyph_s = self.perspective.cursor_glyph.s
-        glyph_e = self.perspective.cursor_glyph.e
+        glyph_s = self.perspective.cursor.get_s()
+        glyph_e = self.perspective.cursor.get_e()
         #
         # do we need to re-point the scope?
         # ---------------------------------
@@ -114,11 +114,15 @@ class Scope(object):
                 cpair=glyph.cpair)
         #
         # // ensure the cursor glyph is on top
+        cursor_e = self.perspective.cursor.get_e()
+        cursor_s = self.perspective.cursor.get_s()
+        cursor_c = self.perspective.cursor.get_c()
+        cursor_cpair = self.perspective.cursor.get_cpair()
         cgrid.put(
-            rest=self.perspective.cursor_glyph.e - s_nail_e,
-            drop=self.perspective.cursor_glyph.s - s_nail_s,
-            s=self.perspective.cursor_glyph.c,
-            cpair=self.perspective.cursor_glyph.cpair)
+            rest=cursor_e - s_nail_e,
+            drop=cursor_s - s_nail_s,
+            s=cursor_c,
+            cpair=cursor_cpair)
 
 def scope_new(perspective, margin_h, margin_w):
     ob = Scope(

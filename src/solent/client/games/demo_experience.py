@@ -10,6 +10,7 @@ from .turnlib.rogue_plane import rogue_plane_new
 
 from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
+from solent.client.term.cursor import cursor_new
 from solent.client.term.curses_term import curses_term_start, curses_term_end
 from solent.client.term.perspective import perspective_new
 from solent.client.term.window_term import window_term_start, window_term_end
@@ -342,8 +343,13 @@ def main():
             rogue_plane=rogue_plane,
             player_glyph=player_glyph)
         #
+        cursor = cursor_new(
+            fn_s=lambda: player_glyph.s,
+            fn_e=lambda: player_glyph.e,
+            fn_c=lambda: player_glyph.c,
+            fn_cpair=lambda: player_glyph.cpair)
         perspective = perspective_new(
-            cursor_glyph=player_glyph,
+            cursor=cursor,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
         rogue_console = rogue_console_new(

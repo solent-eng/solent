@@ -1,6 +1,6 @@
 class Perspective(object):
-    def __init__(self, cursor_glyph, width, height):
-        self.cursor_glyph = cursor_glyph
+    def __init__(self, cursor, width, height):
+        self.cursor = cursor
         self.width = width
         self.height = height
         #
@@ -12,9 +12,9 @@ class Perspective(object):
         self.scrap = []
         self.glyphs = []
 
-def perspective_new(cursor_glyph, width, height):
+def perspective_new(cursor, width, height):
     ob = Perspective(
-        cursor_glyph=cursor_glyph,
+        cursor=cursor,
         width=width,
         height=height)
     return ob
