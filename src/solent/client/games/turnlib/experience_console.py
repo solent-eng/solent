@@ -1,5 +1,6 @@
 from .menu import menu_new
 
+from solent.exceptions import SolentQuitException
 from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
 

@@ -1,5 +1,7 @@
 from .meep import meep_new
 
+from solent.client.constants import *
+
 class RoguePlane(object):
     def __init__(self):
         self._terrain = []
@@ -8,7 +10,7 @@ class RoguePlane(object):
     #
     def get_terrain(self):
         return self._terrain
-    def create_terrain(self, s, e, c, cpair):
+    def create_terrain(self, s, e, c, cpair=SOL_CPAIR_PURPLE_T):
         t = meep_new(
             s=s,
             e=e,

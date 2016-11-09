@@ -5,14 +5,12 @@
 
 from .turnlib.experience_console import experience_console_new
 from .turnlib.rogue_console import rogue_console_new
-from .turnlib.gollop_console import gollop_console_new
 from .turnlib.rogue_plane import rogue_plane_new
 
 from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
 from solent.client.term.cursor import cursor_new
 from solent.client.term.curses_term import curses_term_start, curses_term_end
-from solent.client.term.perspective import perspective_new
 from solent.client.term.window_term import window_term_start, window_term_end
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
@@ -70,49 +68,96 @@ def rogue_game_new(rogue_plane, player_meep):
 # --------------------------------------------------------
 #   :alg
 # --------------------------------------------------------
+def make_room(rogue_plane, se_nail, width, height):
+    (s_nail, e_nail) = se_nail
+    hori = width+2
+    for i in range(hori):
+        rogue_plane.create_terrain(
+            s=s_nail,
+            e=e_nail+i,
+            c='-')
+        rogue_plane.create_terrain(
+            s=s_nail+height+1,
+            e=e_nail+i,
+            c='-')
+    for i in range(height):
+        rogue_plane.create_terrain(
+            s=s_nail+i+1,
+            e=e_nail,
+            c='|')
+        rogue_plane.create_terrain(
+            s=s_nail+i+1,
+            e=e_nail+width+1,
+            c='|')
+
 def prep_plane(rogue_plane):
     #
-    # // terrain
+    # // terrain: walls
+    make_room(
+        rogue_plane=rogue_plane,
+        se_nail=(-1, -1),
+        width=2,
+        height=4)
+    make_room(
+        rogue_plane=rogue_plane,
+        se_nail=(-8, -8),
+        width=1,
+        height=1)
+    #
+    # // terrain: boulder
+    rogue_plane.create_terrain(
+        s=-2,
+        e=-5,
+        c='o')
+    #
+    # // terrain: standing stones
     rogue_plane.create_terrain(
         s=-2,
         e=-2,
-        c='|',
+        c='i',
         cpair=SOL_CPAIR_WHITE_T)
     rogue_plane.create_terrain(
         s=-3,
         e=0,
-        c='|',
+        c='i',
         cpair=SOL_CPAIR_WHITE_T)
     rogue_plane.create_terrain(
         s=-2,
         e=2,
-        c='|',
+        c='i',
         cpair=SOL_CPAIR_WHITE_T)
     rogue_plane.create_terrain(
         s=0,
         e=-3,
-        c='|',
+        c='i',
         cpair=SOL_CPAIR_WHITE_T)
     rogue_plane.create_terrain(
         s=0,
         e=3,
-        c='|',
+        c='i',
         cpair=SOL_CPAIR_WHITE_T)
     rogue_plane.create_terrain(
         s=2,
         e=-2,
-        c='|',
+        c='i',
         cpair=SOL_CPAIR_WHITE_T)
     rogue_plane.create_terrain(
         s=3,
         e=0,
-        c='|',
+        c='i',
         cpair=SOL_CPAIR_WHITE_T)
     rogue_plane.create_terrain(
         s=2,
         e=2,
-        c='|',
+        c='i',
         cpair=SOL_CPAIR_WHITE_T)
+    #
+    # // scrap
+    rogue_plane.create_meep(
+        s=3,
+        e=-4,
+        c=':',
+        cpair=SOL_CPAIR_YELLOW_T)
     #
     # // meeps
     rogue_plane.create_meep(
@@ -150,25 +195,15 @@ def main():
             fn_e=lambda: player_meep.e,
             fn_c=lambda: player_meep.c,
             fn_cpair=lambda: player_meep.cpair)
-        perspective = perspective_new(
-            cursor=cursor,
-            width=C_GAME_WIDTH,
-            height=C_GAME_HEIGHT)
         rogue_console = rogue_console_new(
             rogue_game=rogue_game,
-            perspective=perspective)
-        '''
-        gollop_game = gollop_game_new()
-        gollop_console = gollop_console_new(
-            gollop_game=gollop_game,
             width=C_GAME_WIDTH,
-            height=C_GAME_HEIGHT)
-        '''
+            height=C_GAME_HEIGHT,
+            cursor=cursor)
         #
         experience_console = experience_console_new(
             title=TITLE,
             console=rogue_console)
-            #console=gollop_console)
         #
         term_shape = fn_device_start(
             game_width=C_GAME_WIDTH,

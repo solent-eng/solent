@@ -23,14 +23,14 @@ class StatusEntry(object):
         self.turns = 0
 
 class RogueConsole(object):
-    def __init__(self, rogue_game, perspective, cgrid, logbook):
+    def __init__(self, rogue_game, cursor, cgrid, logbook):
         self.rogue_game = rogue_game
-        self.perspective = perspective
+        self.cursor = cursor
         self.cgrid = cgrid
         self.logbook = logbook
         #
         self.scope = scope_new(
-            perspective=perspective,
+            cursor=cursor,
             margin_h=3,
             margin_w=5)
         #
@@ -65,22 +65,39 @@ class RogueConsole(object):
                 cpair=cpair)
     def redraw(self, grid_display):
         rogue_plane = self.rogue_game.player_meep.rogue_plane
-        meeps = rogue_plane.get_meeps()
         #
         # /this seems inefficient, but at least it gives us a clean break
         # between meeps and glyphs.
         glyphs = []
-        for meep in meeps:
-            glyphs.append(
-                glyph_new(
-                    s=meep.s,
-                    e=meep.e,
-                    c=meep.c,
-                    cpair=meep.cpair))
+        def add_glyph(s, e, c, cpair):
+            g = glyph_new(
+                s=s,
+                e=e,
+                c=c,
+                cpair=cpair)
+            glyphs.append(g)
+        for terrain in rogue_plane.get_terrain():
+            add_glyph(
+                s=terrain.s,
+                e=terrain.e,
+                c=terrain.c,
+                cpair=terrain.cpair)
+        for scrap in rogue_plane.get_scrap():
+            add_glyph(
+                s=scrap.s,
+                e=scrap.e,
+                c=scrap.c,
+                cpair=scrap.cpair)
+        for meep in rogue_plane.get_meeps():
+            add_glyph(
+                s=meep.s,
+                e=meep.e,
+                c=meep.c,
+                cpair=meep.cpair)
         #
         self.scope.populate_cgrid(
             cgrid=self.cgrid,
-            glyphs=meeps)
+            glyphs=glyphs)
         self._plot_status_messages()
         grid_display.update(
             cgrid=self.cgrid)
@@ -106,15 +123,15 @@ class RogueConsole(object):
                 s='t %s: player_meep moved to %ss%se'%(self.t, self.rogue_game.player_meep.s, self.rogue_game.player_meep.e))
             return
 
-def rogue_console_new(rogue_game, perspective):
+def rogue_console_new(rogue_game, width, height, cursor):
     cgrid = cgrid_new(
-        width=perspective.width,
-        height=perspective.height)
+        width=width,
+        height=height)
     logbook = logbook_new(
         capacity=100)
     ob = RogueConsole(
         rogue_game=rogue_game,
-        perspective=perspective,
+        cursor=cursor,
         cgrid=cgrid,
         logbook=logbook)
     return ob

@@ -13,10 +13,10 @@
 from solent.client.constants import *
 
 class Scope(object):
-    def __init__(self, perspective, margin_h, margin_w):
+    def __init__(self, cursor, margin_h, margin_w):
+        self.cursor = cursor
         self.margin_h = margin_h
         self.margin_w = margin_w
-        self.perspective = perspective
         #
         self.adjust_h = 3
         self.adjust_w = 3
@@ -47,8 +47,8 @@ class Scope(object):
         m_peri_e = s_peri_e - self.margin_w
         #
         # our focus point
-        glyph_s = self.perspective.cursor.get_s()
-        glyph_e = self.perspective.cursor.get_e()
+        glyph_s = self.cursor.get_s()
+        glyph_e = self.cursor.get_e()
         #
         # do we need to re-point the scope?
         # ---------------------------------
@@ -98,19 +98,19 @@ class Scope(object):
                 cpair=glyph.cpair)
         #
         # // ensure the cursor glyph is on top
-        cursor_e = self.perspective.cursor.get_e()
-        cursor_s = self.perspective.cursor.get_s()
-        cursor_c = self.perspective.cursor.get_c()
-        cursor_cpair = self.perspective.cursor.get_cpair()
+        cursor_e = self.cursor.get_e()
+        cursor_s = self.cursor.get_s()
+        cursor_c = self.cursor.get_c()
+        cursor_cpair = self.cursor.get_cpair()
         cgrid.put(
             rest=cursor_e - s_nail_e,
             drop=cursor_s - s_nail_s,
             s=cursor_c,
             cpair=cursor_cpair)
 
-def scope_new(perspective, margin_h, margin_w):
+def scope_new(cursor, margin_h, margin_w):
     ob = Scope(
-        perspective=perspective,
+        cursor=cursor,
         margin_h=margin_h,
         margin_w=margin_w)
     return ob
