@@ -66,48 +66,134 @@ def rogue_game_new(rogue_plane, player_meep):
 
 
 # --------------------------------------------------------
-#   :alg
+#   :boxes
 # --------------------------------------------------------
-def make_room(rogue_plane, se_nail, width, height):
+BOX_LINE = uniq()
+BOX_EDGE = uniq()
+BOX_VOID = uniq()
+BOX_HASH = uniq()
+BOX_STOP = uniq()
+
+def make_box(rogue_plane, se_nail, width, height, cpair=SOL_CPAIR_WHITE_T, box_type=BOX_LINE):
+    '''
+    Box type indicates the kind of corners the box should have.
+    '''
     (s_nail, e_nail) = se_nail
     hori = width+2
     for i in range(hori):
-        rogue_plane.create_terrain(
-            s=s_nail,
-            e=e_nail+i,
-            c='-')
-        rogue_plane.create_terrain(
-            s=s_nail+height+1,
-            e=e_nail+i,
-            c='-')
+        if (i, box_type) in [(0, BOX_EDGE), (hori-1, BOX_VOID)]:
+            rogue_plane.create_terrain(
+                s=s_nail,
+                e=e_nail+i,
+                c='/',
+                cpair=cpair)
+            rogue_plane.create_terrain(
+                s=s_nail+height+1,
+                e=e_nail+i,
+                c='\\',
+                cpair=cpair)
+        elif (i, box_type) in [(hori-1, BOX_EDGE), (0, BOX_VOID)]:
+            rogue_plane.create_terrain(
+                s=s_nail,
+                e=e_nail+i,
+                c='\\',
+                cpair=cpair)
+            rogue_plane.create_terrain(
+                s=s_nail+height+1,
+                e=e_nail+i,
+                c='/',
+                cpair=cpair)
+        else:
+            if box_type == BOX_HASH:
+                c = '#'
+            elif box_type == BOX_STOP:
+                c = '.'
+            else:
+                c = '-'
+            rogue_plane.create_terrain(
+                s=s_nail,
+                e=e_nail+i,
+                c=c,
+                cpair=cpair)
+            rogue_plane.create_terrain(
+                s=s_nail+height+1,
+                e=e_nail+i,
+                c=c,
+                cpair=cpair)
     for i in range(height):
+        if box_type == BOX_HASH:
+            c = '#'
+        elif box_type == BOX_STOP:
+            c = '.'
+        else:
+            c = '|'
         rogue_plane.create_terrain(
             s=s_nail+i+1,
             e=e_nail,
-            c='|')
+            c=c,
+            cpair=cpair)
         rogue_plane.create_terrain(
             s=s_nail+i+1,
             e=e_nail+width+1,
-            c='|')
+            c=c,
+            cpair=cpair)
 
+
+# --------------------------------------------------------
+#   :alg
+# --------------------------------------------------------
 def prep_plane(rogue_plane):
     #
     # // terrain: walls
-    make_room(
+    make_box(
         rogue_plane=rogue_plane,
-        se_nail=(-1, -1),
-        width=2,
-        height=4)
-    make_room(
+        se_nail=(-5, -8),
+        width=30,
+        height=14,
+        box_type=BOX_STOP)
+    make_box(
         rogue_plane=rogue_plane,
-        se_nail=(-8, -8),
+        se_nail=(6, 3),
         width=1,
         height=1)
+    make_box(
+        rogue_plane=rogue_plane,
+        se_nail=(-2, -17),
+        width=3,
+        height=3,
+        cpair=SOL_CPAIR_CYAN_T,
+        box_type=BOX_EDGE)
+    make_box(
+        rogue_plane=rogue_plane,
+        se_nail=(-2, 10),
+        width=3,
+        height=3,
+        cpair=SOL_CPAIR_CYAN_T,
+        box_type=BOX_VOID)
+    make_box(
+        rogue_plane=rogue_plane,
+        se_nail=(4, 10),
+        width=3,
+        height=3,
+        cpair=SOL_CPAIR_CYAN_T,
+        box_type=BOX_STOP)
+    make_box(
+        rogue_plane=rogue_plane,
+        se_nail=(-4, 28),
+        width=3,
+        height=3,
+        box_type=BOX_HASH)
+    make_box(
+        rogue_plane=rogue_plane,
+        se_nail=(4, 28),
+        width=3,
+        height=3,
+        box_type=BOX_STOP)
     #
     # // terrain: boulder
     rogue_plane.create_terrain(
-        s=-2,
-        e=-5,
+        s=-1,
+        e=-3,
         c='o')
     #
     # // terrain: standing stones
