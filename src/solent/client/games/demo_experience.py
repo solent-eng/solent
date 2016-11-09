@@ -28,9 +28,9 @@ TITLE = '[demo_experience]'
 
 
 # --------------------------------------------------------
-#   :console_regulator
+#   :io_regulator
 # --------------------------------------------------------
-class ConsoleRegulator(object):
+class TurnBasedEventLoop(object):
     def __init__(self, keystream, grid_display, console):
         self.keystream = keystream
         self.grid_display = grid_display
@@ -44,8 +44,8 @@ class ConsoleRegulator(object):
                 key=self.keystream.next())
             self.console.redraw(self.grid_display)
 
-def console_regulator_new(keystream, grid_display, console):
-    ob = ConsoleRegulator(
+def turn_based_event_loop_new(keystream, grid_display, console):
+    ob = TurnBasedEventLoop(
         keystream=keystream,
         grid_display=grid_display,
         console=console)
@@ -71,51 +71,55 @@ def rogue_game_new(rogue_plane, player_meep):
 #   :alg
 # --------------------------------------------------------
 def prep_plane(rogue_plane):
-    rogue_plane.create_meep(
-        s=0,
-        e=0,
-        c='<',
-        cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_meep(
+    #
+    # // terrain
+    rogue_plane.create_terrain(
         s=-2,
         e=-2,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_meep(
+    rogue_plane.create_terrain(
         s=-3,
         e=0,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_meep(
+    rogue_plane.create_terrain(
         s=-2,
         e=2,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_meep(
+    rogue_plane.create_terrain(
         s=0,
         e=-3,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_meep(
+    rogue_plane.create_terrain(
         s=0,
         e=3,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_meep(
+    rogue_plane.create_terrain(
         s=2,
         e=-2,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_meep(
+    rogue_plane.create_terrain(
         s=3,
         e=0,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
-    rogue_plane.create_meep(
+    rogue_plane.create_terrain(
         s=2,
         e=2,
         c='|',
         cpair=SOL_CPAIR_WHITE_T)
+    #
+    # // meeps
+    rogue_plane.create_meep(
+        s=3,
+        e=3,
+        c='"',
+        cpair=SOL_CPAIR_GREEN_T)
 
 def main():
     if '--tty' in sys.argv:
@@ -169,11 +173,11 @@ def main():
         term_shape = fn_device_start(
             game_width=C_GAME_WIDTH,
             game_height=C_GAME_HEIGHT)
-        console_regulator = console_regulator_new(
+        turn_based_event_loop = turn_based_event_loop_new(
             keystream=term_shape.get_keystream(),
             grid_display=term_shape.get_grid_display(),
             console=experience_console)
-        console_regulator.run_event_loop()
+        turn_based_event_loop.run_event_loop()
     except SolentQuitException:
         pass
     except:
