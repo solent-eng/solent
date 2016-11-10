@@ -69,7 +69,6 @@ class ExperienceXxx(object):
             width=longest_line+4,
             height=len(lines)+2)
         horiz = ' '*(longest_line+4)
-        blank = ' '*(longest_line+4)
         menu_border_height = len(lines)+2
         for idx in range(menu_border_height):
             if idx in (0, menu_border_height-1):

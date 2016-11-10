@@ -4,6 +4,7 @@
 #
 
 from .turnlib.experience_xxx import experience_xxx_new
+from .turnlib.player_mind import player_mind_new
 from .turnlib.rogue_xxx import rogue_xxx_new
 from .turnlib.rogue_plane import rogue_plane_new
 from .turnlib.time_system import time_system_new
@@ -253,11 +254,16 @@ def prep_plane(rogue_plane):
         c='"',
         cpair=SOL_CPAIR_GREEN_T)
 
-def event_loop(xxx, console):
+def event_loop(time_system, player_mind, xxx, console):
     xxx.redraw(console)
     while True:
+        key = console.getc()
+        if key not in (None, ''):
+            player_mind.add_key(key)
+        time_system.dispatch_next_tick()
+        #
         xxx.accept(
-            key=console.getc())
+            key=key)
         xxx.redraw(console)
 
 def main():
@@ -305,8 +311,13 @@ def main():
             game_width=C_GAME_WIDTH,
             game_height=C_GAME_HEIGHT)
         #
+        player_mind = player_mind_new(
+            console=console)
+        #
         # event loop
         event_loop(
+            time_system=time_system,
+            player_mind=player_mind,
             xxx=experience_xxx,
             console=console)
     except SolentQuitException:
