@@ -257,7 +257,7 @@ def event_loop(console, keystream, grid_display):
     console.redraw(grid_display)
     while True:
         console.accept(
-            key=keystream.next())
+            key=keystream.getc())
         console.redraw(grid_display)
 
 def main():
@@ -287,8 +287,8 @@ def main():
             player_meep=player_meep)
         #
         cursor = cursor_new(
-            fn_s=lambda: player_meep.s,
-            fn_e=lambda: player_meep.e,
+            fn_s=lambda: player_meep.coords.s,
+            fn_e=lambda: player_meep.coords.e,
             fn_c=lambda: player_meep.c,
             fn_cpair=lambda: player_meep.cpair)
         rogue_console = rogue_console_new(

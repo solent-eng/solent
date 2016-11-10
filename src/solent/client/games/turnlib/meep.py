@@ -1,11 +1,14 @@
+from solent.client.constants import SOL_CPAIR_T_RED
+
+DEFAULT_CPAIR = SOL_CPAIR_T_RED
+
 class Meep(object):
-    def __init__(self, mind, s, e, c, cpair, rogue_plane, overhead):
+    def __init__(self, overhead, mind, plane, coords, c, cpair):
         self.mind = mind
-        self.s = s
-        self.e = e
+        self.coords = coords
         self.c = c
         self.cpair = cpair
-        self.rogue_plane = rogue_plane
+        self.plane = plane
         self.overhead = overhead
         #
         # creation has inherent fatigue
@@ -14,14 +17,13 @@ class Meep(object):
         # mind should set this
         self.has_died = False
 
-def meep_new(mind, s, e, c, cpair, rogue_plane, overhead=10):
+def meep_new(overhead=10, mind=None, plane=None, coords=None, c='x', cpair=DEFAULT_CPAIR):
     ob = Meep(
         mind=mind,
-        s=s,
-        e=e,
+        plane=plane,
+        coords=coords,
         c=c,
         cpair=cpair,
-        rogue_plane=rogue_plane,
         overhead=overhead)
     return ob
 

@@ -4,6 +4,7 @@
 
 from .term_shape import term_shape_new
 from .cgrid import cgrid_new
+from .keystream import keystream_new
 
 from solent.client.constants import *
 from solent.exceptions import SolentQuitException
@@ -11,10 +12,6 @@ from solent.exceptions import SolentQuitException
 import os
 import pygame
 
-
-# --------------------------------------------------------
-#   :keystroke source
-# --------------------------------------------------------
 PROFILE_RED_T = ((255, 0, 0), (0, 0, 0))
 PROFILE_GREEN_T = ((0, 255, 0), (0, 0, 0))
 PROFILE_YELLOW_T = ((255, 255, 0), (0, 0, 0))
@@ -46,25 +43,18 @@ MAP_CONST_COLOURS_TO_CPAIR = { SOL_CPAIR_RED_T: PROFILE_RED_T
                              , SOL_CPAIR_T_WHITE: PROFILE_T_WHITE
                              }
 
-class PygameKeystream(object):
-    def __init__(self):
-        pass
-    def next(self):
-        #events = pygame.event.get()
-        while True:
-            ev = pygame.event.wait()
-            #
-            if ev.type == pygame.QUIT:
-                raise SolentQuitException()
-            if not ev.type == pygame.KEYDOWN:
-                continue
-            #
-            return ev.unicode
+def pygame_getc():
+    #events = pygame.event.get()
+    while True:
+        ev = pygame.event.wait()
+        #
+        if ev.type == pygame.QUIT:
+            raise SolentQuitException()
+        if not ev.type == pygame.KEYDOWN:
+            continue
+        #
+        return ev.unicode
 
-
-# --------------------------------------------------------
-#   :screen
-# --------------------------------------------------------
 class GridDisplay(object):
     def __init__(self, internal_cgrid, font):
         self.internal_cgrid = internal_cgrid
@@ -113,11 +103,11 @@ DIR_FONT = os.sep.join( [DIR_CODE, 'fonts'] )
 #PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'terminus-bold.ttf'] )
 PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'kongtext.ttf'] )
 
-IO_DEVICE = None
+CONSOLE = None
 
 def window_term_start(game_width, game_height):
-    global IO_DEVICE
-    if None != IO_DEVICE:
+    global CONSOLE
+    if None != CONSOLE:
         raise Exception('window_term is singleton. (cannot restart)')
     #
     cgrid = cgrid_new(
@@ -126,16 +116,17 @@ def window_term_start(game_width, game_height):
     pygame.font.init()
     font = pygame.font.Font(PATH_TTF_FONT, 16)
     #
-    keystream = PygameKeystream()
+    keystream = keystream_new(
+        fn_getc=pygame_getc)
     grid_display = GridDisplay(
         internal_cgrid=cgrid,
         font=font)
-    IO_DEVICE = term_shape_new(
+    CONSOLE = term_shape_new(
         keystream=keystream,
         grid_display=grid_display)
-    return IO_DEVICE
+    return CONSOLE
 
 def window_term_end():
-    IO_DEVICE = None
+    CONSOLE = None
     pygame.quit()
 

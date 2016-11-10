@@ -1,5 +1,6 @@
 from .term_shape import term_shape_new
 from .cgrid import cgrid_new
+from .keystream import keystream_new
 
 from solent.client.constants import *
 
@@ -61,17 +62,15 @@ def screen_curses_exit():
     curses.nocbreak()
     curses.endwin()
 
-class Keystream(object):
-    def __init__(self):
-        pass
-    def next(self):
-        k = STDSCR.getch()
-        if None == k:
-            return None
-        if k < 0 or k >= 256:
-            return None
-        c = chr(k)
-        return c
+def curses_getc():
+    global STDSCR
+    k = STDSCR.getch()
+    if None == k:
+        return None
+    if k < 0 or k >= 256:
+        return None
+    c = chr(k)
+    return c
 
 #
 # These are not the names of colours. Rather, they are the names of colour
@@ -167,11 +166,11 @@ class GridDisplay(object):
 # --------------------------------------------------------
 #   :interface
 # --------------------------------------------------------
-IO_DEVICE = None
+CONSOLE = None
 
 def curses_term_start(game_width, game_height):
-    global IO_DEVICE
-    if None != IO_DEVICE:
+    global CONSOLE
+    if None != CONSOLE:
         raise Exception('curses term is singleton. (cannot restart)')
     cgrid = cgrid_new(
         width=game_width,
@@ -182,21 +181,22 @@ def curses_term_start(game_width, game_height):
     # reason that it's good to have this stuff wrapped up in a library:
     # solve the nasty problem, and then facade things so your user doesn't
     # have to think about it.
-    keystream = Keystream()
+    keystream = keystream_new(
+        fn_getc=curses_getc)
     grid_display = GridDisplay(
         internal_cgrid=cgrid)
     #
     # Emphasis: see note about regarding keystream: ordering is significant.
     screen_curses_init()
     #
-    IO_DEVICE = term_shape_new(
+    CONSOLE = term_shape_new(
         keystream=keystream,
         grid_display=grid_display)
-    return IO_DEVICE
+    return CONSOLE
 
 def curses_term_end():
     screen_curses_exit()
     #
-    global IO_DEVICE
-    IO_DEVICE = None
+    global CONSOLE
+    CONSOLE = None
 

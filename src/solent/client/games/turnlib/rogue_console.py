@@ -64,7 +64,7 @@ class RogueConsole(object):
                 s=se.s,
                 cpair=cpair)
     def redraw(self, grid_display):
-        rogue_plane = self.rogue_game.player_meep.rogue_plane
+        rogue_plane = self.rogue_game.player_meep.plane
         #
         # /this seems inefficient, but at least it gives us a clean break
         # between meeps and glyphs.
@@ -78,20 +78,20 @@ class RogueConsole(object):
             glyphs.append(g)
         for terrain in rogue_plane.get_terrain():
             add_glyph(
-                s=terrain.s,
-                e=terrain.e,
+                s=terrain.coords.s,
+                e=terrain.coords.e,
                 c=terrain.c,
                 cpair=terrain.cpair)
         for scrap in rogue_plane.get_scrap():
             add_glyph(
-                s=scrap.s,
-                e=scrap.e,
+                s=scrap.coords.s,
+                e=scrap.coords.e,
                 c=scrap.c,
                 cpair=scrap.cpair)
         for meep in rogue_plane.get_meeps():
             add_glyph(
-                s=meep.s,
-                e=meep.e,
+                s=meep.coords.s,
+                e=meep.coords.e,
                 c=meep.c,
                 cpair=meep.cpair)
         #
@@ -105,7 +105,7 @@ class RogueConsole(object):
         fn = None
         #
         # direction processing
-        rogue_plane = self.rogue_game.player_meep.rogue_plane
+        rogue_plane = self.rogue_game.player_meep.plane
         movement = { 'q':   rogue_plane.move_nw
                    , 'w':   rogue_plane.move_nn
                    , 'e':   rogue_plane.move_ne
@@ -120,7 +120,7 @@ class RogueConsole(object):
                 meep=self.rogue_game.player_meep)
             self.logbook.log(
                 t=self.t,
-                s='t %s: player_meep moved to %ss%se'%(self.t, self.rogue_game.player_meep.s, self.rogue_game.player_meep.e))
+                s='t %s: player_meep moved to %ss%se'%(self.t, self.rogue_game.player_meep.coords.s, self.rogue_game.player_meep.coords.e))
             return
 
 def rogue_console_new(rogue_game, width, height, cursor):
