@@ -3,7 +3,7 @@
 # Intends to demonstrate basic use of the experience class
 #
 
-from .turnlib.menu_interaction import menu_interaction_new
+from .turnlib.control_menu import control_menu_new
 from .turnlib.player_mind import player_mind_new
 from .turnlib.rogue_interaction import rogue_interaction_new
 from .turnlib.rogue_plane import rogue_plane_new
@@ -102,9 +102,10 @@ def make_box(rogue_plane, se_nail, width, height, cpair=SOL_CPAIR_WHITE_T, box_t
 
 
 # --------------------------------------------------------
-#   :alg
+#   :game
 # --------------------------------------------------------
-def prep_plane(rogue_plane):
+def create_origin_plane():
+    rogue_plane = rogue_plane_new()
     #
     # // terrain: walls
     make_box(
@@ -213,15 +214,55 @@ def prep_plane(rogue_plane):
         e=3,
         c='"',
         cpair=SOL_CPAIR_GREEN_T)
+    return rogue_plane
 
-def event_loop(time_system, player_mind, menu_interaction, console):
-    menu_interaction.redraw(console)
+
+# --------------------------------------------------------
+#   :event_loop
+# --------------------------------------------------------
+ESC_KEY = 27
+
+def event_loop(console, player_mind, time_system):
+    control_menu = control_menu_new(
+        title=TITLE,
+        width=C_GAME_WIDTH,
+        height=C_GAME_HEIGHT)
+    control_menu.redraw(
+        console=console)
     while True:
+        #
+        # Input
         key = console.getc()
-        if key not in (None, ''):
-            player_mind.add_key(key)
-        time_system.dispatch_next_tick()
+        if key in (None, ''):
+            continue
+        #
+        # Menu
+        if control_menu.active() and ord(key) == ESC_KEY:
+            control_menu.set_active(False)
+            key = None
+        elif not control_menu.active() and ord(key) == ESC_KEY:
+            control_menu.set_active(True)
+            key = None
+        elif control_menu.active():
+            control_menu.accept(
+                key=key)
+            key = None
+        #
+        # Game input
+        if not control_menu.active():
+            if key != None:
+                player_mind.add_key(key)
+            time_system.dispatch_next_tick()
+        #
+        # Menu display
+        if control_menu.active():
+            control_menu.redraw(
+                console=console)
 
+
+# --------------------------------------------------------
+#   :alg
+# --------------------------------------------------------
 def main():
     if '--tty' in sys.argv:
         fn_device_start = curses_console_start
@@ -233,49 +274,42 @@ def main():
         print('ERROR: specify --tty or --win')
         sys.exit(1)
     try:
+        console = fn_device_start(
+            game_width=C_GAME_WIDTH,
+            game_height=C_GAME_HEIGHT)
+        #
+        console = console
+        #
         time_system = time_system_new()
         #
-        rogue_plane = rogue_plane_new()
-        prep_plane(
-            rogue_plane=rogue_plane)
-        #
+        rogue_plane = create_origin_plane()
         player_meep = rogue_plane.create_meep(
             s=0,
             e=0,
             c='@',
             cpair=SOL_CPAIR_RED_T)
         #
-        cursor = cursor_new(
-            fn_s=lambda: player_meep.coords.s,
-            fn_e=lambda: player_meep.coords.e,
-            fn_c=lambda: player_meep.c,
-            fn_cpair=lambda: player_meep.cpair)
         rogue_interaction = rogue_interaction_new(
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT,
-            cursor=cursor)
-        #
-        menu_interaction = menu_interaction_new(
-            title=TITLE,
-            width=C_GAME_WIDTH,
-            height=C_GAME_HEIGHT)
-        console = fn_device_start(
-            game_width=C_GAME_WIDTH,
-            game_height=C_GAME_HEIGHT)
+            cursor=cursor_new(
+                fn_s=lambda: player_meep.coords.s,
+                fn_e=lambda: player_meep.coords.e,
+                fn_c=lambda: player_meep.c,
+                fn_cpair=lambda: player_meep.cpair))
         #
         player_mind = player_mind_new(
             console=console,
-            menu_interaction=menu_interaction,
             rogue_interaction=rogue_interaction)
         player_meep.mind = player_mind
-        time_system.add_meep(player_meep)
+        time_system.add_meep(
+            meep=player_meep)
         #
         # event loop
         event_loop(
-            time_system=time_system,
+            console=console,
             player_mind=player_mind,
-            menu_interaction=menu_interaction,
-            console=console)
+            time_system=time_system)
     except SolentQuitException:
         pass
     except:

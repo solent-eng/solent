@@ -13,7 +13,7 @@ CPAIR_MENU_BORDER = SOL_CPAIR_BLACK_CYAN
 CPAIR_MENU_TEXT = SOL_CPAIR_T_WHITE
 CPAIR_TITLE = SOL_CPAIR_T_WHITE
 
-class MenuInteraction(object):
+class ControlMenu(object):
     def __init__(self, title, cgrid):
         '''
         title
@@ -127,11 +127,11 @@ class MenuInteraction(object):
         console.screen_update(
             cgrid=self.cgrid)
 
-def menu_interaction_new(title, width, height):
+def control_menu_new(title, width, height):
     cgrid = cgrid_new(
         width=width,
         height=height)
-    ob = MenuInteraction(
+    ob = ControlMenu(
         title=title,
         cgrid=cgrid)
     return ob
