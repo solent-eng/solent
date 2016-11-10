@@ -13,8 +13,8 @@ CPAIR_MENU_BORDER = SOL_CPAIR_BLACK_CYAN
 CPAIR_MENU_TEXT = SOL_CPAIR_T_WHITE
 CPAIR_TITLE = SOL_CPAIR_T_WHITE
 
-class ExperienceConsole(object):
-    def __init__(self, title, console):
+class ExperienceXxx(object):
+    def __init__(self, title, xxx):
         '''
         cgrid
             the memory to be used for rendering activity
@@ -22,13 +22,13 @@ class ExperienceConsole(object):
             to display on the console
         menu
             instance of menu class that the user interacts with through
-            this console
+            this xxx
         '''
         self.title = title
-        self.console = console
+        self.xxx = xxx
         #
         # no harm reusing it
-        self.cgrid = self.console.cgrid
+        self.cgrid = self.xxx.cgrid
         self.b_in_game = False
         #
         self.menu = self.__init_menu()
@@ -129,26 +129,26 @@ class ExperienceConsole(object):
         elif ord(key) == 27:
             self.b_in_game = True
         elif self.b_in_game:
-            self.console.accept(
+            self.xxx.accept(
                 key=key)
         else:
             if not self.menu.has_key(key):
                 return
             fn = self.menu.get_callback(key)
             fn()
-    def redraw(self, grid_display):
+    def redraw(self, console):
         if self.b_in_game:
-            self.console.redraw(
-                grid_display=grid_display)
+            self.xxx.redraw(
+                console=console)
         else:
             self._redraw_title()
             self._redraw_menu()
-            grid_display.update(
+            console.screen_update(
                 cgrid=self.cgrid)
 
-def experience_console_new(title, console):
-    ob = ExperienceConsole(
+def experience_xxx_new(title, xxx):
+    ob = ExperienceXxx(
         title=title,
-        console=console)
+        xxx=xxx)
     return ob
 

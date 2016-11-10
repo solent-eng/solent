@@ -1,4 +1,4 @@
-from .term_shape import term_shape_new
+from .console import console_new
 from .cgrid import cgrid_new
 from .keystream import keystream_new
 
@@ -168,10 +168,10 @@ class GridDisplay(object):
 # --------------------------------------------------------
 CONSOLE = None
 
-def curses_term_start(game_width, game_height):
+def curses_console_start(game_width, game_height):
     global CONSOLE
     if None != CONSOLE:
-        raise Exception('curses term is singleton. (cannot restart)')
+        raise Exception('curses console is singleton. (cannot restart)')
     cgrid = cgrid_new(
         width=game_width,
         height=game_height)
@@ -189,12 +189,12 @@ def curses_term_start(game_width, game_height):
     # Emphasis: see note about regarding keystream: ordering is significant.
     screen_curses_init()
     #
-    CONSOLE = term_shape_new(
+    CONSOLE = console_new(
         keystream=keystream,
         grid_display=grid_display)
     return CONSOLE
 
-def curses_term_end():
+def curses_console_end():
     screen_curses_exit()
     #
     global CONSOLE

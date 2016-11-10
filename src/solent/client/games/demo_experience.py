@@ -3,16 +3,16 @@
 # Intends to demonstrate basic use of the experience class
 #
 
-from .turnlib.experience_console import experience_console_new
-from .turnlib.rogue_console import rogue_console_new
+from .turnlib.experience_xxx import experience_xxx_new
+from .turnlib.rogue_xxx import rogue_xxx_new
 from .turnlib.rogue_plane import rogue_plane_new
 from .turnlib.time_system import time_system_new
 
 from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
 from solent.client.term.cursor import cursor_new
-from solent.client.term.curses_term import curses_term_start, curses_term_end
-from solent.client.term.window_term import window_term_start, window_term_end
+from solent.client.term.curses_console import curses_console_start, curses_console_end
+from solent.client.term.window_console import window_console_start, window_console_end
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
 
@@ -253,20 +253,20 @@ def prep_plane(rogue_plane):
         c='"',
         cpair=SOL_CPAIR_GREEN_T)
 
-def event_loop(console, keystream, grid_display):
-    console.redraw(grid_display)
+def event_loop(xxx, console):
+    xxx.redraw(console)
     while True:
-        console.accept(
-            key=keystream.getc())
-        console.redraw(grid_display)
+        xxx.accept(
+            key=console.getc())
+        xxx.redraw(console)
 
 def main():
     if '--tty' in sys.argv:
-        fn_device_start = curses_term_start
-        fn_device_end = curses_term_end
+        fn_device_start = curses_console_start
+        fn_device_end = curses_console_end
     elif '--win' in sys.argv:
-        fn_device_start = window_term_start
-        fn_device_end = window_term_end
+        fn_device_start = window_console_start
+        fn_device_end = window_console_end
     else:
         print('ERROR: specify --tty or --win')
         sys.exit(1)
@@ -291,25 +291,24 @@ def main():
             fn_e=lambda: player_meep.coords.e,
             fn_c=lambda: player_meep.c,
             fn_cpair=lambda: player_meep.cpair)
-        rogue_console = rogue_console_new(
+        rogue_xxx = rogue_xxx_new(
             rogue_game=rogue_game,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT,
             cursor=cursor)
         #
-        experience_console = experience_console_new(
+        experience_xxx = experience_xxx_new(
             title=TITLE,
-            console=rogue_console)
+            xxx=rogue_xxx)
         #
-        term_shape = fn_device_start(
+        console = fn_device_start(
             game_width=C_GAME_WIDTH,
             game_height=C_GAME_HEIGHT)
         #
         # event loop
         event_loop(
-            console=experience_console,
-            keystream=term_shape.get_keystream(),
-            grid_display=term_shape.get_grid_display())
+            xxx=experience_xxx,
+            console=console)
     except SolentQuitException:
         pass
     except:

@@ -2,8 +2,8 @@
 # Pygame wrapper. Provides devices for keystroke and rogue display
 #
 
-from .term_shape import term_shape_new
 from .cgrid import cgrid_new
+from .console import console_new
 from .keystream import keystream_new
 
 from solent.client.constants import *
@@ -105,10 +105,10 @@ PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'kongtext.ttf'] )
 
 CONSOLE = None
 
-def window_term_start(game_width, game_height):
+def window_console_start(game_width, game_height):
     global CONSOLE
     if None != CONSOLE:
-        raise Exception('window_term is singleton. (cannot restart)')
+        raise Exception('window_console is singleton. (cannot restart)')
     #
     cgrid = cgrid_new(
         width=game_width,
@@ -121,12 +121,12 @@ def window_term_start(game_width, game_height):
     grid_display = GridDisplay(
         internal_cgrid=cgrid,
         font=font)
-    CONSOLE = term_shape_new(
+    CONSOLE = console_new(
         keystream=keystream,
         grid_display=grid_display)
     return CONSOLE
 
-def window_term_end():
+def window_console_end():
     CONSOLE = None
     pygame.quit()
 

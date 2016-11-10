@@ -22,7 +22,7 @@ class StatusEntry(object):
         #
         self.turns = 0
 
-class RogueConsole(object):
+class RogueXxx(object):
     def __init__(self, rogue_game, cursor, cgrid, logbook):
         self.rogue_game = rogue_game
         self.cursor = cursor
@@ -63,7 +63,7 @@ class RogueConsole(object):
                 drop=idx,
                 s=se.s,
                 cpair=cpair)
-    def redraw(self, grid_display):
+    def redraw(self, console):
         rogue_plane = self.rogue_game.player_meep.plane
         #
         # /this seems inefficient, but at least it gives us a clean break
@@ -99,7 +99,7 @@ class RogueConsole(object):
             cgrid=self.cgrid,
             glyphs=glyphs)
         self._plot_status_messages()
-        grid_display.update(
+        console.screen_update(
             cgrid=self.cgrid)
     def accept(self, key):
         fn = None
@@ -123,13 +123,13 @@ class RogueConsole(object):
                 s='t %s: player_meep moved to %ss%se'%(self.t, self.rogue_game.player_meep.coords.s, self.rogue_game.player_meep.coords.e))
             return
 
-def rogue_console_new(rogue_game, width, height, cursor):
+def rogue_xxx_new(rogue_game, width, height, cursor):
     cgrid = cgrid_new(
         width=width,
         height=height)
     logbook = logbook_new(
         capacity=100)
-    ob = RogueConsole(
+    ob = RogueXxx(
         rogue_game=rogue_game,
         cursor=cursor,
         cgrid=cgrid,
