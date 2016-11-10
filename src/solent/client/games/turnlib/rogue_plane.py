@@ -12,6 +12,7 @@ class RoguePlane(object):
         return self._terrain
     def create_terrain(self, s, e, c, cpair=SOL_CPAIR_PURPLE_T):
         t = meep_new(
+            mind=None,
             s=s,
             e=e,
             c=c,
@@ -23,6 +24,7 @@ class RoguePlane(object):
         return self._scrap
     def create_scrap(self, s, e, c, cpair):
         scrap = meep_new(
+            mind=None,
             s=s,
             e=e,
             c=c,
@@ -34,6 +36,7 @@ class RoguePlane(object):
         return self._meeps
     def create_meep(self, s, e, c, cpair):
         meep = meep_new(
+            mind=None,
             s=s,
             e=e,
             c=c,

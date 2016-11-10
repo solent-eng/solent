@@ -6,6 +6,7 @@
 from .turnlib.experience_console import experience_console_new
 from .turnlib.rogue_console import rogue_console_new
 from .turnlib.rogue_plane import rogue_plane_new
+from .turnlib.time_system import time_system_new
 
 from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
@@ -252,6 +253,13 @@ def prep_plane(rogue_plane):
         c='"',
         cpair=SOL_CPAIR_GREEN_T)
 
+def event_loop(console, keystream, grid_display):
+    console.redraw(grid_display)
+    while True:
+        console.accept(
+            key=keystream.next())
+        console.redraw(grid_display)
+
 def main():
     if '--tty' in sys.argv:
         fn_device_start = curses_term_start
@@ -263,6 +271,8 @@ def main():
         print('ERROR: specify --tty or --win')
         sys.exit(1)
     try:
+        time_system = time_system_new()
+        #
         rogue_plane = rogue_plane_new()
         prep_plane(
             rogue_plane=rogue_plane)
@@ -294,11 +304,12 @@ def main():
         term_shape = fn_device_start(
             game_width=C_GAME_WIDTH,
             game_height=C_GAME_HEIGHT)
-        turn_based_event_loop = turn_based_event_loop_new(
+        #
+        # event loop
+        event_loop(
+            console=experience_console,
             keystream=term_shape.get_keystream(),
-            grid_display=term_shape.get_grid_display(),
-            console=experience_console)
-        turn_based_event_loop.run_event_loop()
+            grid_display=term_shape.get_grid_display())
     except SolentQuitException:
         pass
     except:
