@@ -27,8 +27,20 @@ class TimeSystem(object):
         # List of meeps, maintained in a deliberate order. The ordering of
         # this list is the heart of the time mechanism.
         self.prio = []
-    def register_meep(self, meep):
-        self._insert(meep)
+    def add_meep(self, meep):
+        '''
+        Find or create the fatigue run that matches the meep's fatigue. If
+        there are other meeps already on the rung, the insertion meep gets
+        last spot on the rung.
+        '''
+        b_placed = False
+        for idx in range(len(self.prio)):
+            if self.prio[idx].fatigue > meep.fatigue:
+                self.prio.insert(idx, meep)
+                b_placed = True
+                break
+        if not b_placed:
+            self.prio.append(meep)
     def dispatch_next_tick(self):
         '''finds the next tick that it to be dispatched, and then activates
         all the meeps who are to have their turn.
@@ -69,7 +81,8 @@ class TimeSystem(object):
         for meep in team:
             if meep.has_died:
                 continue
-            self._insert(meep)
+            self.add_meep(
+                meep=meep)
     def _normalise_time_to_first_meep_action(self):
         '''We need the meep at the front of the priority list to have a fatigue
         of 0. Hence, we want adjust all the meeps in the queue by the fatigue
@@ -80,20 +93,6 @@ class TimeSystem(object):
             return
         for meep in self.prio:
             meep.fatigue -= fatigue
-    def _insert(self, meep):
-        '''
-        Find or create the fatigue run that matches the meep's fatigue. If
-        there are other meeps already on the rung, the insertion meep gets
-        last spot on the rung.
-        '''
-        b_placed = False
-        for idx in range(len(self.prio)):
-            if self.prio[idx].fatigue > meep.fatigue:
-                self.prio.insert(idx, meep)
-                b_placed = True
-                break
-        if not b_placed:
-            self.prio.append(meep)
     def __repr__(self):
         sb = []
         sb.append('  meep   fatigue')
@@ -122,7 +121,7 @@ def test():
             print('turn: %s (%s)'%(meep.c, meep.overhead))
     mind = FakeMind()
     ts = time_system_new()
-    ts.register_meep(
+    ts.add_meep(
         meep=meep_new(
             mind=mind,
             s=0,
@@ -131,7 +130,7 @@ def test():
             cpair=None,
             rogue_plane=None,
             overhead=5))
-    ts.register_meep(
+    ts.add_meep(
         meep=meep_new(
             mind=mind,
             s=0,
@@ -140,7 +139,7 @@ def test():
             cpair=None,
             rogue_plane=None,
             overhead=8))
-    ts.register_meep(
+    ts.add_meep(
         meep=meep_new(
             mind=mind,
             s=0,
@@ -149,7 +148,7 @@ def test():
             cpair=None,
             rogue_plane=None,
             overhead=10))
-    ts.register_meep(
+    ts.add_meep(
         meep=meep_new(
             mind=mind,
             s=0,
@@ -158,7 +157,7 @@ def test():
             cpair=None,
             rogue_plane=None,
             overhead=7))
-    ts.register_meep(
+    ts.add_meep(
         meep=meep_new(
             mind=mind,
             s=0,
@@ -167,7 +166,7 @@ def test():
             cpair=None,
             rogue_plane=None,
             overhead=9))
-    ts.register_meep(
+    ts.add_meep(
         meep=meep_new(
             mind=mind,
             s=0,
@@ -176,7 +175,7 @@ def test():
             cpair=None,
             rogue_plane=None,
             overhead=12))
-    ts.register_meep(
+    ts.add_meep(
         meep=meep_new(
             mind=mind,
             s=0,
