@@ -13,23 +13,16 @@ CPAIR_MENU_BORDER = SOL_CPAIR_BLACK_CYAN
 CPAIR_MENU_TEXT = SOL_CPAIR_T_WHITE
 CPAIR_TITLE = SOL_CPAIR_T_WHITE
 
-class ExperienceXxx(object):
-    def __init__(self, title, xxx):
+class MenuInteraction(object):
+    def __init__(self, title, cgrid):
         '''
-        cgrid
-            the memory to be used for rendering activity
         title
             to display on the console
-        menu
-            instance of menu class that the user interacts with through
-            this xxx
         '''
         self.title = title
-        self.xxx = xxx
+        self.cgrid = cgrid
         #
-        # no harm reusing it
-        self.cgrid = self.xxx.cgrid
-        self.b_in_game = False
+        self.b_active = True
         #
         self.menu = self.__init_menu()
         self.__init_menu()
@@ -106,13 +99,12 @@ class ExperienceXxx(object):
             src_cgrid=self.menu_cgrid,
             nail=nail)
     #
-    def to_menu(self):
-        self.b_in_game = False
     def mi_continue_game(self):
-        self.b_in_game = True
+        print('xxx continue game')
+        self.b_active = False
     def mi_new_game(self):
         print('xxx new game')
-        self.b_in_game = True
+        self.b_active = False
     def mi_load_game(self):
         print('xxx mi_load_game')
     def mi_save_game(self):
@@ -120,34 +112,27 @@ class ExperienceXxx(object):
     def mi_quit(self):
         raise SolentQuitException()
     #
+    def active(self):
+        return self.b_active
+    def set_active(self, b):
+        self.b_active = b
     def accept(self, key):
-        if '' == key:
+        if not self.menu.has_key(key):
             return
-        elif ord(key) == 27 and self.b_in_game:
-            self.to_menu()
-        elif ord(key) == 27:
-            self.b_in_game = True
-        elif self.b_in_game:
-            self.xxx.accept(
-                key=key)
-        else:
-            if not self.menu.has_key(key):
-                return
-            fn = self.menu.get_callback(key)
-            fn()
+        fn = self.menu.get_callback(key)
+        fn()
     def redraw(self, console):
-        if self.b_in_game:
-            self.xxx.redraw(
-                console=console)
-        else:
-            self._redraw_title()
-            self._redraw_menu()
-            console.screen_update(
-                cgrid=self.cgrid)
+        self._redraw_title()
+        self._redraw_menu()
+        console.screen_update(
+            cgrid=self.cgrid)
 
-def experience_xxx_new(title, xxx):
-    ob = ExperienceXxx(
+def menu_interaction_new(title, width, height):
+    cgrid = cgrid_new(
+        width=width,
+        height=height)
+    ob = MenuInteraction(
         title=title,
-        xxx=xxx)
+        cgrid=cgrid)
     return ob
 

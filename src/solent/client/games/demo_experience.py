@@ -3,9 +3,9 @@
 # Intends to demonstrate basic use of the experience class
 #
 
-from .turnlib.experience_xxx import experience_xxx_new
+from .turnlib.menu_interaction import menu_interaction_new
 from .turnlib.player_mind import player_mind_new
-from .turnlib.rogue_xxx import rogue_xxx_new
+from .turnlib.rogue_interaction import rogue_interaction_new
 from .turnlib.rogue_plane import rogue_plane_new
 from .turnlib.time_system import time_system_new
 
@@ -25,46 +25,6 @@ C_GAME_WIDTH = 78
 C_GAME_HEIGHT = 25
 
 TITLE = '[demo_experience]'
-
-
-# --------------------------------------------------------
-#   :io_regulator
-# --------------------------------------------------------
-class TurnBasedEventLoop(object):
-    def __init__(self, keystream, grid_display, console):
-        self.keystream = keystream
-        self.grid_display = grid_display
-        self.console = console
-    def run_event_loop(self):
-        # draw instructions
-        #
-        self.console.redraw(self.grid_display)
-        while True:
-            self.console.accept(
-                key=self.keystream.next())
-            self.console.redraw(self.grid_display)
-
-def turn_based_event_loop_new(keystream, grid_display, console):
-    ob = TurnBasedEventLoop(
-        keystream=keystream,
-        grid_display=grid_display,
-        console=console)
-    return ob
-
-
-# --------------------------------------------------------
-#   :rogue_game
-# --------------------------------------------------------
-class RogueGame(object):
-    def __init__(self, rogue_plane, player_meep):
-        self.rogue_plane = rogue_plane
-        self.player_meep = player_meep
-
-def rogue_game_new(rogue_plane, player_meep):
-    ob = RogueGame(
-        rogue_plane=rogue_plane,
-        player_meep=player_meep)
-    return ob
 
 
 # --------------------------------------------------------
@@ -254,17 +214,13 @@ def prep_plane(rogue_plane):
         c='"',
         cpair=SOL_CPAIR_GREEN_T)
 
-def event_loop(time_system, player_mind, xxx, console):
-    xxx.redraw(console)
+def event_loop(time_system, player_mind, menu_interaction, console):
+    menu_interaction.redraw(console)
     while True:
         key = console.getc()
         if key not in (None, ''):
             player_mind.add_key(key)
         time_system.dispatch_next_tick()
-        #
-        xxx.accept(
-            key=key)
-        xxx.redraw(console)
 
 def main():
     if '--tty' in sys.argv:
@@ -288,37 +244,37 @@ def main():
             e=0,
             c='@',
             cpair=SOL_CPAIR_RED_T)
-        rogue_game = rogue_game_new(
-            rogue_plane=rogue_plane,
-            player_meep=player_meep)
         #
         cursor = cursor_new(
             fn_s=lambda: player_meep.coords.s,
             fn_e=lambda: player_meep.coords.e,
             fn_c=lambda: player_meep.c,
             fn_cpair=lambda: player_meep.cpair)
-        rogue_xxx = rogue_xxx_new(
-            rogue_game=rogue_game,
+        rogue_interaction = rogue_interaction_new(
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT,
             cursor=cursor)
         #
-        experience_xxx = experience_xxx_new(
+        menu_interaction = menu_interaction_new(
             title=TITLE,
-            xxx=rogue_xxx)
-        #
+            width=C_GAME_WIDTH,
+            height=C_GAME_HEIGHT)
         console = fn_device_start(
             game_width=C_GAME_WIDTH,
             game_height=C_GAME_HEIGHT)
         #
         player_mind = player_mind_new(
-            console=console)
+            console=console,
+            menu_interaction=menu_interaction,
+            rogue_interaction=rogue_interaction)
+        player_meep.mind = player_mind
+        time_system.add_meep(player_meep)
         #
         # event loop
         event_loop(
             time_system=time_system,
             player_mind=player_mind,
-            xxx=experience_xxx,
+            menu_interaction=menu_interaction,
             console=console)
     except SolentQuitException:
         pass

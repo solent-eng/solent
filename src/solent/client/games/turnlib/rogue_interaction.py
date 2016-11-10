@@ -22,9 +22,8 @@ class StatusEntry(object):
         #
         self.turns = 0
 
-class RogueXxx(object):
-    def __init__(self, rogue_game, cursor, cgrid, logbook):
-        self.rogue_game = rogue_game
+class RogueInteraction(object):
+    def __init__(self, cursor, cgrid, logbook):
         self.cursor = cursor
         self.cgrid = cgrid
         self.logbook = logbook
@@ -63,8 +62,8 @@ class RogueXxx(object):
                 drop=idx,
                 s=se.s,
                 cpair=cpair)
-    def redraw(self, console):
-        rogue_plane = self.rogue_game.player_meep.plane
+    def redraw(self, console, meep):
+        rogue_plane = meep.plane
         #
         # /this seems inefficient, but at least it gives us a clean break
         # between meeps and glyphs.
@@ -101,11 +100,11 @@ class RogueXxx(object):
         self._plot_status_messages()
         console.screen_update(
             cgrid=self.cgrid)
-    def accept(self, key):
+    def accept(self, meep, key):
         fn = None
         #
         # direction processing
-        rogue_plane = self.rogue_game.player_meep.plane
+        rogue_plane = meep.plane
         movement = { 'q':   rogue_plane.move_nw
                    , 'w':   rogue_plane.move_nn
                    , 'e':   rogue_plane.move_ne
@@ -117,20 +116,19 @@ class RogueXxx(object):
                    }
         if key in movement:
             movement[key](
-                meep=self.rogue_game.player_meep)
+                meep=meep)
             self.logbook.log(
                 t=self.t,
-                s='t %s: player_meep moved to %ss%se'%(self.t, self.rogue_game.player_meep.coords.s, self.rogue_game.player_meep.coords.e))
+                s='t %s: meep moved to %ss%se'%(self.t, meep.coords.s, meep.coords.e))
             return
 
-def rogue_xxx_new(rogue_game, width, height, cursor):
+def rogue_interaction_new(width, height, cursor):
     cgrid = cgrid_new(
         width=width,
         height=height)
     logbook = logbook_new(
         capacity=100)
-    ob = RogueXxx(
-        rogue_game=rogue_game,
+    ob = RogueInteraction(
         cursor=cursor,
         cgrid=cgrid,
         logbook=logbook)

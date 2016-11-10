@@ -22,6 +22,8 @@ class RoguePlane(object):
         self._terrain = []
         self._scrap = []
         self._meeps = []
+    def get_plane_type(self):
+        return 'RoguePlane'
     #
     def get_terrain(self):
         return self._terrain
