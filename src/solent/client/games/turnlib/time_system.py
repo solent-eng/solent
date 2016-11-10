@@ -29,40 +29,63 @@ class TimeSystem(object):
         self.prio = []
     def register_meep(self, meep):
         self._insert(meep)
-    def next(self):
+    def dispatch_next_tick(self):
+        '''finds the next tick that it to be dispatched, and then activates
+        all the meeps who are to have their turn.
+        '''
         if not self.prio:
             return
-        self._normalise_to_zero()
-        assert (self.prio[0].fatigue == 0) # xxx
         #
-        meep = self.prio[0]
-        del self.prio[0] # slow! see comments at top
-        if meep.has_died:
-            return
+        # Synchronise time so that the first item in the list is at 0 fatigue.
+        self._normalise_time_to_first_meep_action()
         #
-        # meep gets its turn
-        mind = meep.mind
-        if None != mind:
+        # Find all of the meeps who have zero fatigue. It's going to be their
+        # turn. So we move them from our prio list into a team list. (The
+        # mechanism by which we are doing this at the moment is probably
+        # super-inefficient. See comments at top.)
+        team = []
+        while self.prio and self.prio[0].fatigue == 0:
+            team.append(self.prio[0])
+            del self.prio[0]
+        #
+        # Grant turns for the selected meeps
+        for meep in team:
+            if meep.has_died:
+                continue
+            mind = meep.mind
+            if None == mind:
+                continue
             mind.turn(meep)
-        meep.fatigue += meep.overhead
+            meep.fatigue += meep.overhead
         #
-        # fatigue adjustments for all the other meeps in the queue
+        # Reduce fatigue for the meeps that are still in the queue. i.e.
+        # The meeps who just had a turn do not benefit from this.
         for itm in self.prio:
             itm.fatigue -= 1
         #
-        # now the meep gets back in the list, demoted
-        if not meep.has_died:
+        # Now we put our team meeps back in the queue. (They are demoted
+        # to the bottom of their fatigue rung. This avoids a starvation
+        # scenario)
+        for meep in team:
+            if meep.has_died:
+                continue
             self._insert(meep)
-    def _normalise_to_zero(self):
-        '''You want to find an amount by which you can adjust the item at the
-        front of the list by in order to get it to zero. You adjust the
-        fatigue of all the items by that amount.'''
+    def _normalise_time_to_first_meep_action(self):
+        '''We need the meep at the front of the priority list to have a fatigue
+        of 0. Hence, we want adjust all the meeps in the queue by the fatigue
+        of that first meep. Effectively, we are shift time to the point at
+        which the meep would have 0 fatigue.'''
         fatigue = self.prio[0].fatigue
         if 0 == fatigue:
             return
         for meep in self.prio:
             meep.fatigue -= fatigue
     def _insert(self, meep):
+        '''
+        Find or create the fatigue run that matches the meep's fatigue. If
+        there are other meeps already on the rung, the insertion meep gets
+        last spot on the rung.
+        '''
         b_placed = False
         for idx in range(len(self.prio)):
             if self.prio[idx].fatigue > meep.fatigue:
@@ -166,7 +189,7 @@ def test():
         print('[paused]', end='')
         input()
     def step():
-        ts.next()
+        ts.dispatch_next_tick()
         print(str(ts))
         pause()
     print('-- initial ---------')
