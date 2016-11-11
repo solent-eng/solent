@@ -62,7 +62,10 @@ def screen_curses_exit():
     curses.nocbreak()
     curses.endwin()
 
-def curses_getc():
+def curses_async_getc():
+    raise Exception('nyi')
+
+def curses_block_getc():
     global STDSCR
     k = STDSCR.getch()
     if None == k:
@@ -182,7 +185,8 @@ def curses_console_start(width, height):
     # solve the nasty problem, and then facade things so your user doesn't
     # have to think about it.
     keystream = keystream_new(
-        fn_getc=curses_getc)
+        fn_async_getc=curses_async_getc,
+        fn_block_getc=curses_block_getc)
     grid_display = GridDisplay(
         internal_cgrid=cgrid)
     #

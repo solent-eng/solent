@@ -48,7 +48,7 @@ class CellGrid(object):
             spot = self.spots[offset+idx]
             spot.c = c
             spot.cpair = cpair
-    def put_spots(self, drop, rest, spots):
+    def _put_spots(self, drop, rest, spots):
         offset = (drop*self.width) + rest
         for idx, src_spot in enumerate(spots):
             spot = self.spots[offset+idx]
@@ -91,7 +91,7 @@ class CellGrid(object):
             #
             dst_drop = nail_drop + idx
             dst_rest = nail_rest
-            self.put_spots(
+            self._put_spots(
                 drop=dst_drop,
                 rest=dst_rest,
                 spots=src_spots)

@@ -9,6 +9,7 @@ from .keystream import keystream_new
 from solent.client.constants import *
 from solent.exceptions import SolentQuitException
 
+from collections import deque
 import os
 import pygame
 
@@ -43,8 +44,22 @@ MAP_CONST_COLOURS_TO_CPAIR = { SOL_CPAIR_RED_T: PROFILE_RED_T
                              , SOL_CPAIR_T_WHITE: PROFILE_T_WHITE
                              }
 
-def pygame_getc():
-    #events = pygame.event.get()
+Q_ASYNC_GETC = deque()
+def pygame_async_getc():
+    global Q_ASYNC_GETC
+    for itm in pygame.event.get():
+        Q_ASYNC_GETC.append(itm)
+    while True:
+        if not Q_ASYNC_GETC:
+            return None
+        ev = Q_ASYNC_GETC.popleft()
+        if ev.type == pygame.QUIT:
+            raise SolentQuitException()
+        if not ev.type == pygame.KEYDOWN:
+            continue
+        return ev.unicode
+
+def pygame_block_getc():
     while True:
         ev = pygame.event.wait()
         #
@@ -117,7 +132,8 @@ def window_console_start(width, height):
     font = pygame.font.Font(PATH_TTF_FONT, 16)
     #
     keystream = keystream_new(
-        fn_getc=pygame_getc)
+        fn_async_getc=pygame_async_getc,
+        fn_block_getc=pygame_block_getc)
     grid_display = GridDisplay(
         internal_cgrid=cgrid,
         font=font)

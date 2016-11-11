@@ -13,8 +13,10 @@ class Console(object):
     def screen_update(self, cgrid):
         self.grid_display.update(
             cgrid=cgrid)
-    def getc(self):
-        return self.keystream.getc()
+    def async_getc(self):
+        return self.keystream.async_getc()
+    def block_getc(self):
+        return self.keystream.block_getc()
 
 def console_new(keystream, grid_display, width, height):
     ob = Console(

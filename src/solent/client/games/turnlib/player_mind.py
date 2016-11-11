@@ -17,6 +17,8 @@ class PlayerMind(object):
     def add_key(self, key):
         self.keys.append(key)
     def turn(self, meep):
+        if not self.keys:
+            return
         key = self.keys.popleft()
         plane_type = meep.plane.get_plane_type()
         if plane_type == 'RoguePlane':

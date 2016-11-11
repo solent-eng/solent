@@ -22,6 +22,8 @@ import os
 import sys
 import traceback
 
+ESC_KEY_ORD = 27
+
 C_GAME_WIDTH = 78
 C_GAME_HEIGHT = 25
 
@@ -385,20 +387,21 @@ class Husk(object):
                 self.b_menu_active = True
             #
             # Input
-            key = self.console.getc()
+            key = self.console.block_getc()
             if key in (None, ''):
                 continue
             #
             # Menu
             if self.b_menu_active:
-                if ord(key) == ESC_KEY and self.game != None:
+                if ord(key) == ESC_KEY_ORD and self.game != None:
                     self.b_menu_active = False
                     key = None
                 elif self.menu.has_key(key):
                     fn = self.menu.get_callback(key)
                     fn()
+                    key = None
             else:
-                if ord(key) == ESC_KEY:
+                if ord(key) == ESC_KEY_ORD:
                     self.b_menu_active = True
                     key = None
                     self._render()
@@ -412,9 +415,6 @@ class Husk(object):
             if self.b_menu_active:
                 self._render()
             else:
-                if key != None:
-                    self.game.accept_key(
-                        key=key)
                 self.game.turn()
 
 def husk_new(console):
@@ -431,8 +431,6 @@ def husk_new(console):
 # --------------------------------------------------------
 #   :alg
 # --------------------------------------------------------
-ESC_KEY = 27
-
 def main():
     if '--tty' in sys.argv:
         fn_device_start = curses_console_start
