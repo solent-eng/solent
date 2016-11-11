@@ -5,18 +5,22 @@
 #
 
 class Console(object):
-    def __init__(self, keystream, grid_display):
+    def __init__(self, keystream, grid_display, width, height):
         self.keystream = keystream
         self.grid_display = grid_display
+        self.width = width
+        self.height = height
     def screen_update(self, cgrid):
         self.grid_display.update(
             cgrid=cgrid)
     def getc(self):
         return self.keystream.getc()
 
-def console_new(keystream, grid_display):
+def console_new(keystream, grid_display, width, height):
     ob = Console(
         keystream=keystream,
-        grid_display=grid_display)
+        grid_display=grid_display,
+        width=width,
+        height=height)
     return ob
 

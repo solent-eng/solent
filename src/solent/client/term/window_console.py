@@ -105,14 +105,14 @@ PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'kongtext.ttf'] )
 
 CONSOLE = None
 
-def window_console_start(game_width, game_height):
+def window_console_start(width, height):
     global CONSOLE
     if None != CONSOLE:
         raise Exception('window_console is singleton. (cannot restart)')
     #
     cgrid = cgrid_new(
-        width=game_width,
-        height=game_height)
+        width=width,
+        height=height)
     pygame.font.init()
     font = pygame.font.Font(PATH_TTF_FONT, 16)
     #
@@ -123,7 +123,9 @@ def window_console_start(game_width, game_height):
         font=font)
     CONSOLE = console_new(
         keystream=keystream,
-        grid_display=grid_display)
+        grid_display=grid_display,
+        width=width,
+        height=height)
     return CONSOLE
 
 def window_console_end():

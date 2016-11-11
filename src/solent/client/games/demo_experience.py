@@ -225,10 +225,8 @@ ESC_KEY = 27
 def event_loop(console, player_mind, time_system):
     control_menu = control_menu_new(
         title=TITLE,
-        width=C_GAME_WIDTH,
-        height=C_GAME_HEIGHT)
-    control_menu.redraw(
         console=console)
+    control_menu.render()
     while True:
         #
         # Input
@@ -256,8 +254,7 @@ def event_loop(console, player_mind, time_system):
         #
         # Menu display
         if control_menu.active():
-            control_menu.redraw(
-                console=console)
+            control_menu.render()
 
 
 # --------------------------------------------------------
@@ -275,10 +272,8 @@ def main():
         sys.exit(1)
     try:
         console = fn_device_start(
-            game_width=C_GAME_WIDTH,
-            game_height=C_GAME_HEIGHT)
-        #
-        console = console
+            width=C_GAME_WIDTH,
+            height=C_GAME_HEIGHT)
         #
         time_system = time_system_new()
         #
@@ -290,8 +285,7 @@ def main():
             cpair=SOL_CPAIR_RED_T)
         #
         rogue_interaction = rogue_interaction_new(
-            width=C_GAME_WIDTH,
-            height=C_GAME_HEIGHT,
+            console=console,
             cursor=cursor_new(
                 fn_s=lambda: player_meep.coords.s,
                 fn_e=lambda: player_meep.coords.e,

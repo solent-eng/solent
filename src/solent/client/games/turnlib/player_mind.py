@@ -32,8 +32,7 @@ class PlayerMind(object):
         # Output
         plane_type = meep.plane.get_plane_type()
         if plane_type == 'RoguePlane':
-            self.rogue_interaction.redraw(
-                console=self.console,
+            self.rogue_interaction.render(
                 meep=meep)
         else:
             raise Exception('unsupported plane_type [%s]'%plane_type)

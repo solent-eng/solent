@@ -14,12 +14,13 @@ CPAIR_MENU_TEXT = SOL_CPAIR_T_WHITE
 CPAIR_TITLE = SOL_CPAIR_T_WHITE
 
 class ControlMenu(object):
-    def __init__(self, title, cgrid):
+    def __init__(self, title, console, cgrid):
         '''
         title
             to display on the console
         '''
         self.title = title
+        self.console = console
         self.cgrid = cgrid
         #
         self.b_active = True
@@ -32,13 +33,25 @@ class ControlMenu(object):
         #
         self.menu_cgrid = None
         self.__init_menu_grid()
+    def __mi_continue_game(self):
+        print('xxx continue game')
+        self.b_active = False
+    def __mi_new_game(self):
+        print('xxx new game')
+        self.b_active = False
+    def __mi_load_game(self):
+        print('xxx __mi_load_game')
+    def __mi_save_game(self):
+        print('xxx __mi_save_game')
+    def __mi_quit(self):
+        raise SolentQuitException()
     def __init_menu(self):
         menu = menu_new()
-        menu.add('c', 'continue', self.mi_continue_game)
-        menu.add('n', 'new', self.mi_new_game)
-        menu.add('l', 'load', self.mi_load_game)
-        menu.add('s', 'save', self.mi_save_game)
-        menu.add('q', 'quit', self.mi_quit)
+        menu.add('c', 'continue', self.__mi_continue_game)
+        menu.add('n', 'new', self.__mi_new_game)
+        menu.add('l', 'load', self.__mi_load_game)
+        menu.add('s', 'save', self.__mi_save_game)
+        menu.add('q', 'quit', self.__mi_quit)
         return menu
     def __init_title(self):
         # Later on we could use something like pyfiglet for this. Better would
@@ -87,30 +100,6 @@ class ControlMenu(object):
                     rest=longest_line+3,
                     s=' ',
                     cpair=CPAIR_MENU_BORDER)
-    def _redraw_title(self):
-        self.cgrid.blit(
-            src_cgrid=self.title_cgrid,
-            nail=(0, 0))
-    def _redraw_menu(self):
-        menu_drop = int((self.cgrid.height / 2) - (self.menu_cgrid.height / 2))
-        menu_rest = int((self.cgrid.width / 2) - (self.menu_cgrid.width / 2))
-        nail = (menu_drop, menu_rest)
-        self.cgrid.blit(
-            src_cgrid=self.menu_cgrid,
-            nail=nail)
-    #
-    def mi_continue_game(self):
-        print('xxx continue game')
-        self.b_active = False
-    def mi_new_game(self):
-        print('xxx new game')
-        self.b_active = False
-    def mi_load_game(self):
-        print('xxx mi_load_game')
-    def mi_save_game(self):
-        print('xxx mi_save_game')
-    def mi_quit(self):
-        raise SolentQuitException()
     #
     def active(self):
         return self.b_active
@@ -121,18 +110,30 @@ class ControlMenu(object):
             return
         fn = self.menu.get_callback(key)
         fn()
-    def redraw(self, console):
-        self._redraw_title()
-        self._redraw_menu()
-        console.screen_update(
+    def _render_title(self):
+        self.cgrid.blit(
+            src_cgrid=self.title_cgrid,
+            nail=(0, 0))
+    def _render_menu(self):
+        menu_drop = int((self.cgrid.height / 2) - (self.menu_cgrid.height / 2))
+        menu_rest = int((self.cgrid.width / 2) - (self.menu_cgrid.width / 2))
+        nail = (menu_drop, menu_rest)
+        self.cgrid.blit(
+            src_cgrid=self.menu_cgrid,
+            nail=nail)
+    def render(self):
+        self._render_title()
+        self._render_menu()
+        self.console.screen_update(
             cgrid=self.cgrid)
 
-def control_menu_new(title, width, height):
+def control_menu_new(title, console):
     cgrid = cgrid_new(
-        width=width,
-        height=height)
+        width=console.width,
+        height=console.height)
     ob = ControlMenu(
         title=title,
+        console=console,
         cgrid=cgrid)
     return ob
 

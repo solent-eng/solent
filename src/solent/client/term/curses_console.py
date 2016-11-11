@@ -168,13 +168,13 @@ class GridDisplay(object):
 # --------------------------------------------------------
 CONSOLE = None
 
-def curses_console_start(game_width, game_height):
+def curses_console_start(width, height):
     global CONSOLE
     if None != CONSOLE:
         raise Exception('curses console is singleton. (cannot restart)')
     cgrid = cgrid_new(
-        width=game_width,
-        height=game_height)
+        width=width,
+        height=height)
     #
     # Weird: it looks like you need to declare the keystroke source before
     # you do screen init. These kind of bizarre ordering problems are the
@@ -191,7 +191,9 @@ def curses_console_start(game_width, game_height):
     #
     CONSOLE = console_new(
         keystream=keystream,
-        grid_display=grid_display)
+        grid_display=grid_display,
+        width=width,
+        height=height)
     return CONSOLE
 
 def curses_console_end():

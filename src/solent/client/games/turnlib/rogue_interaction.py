@@ -23,7 +23,8 @@ class StatusEntry(object):
         self.turns = 0
 
 class RogueInteraction(object):
-    def __init__(self, cursor, cgrid, logbook):
+    def __init__(self, console, cursor, cgrid, logbook):
+        self.console = console
         self.cursor = cursor
         self.cgrid = cgrid
         self.logbook = logbook
@@ -62,7 +63,7 @@ class RogueInteraction(object):
                 drop=idx,
                 s=se.s,
                 cpair=cpair)
-    def redraw(self, console, meep):
+    def render(self, meep):
         rogue_plane = meep.plane
         #
         # /this seems inefficient, but at least it gives us a clean break
@@ -98,7 +99,7 @@ class RogueInteraction(object):
             cgrid=self.cgrid,
             glyphs=glyphs)
         self._plot_status_messages()
-        console.screen_update(
+        self.console.screen_update(
             cgrid=self.cgrid)
     def accept(self, meep, key):
         fn = None
@@ -122,13 +123,14 @@ class RogueInteraction(object):
                 s='t %s: meep moved to %ss%se'%(self.t, meep.coords.s, meep.coords.e))
             return
 
-def rogue_interaction_new(width, height, cursor):
+def rogue_interaction_new(console, cursor):
     cgrid = cgrid_new(
-        width=width,
-        height=height)
+        width=console.width,
+        height=console.height)
     logbook = logbook_new(
         capacity=100)
     ob = RogueInteraction(
+        console=console,
         cursor=cursor,
         cgrid=cgrid,
         logbook=logbook)
