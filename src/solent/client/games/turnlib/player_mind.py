@@ -17,23 +17,12 @@ class PlayerMind(object):
     def add_key(self, key):
         self.keys.append(key)
     def turn(self, meep):
-        #
-        # Input
-        while self.keys:
-            key = self.keys.popleft()
-            plane_type = meep.plane.get_plane_type()
-            if plane_type == 'RoguePlane':
-                self.rogue_interaction.accept(
-                    meep=meep,
-                    key=key)
-            else:
-                raise Exception('unsupported plane_type [%s]'%plane_type)
-        #
-        # Output
+        key = self.keys.popleft()
         plane_type = meep.plane.get_plane_type()
         if plane_type == 'RoguePlane':
-            self.rogue_interaction.render(
-                meep=meep)
+            self.rogue_interaction.accept(
+                meep=meep,
+                key=key)
         else:
             raise Exception('unsupported plane_type [%s]'%plane_type)
     def in_menu(self, key):

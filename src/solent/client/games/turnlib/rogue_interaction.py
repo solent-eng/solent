@@ -63,8 +63,8 @@ class RogueInteraction(object):
                 drop=idx,
                 s=se.s,
                 cpair=cpair)
-    def render(self, meep):
-        rogue_plane = meep.plane
+    def render(self, rogue_plane):
+        # xxx refactor to field-of-view
         #
         # /this seems inefficient, but at least it gives us a clean break
         # between meeps and glyphs.

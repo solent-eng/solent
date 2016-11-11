@@ -22,5 +22,14 @@ SOL_CPAIR_WHITE_PURPLE  = 1011
 SOL_CPAIR_BLACK_CYAN    = 1012
 SOL_CPAIR_T_WHITE       = 1013
 
+#
+# box types
+# ---------
+#
+BOX_LINE                = 2000
+BOX_EDGE                = 2001
+BOX_VOID                = 2002
+BOX_HASH                = 2003
+BOX_STOP                = 2004
 
 

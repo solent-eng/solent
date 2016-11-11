@@ -3,7 +3,7 @@
 # Intends to demonstrate basic use of the experience class
 #
 
-from .turnlib.control_menu import control_menu_new
+from .turnlib.menu import menu_new
 from .turnlib.player_mind import player_mind_new
 from .turnlib.rogue_interaction import rogue_interaction_new
 from .turnlib.rogue_plane import rogue_plane_new
@@ -17,6 +17,7 @@ from solent.client.term.window_console import window_console_start, window_conso
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
 
+from collections import deque
 import os
 import sys
 import traceback
@@ -24,18 +25,12 @@ import traceback
 C_GAME_WIDTH = 78
 C_GAME_HEIGHT = 25
 
-TITLE = '[demo_experience]'
+TITLE = 'sample game (solent.client)'
 
 
 # --------------------------------------------------------
-#   :boxes
+#   :game
 # --------------------------------------------------------
-BOX_LINE = uniq()
-BOX_EDGE = uniq()
-BOX_VOID = uniq()
-BOX_HASH = uniq()
-BOX_STOP = uniq()
-
 def make_box(rogue_plane, se_nail, width, height, cpair=SOL_CPAIR_WHITE_T, box_type=BOX_LINE):
     '''
     Box type indicates the kind of corners the box should have.
@@ -100,10 +95,6 @@ def make_box(rogue_plane, se_nail, width, height, cpair=SOL_CPAIR_WHITE_T, box_t
             c=c,
             cpair=cpair)
 
-
-# --------------------------------------------------------
-#   :game
-# --------------------------------------------------------
 def create_origin_plane():
     rogue_plane = rogue_plane_new()
     #
@@ -216,50 +207,232 @@ def create_origin_plane():
         cpair=SOL_CPAIR_GREEN_T)
     return rogue_plane
 
-
-# --------------------------------------------------------
-#   :event_loop
-# --------------------------------------------------------
-ESC_KEY = 27
-
-def event_loop(console, player_mind, time_system):
-    control_menu = control_menu_new(
-        title=TITLE,
-        console=console)
-    control_menu.render()
-    while True:
+class Game(object):
+    def __init__(self, console, time_system):
+        self.console = console
+        self.time_system = time_system
         #
-        # Input
-        key = console.getc()
+        self.rogue_plane = create_origin_plane()
+        self.player_meep = self.rogue_plane.create_meep(
+            s=0,
+            e=0,
+            c='@',
+            cpair=SOL_CPAIR_RED_T)
+        #
+        self.rogue_interaction = rogue_interaction_new(
+            console=console,
+            cursor=cursor_new(
+                fn_s=lambda: self.player_meep.coords.s,
+                fn_e=lambda: self.player_meep.coords.e,
+                fn_c=lambda: self.player_meep.c,
+                fn_cpair=lambda: self.player_meep.cpair))
+        #
+        self.player_mind = player_mind_new(
+            console=console,
+            rogue_interaction=self.rogue_interaction)
+        self.player_meep.mind = self.player_mind
+        self.time_system.add_meep(
+            meep=self.player_meep)
+    def accept_key(self, key):
         if key in (None, ''):
-            continue
+            return
+        if len(key) != 1:
+            print('!! weird value in var key: [%s] [%s]'%(
+                '/'.join([str(ord(k)) for k in key]),
+                key))
+            return
+        self.player_mind.add_key(key)
+    def turn(self):
+        self.time_system.dispatch_next_tick()
         #
-        # Menu
-        if control_menu.active() and ord(key) == ESC_KEY:
-            control_menu.set_active(False)
-            key = None
-        elif not control_menu.active() and ord(key) == ESC_KEY:
-            control_menu.set_active(True)
-            key = None
-        elif control_menu.active():
-            control_menu.accept(
-                key=key)
-            key = None
+        plane_type = self.player_meep.plane.get_plane_type()
+        if plane_type == 'RoguePlane':
+            self.rogue_interaction.render(
+                rogue_plane=self.rogue_plane)
+        else:
+            raise Exception('unsupported plane_type [%s]'%plane_type)
+
+def game_new(console):
+    time_system = time_system_new()
+    ob = Game(
+        console=console,
+        time_system=time_system)
+    return ob
+
+
+# --------------------------------------------------------
+#   :husk
+# --------------------------------------------------------
+#
+# The husk is the thing that contains the game. The husk exposes new game and
+# load game and save game.
+#
+CPAIR_MENU_BORDER = SOL_CPAIR_BLACK_CYAN
+CPAIR_MENU_TEXT = SOL_CPAIR_T_WHITE
+CPAIR_TITLE = SOL_CPAIR_T_WHITE
+
+class Husk(object):
+    def __init__(self, console, cgrid, title):
+        self.console = console
+        self.cgrid = cgrid
+        self.title = title
         #
-        # Game input
-        if not control_menu.active():
-            if key != None:
-                player_mind.add_key(key)
-            time_system.dispatch_next_tick()
+        self.b_menu_active = True
+        self.game = None
         #
-        # Menu display
-        if control_menu.active():
-            control_menu.render()
+        # Later on we could use something like pyfiglet for this. Better would
+        # be a single distinct font, similar to what Gollop did with rebelstar.
+        self.title_cgrid = cgrid_new(
+            width=len(self.title),
+            height=1)
+        self.title_cgrid.put(
+            drop=0,
+            rest=0,
+            s=self.title,
+            cpair=CPAIR_TITLE)
+        #
+        self.menu = menu_new()
+        self.menu_cgrid = None
+    #
+    def _generate_menu_content(self):
+        def mi_new_game():
+            print('xxx new game')
+            self.game = game_new(
+                console=self.console)
+            self.b_menu_active = False
+        def mi_load_game():
+            print('xxx __mi_load_game')
+        def mi_continue_game():
+            print('xxx continue game')
+            self.b_menu_active = False
+        def mi_save_game():
+            print('xxx __mi_save_game')
+        def mi_quit():
+            raise SolentQuitException()
+        self.menu.clear()
+        if None != self.game:
+            self.menu.add('c', 'continue', mi_continue_game)
+            self.menu.add('s', 'save', mi_save_game)
+        self.menu.add('l', 'load', mi_load_game)
+        self.menu.add('n', 'new', mi_new_game)
+        self.menu.add('q', 'quit', mi_quit)
+    def _allocate_menu_cgrid(self):
+        '''
+        xxx it's garbagey to repreatedly recreate this. create an issue.
+        better solution: plot the menu directly to the main cgrid, rather than
+        having separate cgrids for title and menu.
+        '''
+        lines = self.menu.get_lines()
+        longest_line = 0
+        for l in lines:
+            longest_line = max( [longest_line, len(l)] )
+        #
+        # prepare the menu border
+        self.menu_cgrid = cgrid_new(
+            width=longest_line+4,
+            height=len(lines)+2)
+        horiz = ' '*(longest_line+4)
+        menu_border_height = len(lines)+2
+        for idx in range(menu_border_height):
+            if idx in (0, menu_border_height-1):
+                self.menu_cgrid.put(
+                    drop=idx,
+                    rest=0,
+                    s=horiz,
+                    cpair=CPAIR_MENU_BORDER)
+            else:
+                line = lines[idx-1]
+                self.menu_cgrid.put(
+                    drop=idx,
+                    rest=0,
+                    s=' ',
+                    cpair=CPAIR_MENU_BORDER)
+                self.menu_cgrid.put(
+                    drop=idx,
+                    rest=1,
+                    s=' %s%s '%(line, ' '*(longest_line-len(line))),
+                    cpair=CPAIR_MENU_TEXT)
+                self.menu_cgrid.put(
+                    drop=idx,
+                    rest=longest_line+3,
+                    s=' ',
+                    cpair=CPAIR_MENU_BORDER)
+    def _render_title(self):
+        self.cgrid.blit(
+            src_cgrid=self.title_cgrid,
+            nail=(0, 0))
+    def _render_menu(self):
+        menu_drop = int((self.cgrid.height / 2) - (self.menu_cgrid.height / 2))
+        menu_rest = int((self.cgrid.width / 2) - (self.menu_cgrid.width / 2))
+        nail = (menu_drop, menu_rest)
+        self.cgrid.blit(
+            src_cgrid=self.menu_cgrid,
+            nail=nail)
+    def _render(self):
+        self._generate_menu_content()
+        self._allocate_menu_cgrid()
+        self._render_title()
+        self._render_menu()
+        self.console.screen_update(
+            cgrid=self.cgrid)
+    #
+    def event_loop(self):
+        self._render()
+        while True:
+            #
+            # Defensive
+            if self.game == None:
+                self.b_menu_active = True
+            #
+            # Input
+            key = self.console.getc()
+            if key in (None, ''):
+                continue
+            #
+            # Menu
+            if self.b_menu_active:
+                if ord(key) == ESC_KEY and self.game != None:
+                    self.b_menu_active = False
+                    key = None
+                elif self.menu.has_key(key):
+                    fn = self.menu.get_callback(key)
+                    fn()
+            else:
+                if ord(key) == ESC_KEY:
+                    self.b_menu_active = True
+                    key = None
+                    self._render()
+                    continue
+                else:
+                    self.game.accept_key(
+                        key=key)
+                    key = None
+            #
+            # Update display.
+            if self.b_menu_active:
+                self._render()
+            else:
+                if key != None:
+                    self.game.accept_key(
+                        key=key)
+                self.game.turn()
+
+def husk_new(console):
+    cgrid = cgrid_new(
+        width=console.width,
+        height=console.height)
+    ob = Husk(
+        console=console,
+        cgrid=cgrid,
+        title=TITLE)
+    return ob
 
 
 # --------------------------------------------------------
 #   :alg
 # --------------------------------------------------------
+ESC_KEY = 27
+
 def main():
     if '--tty' in sys.argv:
         fn_device_start = curses_console_start
@@ -274,36 +447,12 @@ def main():
         console = fn_device_start(
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
+        husk = husk_new(
+            console=console)
         #
-        time_system = time_system_new()
-        #
-        rogue_plane = create_origin_plane()
-        player_meep = rogue_plane.create_meep(
-            s=0,
-            e=0,
-            c='@',
-            cpair=SOL_CPAIR_RED_T)
-        #
-        rogue_interaction = rogue_interaction_new(
-            console=console,
-            cursor=cursor_new(
-                fn_s=lambda: player_meep.coords.s,
-                fn_e=lambda: player_meep.coords.e,
-                fn_c=lambda: player_meep.c,
-                fn_cpair=lambda: player_meep.cpair))
-        #
-        player_mind = player_mind_new(
-            console=console,
-            rogue_interaction=rogue_interaction)
-        player_meep.mind = player_mind
-        time_system.add_meep(
-            meep=player_meep)
         #
         # event loop
-        event_loop(
-            console=console,
-            player_mind=player_mind,
-            time_system=time_system)
+        husk.event_loop()
     except SolentQuitException:
         pass
     except:

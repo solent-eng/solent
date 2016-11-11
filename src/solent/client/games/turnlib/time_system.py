@@ -24,6 +24,7 @@ from .meep import meep_new
 
 class TimeSystem(object):
     def __init__(self):
+        #
         # List of meeps, maintained in a deliberate order. The ordering of
         # this list is the heart of the time mechanism.
         self.prio = []
@@ -47,6 +48,7 @@ class TimeSystem(object):
         '''
         if not self.prio:
             return
+        backup_prio = self.prio[:]
         #
         # Synchronise time so that the first item in the list is at 0 fatigue.
         self._normalise_time_to_first_meep_action()
