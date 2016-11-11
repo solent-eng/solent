@@ -22,7 +22,7 @@
 
 from .meep import meep_new
 
-class TimeSystem(object):
+class TurnSystem(object):
     def __init__(self):
         #
         # List of meeps, maintained in a deliberate order. The ordering of
@@ -107,8 +107,8 @@ class TimeSystem(object):
         sb.append('.')
         return '\n'.join(sb)
 
-def time_system_new():
-    ob = TimeSystem()
+def turn_system_new():
+    ob = TurnSystem()
     return ob
 
 
@@ -116,75 +116,74 @@ def time_system_new():
 #   :testing
 # --------------------------------------------------------
 def test():
+    import types
+    def coords(s, e):
+        ob = types.ModuleType('coords')
+        ob.s = s
+        ob.e = e
+        return ob
     class FakeMind(object):
         def __init__(self):
             pass
         def turn(self, meep):
             print('turn: %s (%s)'%(meep.c, meep.overhead))
     mind = FakeMind()
-    ts = time_system_new()
+    ts = turn_system_new()
     ts.add_meep(
         meep=meep_new(
             mind=mind,
-            s=0,
-            e=0,
+            coords=coords(
+                s=0,
+                e=0),
             c='a',
-            cpair=None,
-            rogue_plane=None,
             overhead=5))
     ts.add_meep(
         meep=meep_new(
             mind=mind,
-            s=0,
-            e=0,
+            coords=coords(
+                s=0,
+                e=0),
             c='b',
-            cpair=None,
-            rogue_plane=None,
             overhead=8))
     ts.add_meep(
         meep=meep_new(
             mind=mind,
-            s=0,
-            e=0,
+            coords=coords(
+                s=0,
+                e=0),
             c='c',
-            cpair=None,
-            rogue_plane=None,
             overhead=10))
     ts.add_meep(
         meep=meep_new(
             mind=mind,
-            s=0,
-            e=0,
+            coords=coords(
+                s=0,
+                e=0),
             c='d',
-            cpair=None,
-            rogue_plane=None,
             overhead=7))
     ts.add_meep(
         meep=meep_new(
             mind=mind,
-            s=0,
-            e=0,
+            coords=coords(
+                s=0,
+                e=0),
             c='e',
-            cpair=None,
-            rogue_plane=None,
             overhead=9))
     ts.add_meep(
         meep=meep_new(
             mind=mind,
-            s=0,
-            e=0,
+            coords=coords(
+                s=0,
+                e=0),
             c='f',
-            cpair=None,
-            rogue_plane=None,
             overhead=12))
     ts.add_meep(
         meep=meep_new(
             mind=mind,
-            s=0,
-            e=0,
+            coords=coords(
+                s=0,
+                e=0),
             c='g',
-            cpair=None,
-            rogue_plane=None,
             overhead=2))
     def pause():
         print('[paused]', end='')
