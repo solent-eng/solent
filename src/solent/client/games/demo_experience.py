@@ -7,7 +7,7 @@ from .turnlib.menu import menu_new
 from .turnlib.player_mind import player_mind_new
 from .turnlib.rogue_interaction import rogue_interaction_new
 from .turnlib.rogue_plane import rogue_plane_new
-from .turnlib.turn_system import turn_system_new
+from .turnlib.initiative import initiative_new
 
 from solent.client.constants import *
 from solent.client.term.cgrid import cgrid_new
@@ -255,7 +255,7 @@ class Game(object):
             raise Exception('unsupported plane_type [%s]'%plane_type)
 
 def game_new(console):
-    time_system = turn_system_new()
+    time_system = initiative_new()
     ob = Game(
         console=console,
         time_system=time_system)
