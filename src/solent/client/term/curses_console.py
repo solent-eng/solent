@@ -4,10 +4,11 @@ from .keystream import keystream_new
 
 from solent.client.constants import *
 
-from select import select
+from collections import deque
 import atexit
 import curses
 import os
+import select
 import sys
 import termios
 import time
@@ -26,7 +27,6 @@ def screen_curses_init():
     #
     global STDSCR
     STDSCR = curses.initscr()
-    #STDSCR.nodelay(1)
     curses.noecho()
     curses.cbreak()
     #
@@ -62,8 +62,26 @@ def screen_curses_exit():
     curses.nocbreak()
     curses.endwin()
 
+Q_ASYNC_GETC = deque()
 def curses_async_getc():
-    raise Exception('nyi')
+    '''
+    xxx this doesn't handle escaped characters very well at the moment. could
+    create an issue to get that fixed.
+    '''
+    global STDSCR
+    global Q_ASYNC_GETC
+    #
+    STDSCR.nodelay(1)
+    try:
+        c = STDSCR.getch()
+        while c != -1:
+            Q_ASYNC_GETC.append(c)
+            c = STDSCR.getch()
+    finally:
+        STDSCR.nodelay(0)
+    #
+    if Q_ASYNC_GETC:
+        return chr(Q_ASYNC_GETC.popleft())
 
 def curses_block_getc():
     global STDSCR
