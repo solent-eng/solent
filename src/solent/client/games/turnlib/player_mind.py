@@ -21,6 +21,16 @@ class PlayerMind(object):
         self.keys.append(key)
     def on_blocking_memo(self):
         self.b_blocking = True
+    def on_is_blocking(self):
+        return self.b_blocking
+    def on_ready(self):
+        '''
+        If there is no input queued, we return True to indicate that
+        we are waiting for input (and therefore blocked).
+        '''
+        if self.keys:
+            return True
+        return False
     def on_turn(self, meep):
         self.b_blocking = False
         if not self.keys:
@@ -33,14 +43,6 @@ class PlayerMind(object):
                 key=key)
         else:
             raise Exception('unsupported plane_type [%s]'%plane_type)
-    def on_ready(self):
-        '''
-        If there is no input queued, we return True to indicate that
-        we are waiting for input (and therefore blocked).
-        '''
-        if self.keys:
-            return True
-        return False
 
 def player_mind_new(console, rogue_interaction):
     inst = PlayerMind(
@@ -49,6 +51,7 @@ def player_mind_new(console, rogue_interaction):
     w = mind_interface(
         cb_add_key=inst.on_add_key,
         cb_blocking_memo=inst.on_blocking_memo,
+        cb_is_blocking=inst.on_is_blocking,
         cb_ready=inst.on_ready,
         cb_turn=inst.on_turn)
     return w

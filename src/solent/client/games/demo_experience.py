@@ -391,13 +391,19 @@ class Husk(object):
     def event_loop(self):
         self._render()
         while True:
+            print('eloop')
             #
             # Defensive
             if self.game == None:
                 self.b_menu_active = True
             #
             # Input
-            key = self.console.async_getc()
+            if self.b_menu_active:
+                key = self.console.block_getc()
+            elif self.game != None and self.game.player_mind.is_blocking():
+                key = self.console.block_getc()
+            else:
+                key = self.console.async_getc()
             b_key = True
             if key in (None, ''):
                 b_key = False

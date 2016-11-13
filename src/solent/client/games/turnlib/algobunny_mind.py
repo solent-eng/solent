@@ -8,6 +8,8 @@ class AlgobunnyMind(object):
         pass
     def on_blocking_memo(self):
         pass
+    def on_is_blocking(self):
+        return False
     def on_ready(self):
         return True
     def on_turn(self, meep):
@@ -41,11 +43,12 @@ class AlgobunnyMind(object):
             self.counter -= 1
 
 def algobunny_mind_new():
-    impl = AlgobunnyMind()
+    inst = AlgobunnyMind()
     i = mind_interface(
-        cb_add_key=impl.on_add_key,
-        cb_blocking_memo=impl.on_blocking_memo,
-        cb_ready=impl.on_ready,
-        cb_turn=impl.on_turn)
+        cb_add_key=inst.on_add_key,
+        cb_blocking_memo=inst.on_blocking_memo,
+        cb_is_blocking=inst.on_is_blocking,
+        cb_ready=inst.on_ready,
+        cb_turn=inst.on_turn)
     return i
 

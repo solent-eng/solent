@@ -114,6 +114,8 @@ class Initiative(object):
                 # consequences here. "nothing to see here, please disperse".
                 continue
             if not mind.ready():
+                # Tell the mind that we're blocked due to lack of input.
+                mind.blocking_memo()
                 # Here, we deduce that the meep that needs processing cannot
                 # proceed with its turn. This effectively calls a break
                 # against this function: we can do no more turn processing
