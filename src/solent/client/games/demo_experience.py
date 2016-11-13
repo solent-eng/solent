@@ -3,6 +3,7 @@
 # Intends to demonstrate basic use of the experience class
 #
 
+from .turnlib.algobunny_mind import algobunny_mind_new
 from .turnlib.menu import menu_new
 from .turnlib.player_mind import player_mind_new
 from .turnlib.rogue_interaction import rogue_interaction_new
@@ -20,6 +21,7 @@ from solent.util import uniq
 from collections import deque
 import os
 import sys
+import time
 import traceback
 
 ESC_KEY_ORD = 27
@@ -200,19 +202,12 @@ def create_origin_plane():
         e=-4,
         c=':',
         cpair=SOL_CPAIR_YELLOW_T)
-    #
-    # // meeps
-    rogue_plane.create_meep(
-        s=3,
-        e=3,
-        c='"',
-        cpair=SOL_CPAIR_GREEN_T)
     return rogue_plane
 
 class Game(object):
-    def __init__(self, console, time_system):
+    def __init__(self, console, initiative):
         self.console = console
-        self.time_system = time_system
+        self.initiative = initiative
         #
         self.rogue_plane = create_origin_plane()
         self.player_meep = self.rogue_plane.create_meep(
@@ -229,11 +224,23 @@ class Game(object):
                 fn_c=lambda: self.player_meep.c,
                 fn_cpair=lambda: self.player_meep.cpair))
         #
+        # algobunny
+        self.algobunny_meep = self.rogue_plane.create_meep(
+            mind=algobunny_mind_new(),
+            overhead=3,
+            s=3,
+            e=3,
+            c='"',
+            cpair=SOL_CPAIR_GREEN_T)
+        self.initiative.add_meep(
+            meep=self.algobunny_meep)
+        #
+        # player
         self.player_mind = player_mind_new(
             console=console,
             rogue_interaction=self.rogue_interaction)
         self.player_meep.mind = self.player_mind
-        self.time_system.add_meep(
+        self.initiative.add_meep(
             meep=self.player_meep)
     def accept_key(self, key):
         if key in (None, ''):
@@ -245,7 +252,7 @@ class Game(object):
             return
         self.player_mind.add_key(key)
     def turn(self):
-        self.time_system.dispatch_next_tick()
+        activity = self.initiative.dispatch_next_tick()
         #
         plane_type = self.player_meep.plane.get_plane_type()
         if plane_type == 'RoguePlane':
@@ -253,12 +260,15 @@ class Game(object):
                 rogue_plane=self.rogue_plane)
         else:
             raise Exception('unsupported plane_type [%s]'%plane_type)
+        #
+        return activity
 
 def game_new(console):
-    time_system = initiative_new()
+    initiative = initiative_new(
+        sleep_per_tick=0)
     ob = Game(
         console=console,
-        time_system=time_system)
+        initiative=initiative)
     return ob
 
 
@@ -387,35 +397,39 @@ class Husk(object):
                 self.b_menu_active = True
             #
             # Input
-            key = self.console.block_getc()
+            key = self.console.async_getc()
+            b_key = True
             if key in (None, ''):
-                continue
+                b_key = False
             #
             # Menu
             if self.b_menu_active:
-                if ord(key) == ESC_KEY_ORD and self.game != None:
-                    self.b_menu_active = False
-                    key = None
-                elif self.menu.has_key(key):
-                    fn = self.menu.get_callback(key)
-                    fn()
-                    key = None
+                if b_key:
+                    if ord(key) == ESC_KEY_ORD and self.game != None:
+                        self.b_menu_active = False
+                        key = None
+                    elif self.menu.has_key(key):
+                        fn = self.menu.get_callback(key)
+                        fn()
+                        key = None
             else:
-                if ord(key) == ESC_KEY_ORD:
-                    self.b_menu_active = True
-                    key = None
-                    self._render()
-                    continue
-                else:
-                    self.game.accept_key(
-                        key=key)
-                    key = None
+                if b_key:
+                    if ord(key) == ESC_KEY_ORD:
+                        self.b_menu_active = True
+                        key = None
+                        self._render()
+                        continue
+                    else:
+                        self.game.accept_key(
+                            key=key)
+                        key = None
             #
             # Update display.
             if self.b_menu_active:
                 self._render()
             else:
-                self.game.turn()
+                activity = self.game.turn()
+                time.sleep(0.08)
 
 def husk_new(console):
     cgrid = cgrid_new(

@@ -53,9 +53,10 @@ class RoguePlane(object):
     #
     def get_meeps(self):
         return self._meeps
-    def create_meep(self, s, e, c, cpair):
+    def create_meep(self, s, e, c, cpair, mind=None, overhead=10):
         meep = meep_new(
-            mind=None,
+            overhead=overhead,
+            mind=mind,
             coords=rogue_plane_coords(
                 s=s,
                 e=e),

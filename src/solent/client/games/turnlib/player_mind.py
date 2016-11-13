@@ -6,6 +6,8 @@
 # participant.
 #
 
+from .mind import mind_interface
+
 from collections import deque
 
 class PlayerMind(object):
@@ -14,9 +16,13 @@ class PlayerMind(object):
         self.rogue_interaction = rogue_interaction
         # keys that the user has sent into the system
         self.keys = deque()
-    def add_key(self, key):
+        self.b_blocking = False
+    def on_add_key(self, key):
         self.keys.append(key)
-    def turn(self, meep):
+    def on_blocking_memo(self):
+        self.b_blocking = True
+    def on_turn(self, meep):
+        self.b_blocking = False
         if not self.keys:
             return
         key = self.keys.popleft()
@@ -27,13 +33,23 @@ class PlayerMind(object):
                 key=key)
         else:
             raise Exception('unsupported plane_type [%s]'%plane_type)
-    def in_menu(self, key):
-        self.control_menu.accept(
-            key=key)
+    def on_ready(self):
+        '''
+        If there is no input queued, we return True to indicate that
+        we are waiting for input (and therefore blocked).
+        '''
+        if self.keys:
+            return True
+        return False
 
 def player_mind_new(console, rogue_interaction):
-    ob = PlayerMind(
+    inst = PlayerMind(
         console=console,
         rogue_interaction=rogue_interaction)
-    return ob
+    w = mind_interface(
+        cb_add_key=inst.on_add_key,
+        cb_blocking_memo=inst.on_blocking_memo,
+        cb_ready=inst.on_ready,
+        cb_turn=inst.on_turn)
+    return w
 
