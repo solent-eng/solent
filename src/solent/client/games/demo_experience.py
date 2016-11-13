@@ -265,7 +265,7 @@ class Game(object):
 
 def game_new(console):
     initiative = initiative_new(
-        sleep_per_tick=0)
+        accelerated_time=True)
     ob = Game(
         console=console,
         initiative=initiative)
@@ -429,7 +429,10 @@ class Husk(object):
                 self._render()
             else:
                 activity = self.game.turn()
-                time.sleep(0.08)
+                if activity:
+                    time.sleep(0.05)
+                if not activity:
+                    time.sleep(0.1)
 
 def husk_new(console):
     cgrid = cgrid_new(

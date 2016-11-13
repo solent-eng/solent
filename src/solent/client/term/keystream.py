@@ -1,15 +1,8 @@
-class Keystream(object):
-    def __init__(self, fn_async_getc, fn_block_getc):
-        self.fn_async_getc = fn_async_getc
-        self.fn_block_getc = fn_block_getc
-    def block_getc(self):
-        return self.fn_block_getc()
-    def async_getc(self):
-        return self.fn_async_getc()
+import types
 
-def keystream_new(fn_async_getc, fn_block_getc):
-    ob = Keystream(
-        fn_async_getc=fn_async_getc,
-        fn_block_getc=fn_block_getc)
+def keystream_new(cb_async_getc, cb_block_getc):
+    ob = types.ModuleType('keystream')
+    ob.async_getc = cb_async_getc
+    ob.block_getc = cb_block_getc
     return ob
 

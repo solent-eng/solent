@@ -24,28 +24,27 @@ from .meep import meep_new
 from .mind import mind_interface
 
 from collections import deque
-import time
-
-def sleep(t):
-    print('sleep t [%s]'%t)
-    time.sleep(t)
 
 class Initiative(object):
-    def __init__(self, sleep_per_tick):
+    def __init__(self, accelerated_time):
         '''
-        sleep_per_tick
-            If this is zero, then the clock will skip forward to the next turn
-            as soon as it can. If it has a value, then it will sleep for that
-            value on each tick of the clock. In practice, you want this to be
-            zero for turn-based games, and non-zero for arcade style games.
+        accelerated_time
+            If this is true, then the clock will skip forward to the next turn
+            whenever it can. Consider a situation where the item at the top
+            of the queue has a fatigue of 7. If accelerated_time is true, then
+            the initiative will remove 7 from the fatigue of everyone in the
+            list, and then immediately process the top rung.
 
-            At some future point we'll need to refactor this so that the
-            sleep does not itself happen in this class, but rather it won't
-            proceed until a certain amount of time has passed. The passage
-            of time should always be at the discretion of the central event
-            loop.
+            This is useful for turn-based games.
+
+            Conversely, this is awful for arcade style games.
+
+            Hence, for arcade games you want this to be False. This returns
+            control for lag to the event loop, and results in a system where
+            every pass of the main event loop represents one unit of time in
+            the system.
         '''
-        self.sleep_per_tick = sleep_per_tick
+        self.accelerated_time = accelerated_time
         #
         # List of meeps, maintained in a deliberate order. The ordering of
         # this list is the heart of the time mechanism.
@@ -87,10 +86,7 @@ class Initiative(object):
         if 0 == len(self.prepped):
             # Synchronise time so that the first item in the list is at 0
             # fatigue.
-            if self.sleep_per_tick:
-                sleep(
-                    t=self.sleep_per_tick)
-            else:
+            if self.accelerated_time:
                 self._normalise_time_to_next_rung()
             #
             # Find all of the meeps who have zero fatigue. It's going to be
@@ -172,9 +168,9 @@ class Initiative(object):
         sb.append('.')
         return '\n'.join(sb)
 
-def initiative_new(sleep_per_tick):
+def initiative_new(accelerated_time=True):
     ob = Initiative(
-        sleep_per_tick=sleep_per_tick)
+        accelerated_time=accelerated_time)
     return ob
 
 

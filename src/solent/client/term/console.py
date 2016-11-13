@@ -2,8 +2,6 @@
 # Bundle of stuff you need to put a terminal together. Typically, an
 # application developer won't create these directly. Rather you'll call
 # curses_term or window_term, and that will give you back an instance of this.
-#
-
 class Console(object):
     def __init__(self, keystream, grid_display, width, height):
         self.keystream = keystream

@@ -203,8 +203,8 @@ def curses_console_start(width, height):
     # solve the nasty problem, and then facade things so your user doesn't
     # have to think about it.
     keystream = keystream_new(
-        fn_async_getc=curses_async_getc,
-        fn_block_getc=curses_block_getc)
+        cb_async_getc=curses_async_getc,
+        cb_block_getc=curses_block_getc)
     grid_display = GridDisplay(
         internal_cgrid=cgrid)
     #

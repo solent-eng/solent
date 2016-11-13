@@ -132,8 +132,8 @@ def window_console_start(width, height):
     font = pygame.font.Font(PATH_TTF_FONT, 16)
     #
     keystream = keystream_new(
-        fn_async_getc=pygame_async_getc,
-        fn_block_getc=pygame_block_getc)
+        cb_async_getc=pygame_async_getc,
+        cb_block_getc=pygame_block_getc)
     grid_display = GridDisplay(
         internal_cgrid=cgrid,
         font=font)
