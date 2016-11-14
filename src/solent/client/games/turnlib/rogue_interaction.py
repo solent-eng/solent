@@ -1,6 +1,5 @@
 #
-# console that follows roguelike conventions and can interact with a
-# rogue_game.
+# This translates a player's keystrokes into interactions with a rogue_plane.
 #
 
 from .logbook import logbook_new

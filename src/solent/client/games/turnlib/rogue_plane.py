@@ -25,6 +25,7 @@ class RoguePlane(object):
     def get_plane_type(self):
         return 'RoguePlane'
     #
+    # terrain: architecture of the plane
     def get_terrain(self):
         return self._terrain
     def create_terrain(self, s, e, c, cpair=SOL_CPAIR_PURPLE_T):
@@ -38,6 +39,8 @@ class RoguePlane(object):
             plane=self)
         self._terrain.append(t)
     #
+    # scrap: what you'd think of as inventory items. things that can be picked
+    # up and operated on.
     def get_scrap(self):
         return self._scrap
     def create_scrap(self, s, e, c, cpair):
@@ -51,6 +54,7 @@ class RoguePlane(object):
             plane=self)
         self._scrap.append(scrap)
     #
+    # meep: a mind's body on a plane
     def get_meeps(self):
         return self._meeps
     def create_meep(self, s, e, c, cpair, mind=None, overhead=10):
