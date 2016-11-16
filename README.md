@@ -1,17 +1,24 @@
 # Overview
 
-Codebase oriented around creating massively concurrent roguelike systems.
+The unifying idea behind solent is that we should define systems in terms of
+messages.
 
-The concurrency model will be a homage to the work of Josh Levine
-(http://www.josh.com/notes/island-ecn-10th-birthday/). The project has been
-developed from scratch on top of of gnu/linux and the python programming
-language. The target platform is python3 on non-specific unix.
+The codebase is currently oriented towards creating massively concurrent
+roguelike systems. That's a fun problema, and straightforward to iterate on.
+
+The concurrency model is to be a homage to the work of Josh Levine
+(http://www.josh.com/notes/island-ecn-10th-birthday/). This project has been
+developed from scratch. The target platform is python3 on non-specific unix.
+
+Solent.client targets major desktops and unix tty with no dependencies
+required.
 
 ## Community
 
 Except where specifically marked, the codebase will be licensed under the
-LGPL. I'd like to grow a community around this code that follows in the spirit
-of _Social Architecture_ by Pieter Hintjens.
+LGPL, with copyright assigned to the FSF. I'd like to grow a community around
+this code that follows in the spirit of _Social Architecture_ by Pieter
+Hintjens.
 
 ## Status
 
@@ -120,8 +127,5 @@ background is achieved by unpowered pixels.
 
 See directions/000.layout.optimised.for.oled for a demonstration of a frame
 layout system
-
-
-
 
 

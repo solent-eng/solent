@@ -1,5 +1,5 @@
 #
-# constants for the solent platform
+# See scenarios.py for guidance about this module.
 #
 # --------------------------------------------------------
 #   :license
@@ -22,35 +22,9 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 # .
-
-
 #
-# colour pairs
-# ------------
-#
-SOL_CPAIR_RED_T         = 1000
-SOL_CPAIR_GREEN_T       = 1001
-SOL_CPAIR_YELLOW_T      = 1002
-SOL_CPAIR_BLUE_T        = 1003
-SOL_CPAIR_PURPLE_T      = 1004
-SOL_CPAIR_CYAN_T        = 1005
-SOL_CPAIR_WHITE_T       = 1006
-SOL_CPAIR_T_RED         = 1007
-SOL_CPAIR_T_GREEN       = 1008
-SOL_CPAIR_T_YELLOW      = 1009
-SOL_CPAIR_WHITE_BLUE    = 1010
-SOL_CPAIR_WHITE_PURPLE  = 1011
-SOL_CPAIR_BLACK_CYAN    = 1012
-SOL_CPAIR_T_WHITE       = 1013
 
-#
-# box types
-# ---------
-#
-BOX_LINE                = 2000
-BOX_EDGE                = 2001
-BOX_VOID                = 2002
-BOX_HASH                = 2003
-BOX_STOP                = 2004
-
+from .engine import engine_new as create_engine
+from .engine import engine_new as QuitEvent
+from .liblog import init_logging, log, nicehex
 
