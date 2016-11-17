@@ -16,8 +16,6 @@ python -m solent.client.games.demo_experience --win
 python -m solent.demo.eng_sandbox
 ```
 
-Things you can run
-
 # Project Overview
 
 The unifying idea behind solent is that we should define systems in terms of
