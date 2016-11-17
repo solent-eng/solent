@@ -1,4 +1,24 @@
-# Overview
+# Quickstart
+
+```
+git clone https://github.com/cratuki/solent.git
+
+cd solent
+
+virtualenv -p python3 venv
+pushd venv; . bin/activate; popd
+pip install pygame
+
+# Run a demo of what we are building in solent.client.term
+python -m solent.client.games.demo_experience --win
+
+# Run a demo of the concurrency system we are building in solent.eng
+python -m solent.demo.eng_sandbox
+```
+
+Things you can run
+
+# Project Overview
 
 The unifying idea behind solent is that we should define systems in terms of
 messages.

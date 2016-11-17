@@ -3,7 +3,7 @@
 # This script 
 #
 
-pushd ../venv
+pushd venv
 . bin/activate
 popd
 
@@ -14,5 +14,5 @@ popd
 
 #python -m solent.eng.scenarios
 
-python -m solent.demo.terminal_engine
+python -m solent.eng.sandbox
 
