@@ -13,7 +13,7 @@ pip install pygame
 python -m solent.client.games.demo_experience --win
 
 # Run a demo of the concurrency system we are building in solent.eng
-python -m solent.demo.eng_sandbox
+python -m solent.eng.sandbox
 ```
 
 # Project Overview
