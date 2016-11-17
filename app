@@ -1,5 +1,18 @@
 #!/bin/bash
+#
+# This script 
+#
 
-cd src
-./app
+pushd ../venv
+. bin/activate
+popd
+
+#python -m solent.client.games.sandbox_a --tty
+#python -m solent.client.games.sandbox_a --win
+#python -m solent.client.games.demo_experience --tty
+#python -m solent.client.games.demo_experience --win
+
+#python -m solent.eng.scenarios
+
+python -m solent.demo.terminal_engine
 

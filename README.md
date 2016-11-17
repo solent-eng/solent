@@ -6,12 +6,24 @@ messages.
 The codebase is currently oriented towards creating massively concurrent
 roguelike systems. That's a fun problema, and straightforward to iterate on.
 
-The concurrency model is to be a homage to the work of Josh Levine
-(http://www.josh.com/notes/island-ecn-10th-birthday/). This project has been
-developed from scratch. The target platform is python3 on non-specific unix.
+This project has been developed from scratch.
 
-Solent.client targets major desktops and unix tty with no dependencies
-required.
+## Concurrency
+
+The target platform is python3
+on non-specific unix. The concurrency model echoes the work of Josh Levine
+(http://www.josh.com/notes/island-ecn-10th-birthday/).
+
+## Interaction
+
+Interaction is through a terminal-like user interface that is described in
+solent/client.
+
+The client follows a unifying idea, "everything is a sigil".
+
+There's an issue to get this packaging an easy-to-download distribution
+(https://github.com/cratuki/solent/issues/17). It is on major desktops and
+unix tty, without external dependencies.
 
 ## Community
 
@@ -125,7 +137,7 @@ simple matter of implementation.
 Some high-end laptops now come with an OLED screen. In this screen, black
 background is achieved by unpowered pixels.
 
-See directions/000.layout.optimised.for.oled for a demonstration of a frame
+See draft/000.layout.optimised.for.oled for a demonstration of a frame
 layout system
 
 
