@@ -27,4 +27,7 @@
 from .engine import engine_new as create_engine
 from .engine import engine_new as QuitEvent
 from .liblog import init_logging, log, nicehex
+from .nearcast_orb import nearcast_orb_new
+from .nearcast_schema import nearcast_schema_new
+from .nearcast_snoop import nearcast_snoop_new
 

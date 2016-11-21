@@ -1,6 +1,37 @@
 #!/usr/bin/env python3
+#
+# Sandbox
+#
+# // brief
+# This is being used for developing new functionality.
+#
+# // deprecated
+# This will disappear in time. Don't use it as a dependency.
+#
+# // license
+# Copyright 2016, Free Software Foundation.
+#
+# This file is part of Solent.
+#
+# Solent is free software: you can redistribute it and/or modify it under the
+# terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Solent is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import create_engine, init_logging, log
+from solent.eng import create_engine
+from solent.eng import init_logging
+from solent.eng import log
+from solent.eng import nearcast_orb_new
+from solent.eng import nearcast_schema_new
+from solent.eng import nearcast_snoop_new
 
 from collections import deque
 import traceback
@@ -9,7 +40,19 @@ import traceback
 TERM_LINK_ADDR = '127.0.0.1'
 TERM_LINK_PORT = 4100
 
-class CogTermLink(object):
+I_NEARCAST_SCHEMA = '''
+    i message h
+    i field h
+    
+    message send_something
+        field text
+'''
+
+
+# --------------------------------------------------------
+#   :cog_gruel_server
+# --------------------------------------------------------
+class CogGruelServer(object):
     def __init__(self, name, engine, addr, port):
         self.name = name
         self.engine = engine
@@ -40,7 +83,7 @@ class CogTermLink(object):
         self.received[key] = deque()
         engine.send(
             sid=client_sid,
-            data='hello, %s:%s!\n'%(addr, port))
+            data='')
     def engine_on_tcp_confail(self, cs_tcp_confail):
         engine = cs_tcp_confail.engine
         client_sid = cs_tcp_confail.client_sid
@@ -54,6 +97,7 @@ class CogTermLink(object):
         client_sid = cs_tcp_recv.client_sid
         data = cs_tcp_recv.data
         #
+        print('recv! %s'%data) # xxx
         key = (engine, client_sid)
         self.received[key].append(data)
         engine.send(
@@ -64,26 +108,38 @@ class CogTermLink(object):
         activity = False
         return activity
 
-class Orb(object):
-    def __init__(self, engine):
-        self.engine = engine
-        #
-        self.cog_term_link = CogTermLink(
-            name='xxx01',
-            engine=self.engine,
+def gruel_server_new(name, engine, addr, port):
+    ob = CogGruelServer(
+        name=name,
+        engine=engine,
+        addr=addr,
+        port=port)
+    return ob
+
+
+# --------------------------------------------------------
+#   :rest
+# --------------------------------------------------------
+def create_orb(engine):
+    orb = nearcast_orb_new(
+        engine=engine,
+        nearcast_schema=nearcast_schema_new(
+            i_nearcast=I_NEARCAST_SCHEMA))
+    orb.add_cog(
+        cog=gruel_server_new(
+            name='server01',
+            engine=engine,
             addr=TERM_LINK_ADDR,
-            port=TERM_LINK_PORT)
-    def at_turn(self):
-        activity = False
-        return activity
+            port=TERM_LINK_PORT))
+    return orb
 
 def main():
     init_logging()
     engine = create_engine()
     try:
-        orb = Orb(
-            engine=engine)
-        engine.add_orb(orb)
+        engine.add_orb(
+            orb=create_orb(
+                engine=engine))
         engine.event_loop()
     except KeyboardInterrupt:
         pass

@@ -1,10 +1,7 @@
 #
 # random utility functions and classes
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -21,7 +18,8 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
+
+from .line_finder import line_finder_new
 
 import types
 

@@ -1,7 +1,4 @@
 #!/bin/bash
-#
-# This script 
-#
 
 pushd venv
 . bin/activate
@@ -14,5 +11,6 @@ popd
 
 #python -m solent.eng.scenarios
 
-python -m solent.eng.sandbox
+#python -m solent.eng.sandbox
+python -m solent.eng.draft_term
 

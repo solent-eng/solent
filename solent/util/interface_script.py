@@ -23,7 +23,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 # .
 
-from liblog import log
+from solent.util.line_finder import line_finder_new
 
 import inspect
 
@@ -31,18 +31,6 @@ import inspect
 # --------------------------------------------------------
 #   :stream_based_parser
 # --------------------------------------------------------
-class LineFinder(object):
-    "When you get to the end of a line, callback."
-    def __init__(self, cb_line):
-        self.cb_line = cb_line
-        self.sb = []
-    def accept(self, c):
-        if c == '\n':
-            self.cb_line(''.join(self.sb))
-            self.sb = []
-        else:
-            self.sb.append(c)
-
 def parse_line_to_tokens(line):
     tokens = []
     acc = []
@@ -127,11 +115,12 @@ class InterfaceScriptParser(object):
         # on_signal(iname, values) -> None
         self.cb_signal = cb_signal
         #
-        self.finder = LineFinder(self._on_line)
+        self.finder = line_finder_new(
+            cb_line=self._on_line)
         self.interfaces = {}
     def parse(self, s):
-        for c in s:
-            self.finder.accept(c)
+        self.finder.accept_string(
+			s=s)
     def _on_line(self, line):
         tokens = parse_line_to_tokens(line)
         if not tokens:
@@ -190,11 +179,11 @@ class SignalConsumer(object):
 # sample
 class SampleApp(SignalConsumer):
     def on_node(self, nid, t_deployment, t_outpost_codebase):
-        print 'node %s'%nid
+        print('node %s'%nid)
     def on_orb(self, module, instance_h):
-        print 'orb %s %s'%(module, instance_h)
+        print('orb %s %s'%(module, instance_h))
     def on_kv(self, key, value):
-        print 'kv %s %s'%(key, value)
+        print('kv %s %s'%(key, value))
 
 def init_interface_script_parser(signal_consumer):
     ob = InterfaceScriptParser(

@@ -264,7 +264,7 @@ class Metasock(object):
             log('recv exception [sid %s] [%s]'%(self.sid, str(e)))
             raise MetasockCloseCondition('read_fail')
             return
-        if data in (None, '', b''):
+        if data in (None,) or 0 == len(data):
             # In this case, it's presumed that select told you that it
             # was good to read from this, and yet when you went to read
             # there wasn't anything empty. This indicates that it's time
