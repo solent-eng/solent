@@ -257,14 +257,14 @@ class Metasock(object):
         try:
             data = self.sock.recv(self.recv_len)
         except Exception as e:
-            # if you're going to disappear errors here, do it with an
-            # exception that is specific to a real read_fail.
-            traceback.print_exc()
-            # msg comparison might be the only way to do it
-            log('recv exception [sid %s] [%s]'%(self.sid, e.message))
+            # If you're going to disappear errors here, do it with an
+            # exception that is specific to a real read_fail. Note,
+            # * You can't count on e.message existing
+            # * Ugly string comparison might be the only way to do it
+            log('recv exception [sid %s] [%s]'%(self.sid, str(e)))
             raise MetasockCloseCondition('read_fail')
             return
-        if data in (None, ''):
+        if data in (None, '', b''):
             # In this case, it's presumed that select told you that it
             # was good to read from this, and yet when you went to read
             # there wasn't anything empty. This indicates that it's time
