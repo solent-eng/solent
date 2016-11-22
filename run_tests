@@ -1,0 +1,14 @@
+#!/bin/bash
+
+pushd venv
+. bin/activate
+popd
+
+for fname in $(ls testing/solent.*); do
+    python3 $fname
+    if [[ "$?" != "0" ]]; then
+        echo "FATAL: something looks wrong, making early exit."
+        exit 1
+    fi
+done
+

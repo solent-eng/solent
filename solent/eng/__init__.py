@@ -31,3 +31,6 @@ from .nearcast_orb import nearcast_orb_new
 from .nearcast_schema import nearcast_schema_new
 from .nearcast_snoop import nearcast_snoop_new
 
+from .gruel.cog_gruel_client import cog_gruel_client_new
+from .gruel.cog_gruel_server import cog_gruel_server_new
+
