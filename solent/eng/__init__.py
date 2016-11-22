@@ -1,10 +1,7 @@
 #
 # See scenarios.py for guidance about this module.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -21,12 +18,9 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
-#
 
 from .engine import engine_new as create_engine
 from .engine import engine_new as QuitEvent
-from .liblog import init_logging, log, nicehex
 from .nearcast_orb import nearcast_orb_new
 from .nearcast_schema import nearcast_schema_new
 from .nearcast_snoop import nearcast_snoop_new

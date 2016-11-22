@@ -133,9 +133,11 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
-from solent.eng import create_engine, init_logging, log, QuitEvent
+from solent.eng import create_engine
+from solent.eng import QuitEvent
+from solent.log import init_logging
+from solent.log import log
 
 from collections import deque
 import logging
@@ -144,10 +146,6 @@ import time
 import traceback
 import unittest
 
-
-# --------------------------------------------------------
-#   broadcast listen
-# --------------------------------------------------------
 def scenario_broadcast_listen(engine):
     net_addr = '127.255.255.255'
     net_port = 50000
@@ -193,10 +191,6 @@ def scenario_broadcast_listen(engine):
     engine.add_orb(orb)
     engine.event_loop()
 
-
-# --------------------------------------------------------
-#   broadcast listen and unlisten
-# --------------------------------------------------------
 def scenario_broadcast_listen_and_unlisten(engine):
     net_addr = '127.255.255.255'
     net_port = 50000
@@ -261,10 +255,6 @@ def scenario_broadcast_listen_and_unlisten(engine):
     engine.add_orb(orb)
     engine.event_loop()
 
-
-# --------------------------------------------------------
-#   multiple tcp servers
-# --------------------------------------------------------
 def scenario_multiple_tcp_servers(engine):
     print('''
         Testing: netcat to one or more of the ports.
@@ -345,10 +335,6 @@ def scenario_multiple_tcp_servers(engine):
     engine.add_orb(orb)
     engine.event_loop()
 
-
-# --------------------------------------------------------
-#   lower tcp server
-# --------------------------------------------------------
 def scenario_close_tcp_servers(engine):
     print('''
         Testing: you just want it to not crash.
@@ -444,10 +430,6 @@ def scenario_close_tcp_servers(engine):
     #
     engine.event_loop()
 
-
-# --------------------------------------------------------
-#   tcp client, cannot connect
-# --------------------------------------------------------
 def scenario_tcp_client_cannot_connect(engine):
     print('''
         test: look for the confail callback
@@ -512,10 +494,6 @@ def scenario_tcp_client_cannot_connect(engine):
     #
     engine.event_loop()
 
-
-# --------------------------------------------------------
-#   tcp client, mixed scenarios
-# --------------------------------------------------------
 def scenario_tcp_client_mixed_scenarios(engine):
     #
     # This test demonstrates TCP connection behaviour to
@@ -616,10 +594,6 @@ def scenario_tcp_client_mixed_scenarios(engine):
     # here we go!
     engine.event_loop()
 
-
-# --------------------------------------------------------
-#   broadcast post
-# --------------------------------------------------------
 def scenario_broadcast_post(engine):
     addr = '127.255.255.255'
     port = 50000
@@ -661,10 +635,6 @@ def scenario_broadcast_post(engine):
     engine.add_orb(orb)
     engine.event_loop()
 
-
-# --------------------------------------------------------
-#   broadcast post
-# --------------------------------------------------------
 def scenario_broadcast_post_with_del(engine):
     addr = '127.255.255.255'
     port = 50000
@@ -716,10 +686,6 @@ def scenario_broadcast_post_with_del(engine):
     orb.cogs.append(cog)
     engine.event_loop()
 
-
-# --------------------------------------------------------
-#   bootstrap
-# --------------------------------------------------------
 def main():
     init_logging()
 

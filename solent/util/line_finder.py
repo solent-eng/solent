@@ -1,5 +1,3 @@
-from solent.eng.liblog import log
-
 import types
 
 class LineFinder:

@@ -28,11 +28,11 @@
 
 from solent.eng import create_engine
 from solent.eng import cog_gruel_client_new
-from solent.eng import init_logging
-from solent.eng import log
 from solent.eng import nearcast_orb_new
 from solent.eng import nearcast_schema_new
 from solent.eng import nearcast_snoop_new
+from solent.log import init_logging
+from solent.log import log
 from solent.util import line_finder_new
 
 from collections import deque

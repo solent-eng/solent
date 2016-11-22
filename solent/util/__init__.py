@@ -20,6 +20,6 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from .line_finder import line_finder_new
-from .simple import ns
-from .simple import uniq
+from .simple import ns as ns
+from .simple import uniq as uniq
 

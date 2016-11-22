@@ -1,6 +1,7 @@
 #
 # Engine.
 #
+# // overview
 # Network engine. This is the core class of the eng system. It provides
 # something that's similar to a reactor, but it's less ambitious than other
 # reactor-based systems.
@@ -17,10 +18,7 @@
 # facading that. Good luck.
 #
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -37,17 +35,19 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
-#
-#
-# --------------------------------------------------------
-#   :head
-# --------------------------------------------------------
 
-from .liblog import log, nicehex
-from .metasock import MetasockCloseCondition, metasock_create_broadcast_listener, metasock_create_tcp_server, metasock_create_broadcast_sender, metasock_create_tcp_client, metasock_create_accepted_tcp_client
+from .metasock import MetasockCloseCondition
+from .metasock import metasock_create_accepted_tcp_client
+from .metasock import metasock_create_broadcast_listener
+from .metasock import metasock_create_broadcast_sender
+from .metasock import metasock_create_tcp_client
+from .metasock import metasock_create_tcp_server
 
-from solent.util.kv_source import kv_source_get, kv_source_exists, kv_source_register_dict
+from solent.log import log
+from solent.log import nicehex
+from solent.util.kv_source import kv_source_get
+from solent.util.kv_source import kv_source_exists
+from solent.util.kv_source import kv_source_register_dict
 
 import errno
 import select
@@ -58,10 +58,6 @@ class QuitEvent(Exception):
     def __init__(self, message=None):
         self.message = message
 
-
-# --------------------------------------------------------
-#   :engine
-# --------------------------------------------------------
 class Engine(object):
     def __init__(self):
         self.sid_to_metasock = {}

@@ -31,8 +31,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 #
 
-from .liblog import log
-
+from solent.log import log
 from solent.util import uniq
 
 from collections import deque

@@ -50,10 +50,7 @@
 # callback. So. Instead of that, Metasock creates a single instance of each of
 # these structs. We reuse that struct whenever we make a callback.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -70,7 +67,6 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
 class CsTcpConnect(object):
     '''Data that is sent in the callback announcing that an attempt to

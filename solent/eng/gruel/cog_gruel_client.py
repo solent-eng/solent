@@ -19,7 +19,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import log
+from solent.log import log
+from solent.util import ns
 
 from collections import deque
 from collections import OrderedDict as od

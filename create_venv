@@ -29,10 +29,6 @@ echo "//"
 echo
 echo "now do this:"
 echo "  pushd venv; . bin/activate; popd"
-echo
-echo "before you run app, you'll need to install the solent code"
-echo "into your venv:"
-echo "  pushd src; pip install -e .; popd"
 echo "  python -m solent.client.games.sandbox"
 echo
 

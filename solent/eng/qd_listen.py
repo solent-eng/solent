@@ -1,12 +1,12 @@
 #!/usr/bin/python -B
 #
+# qd_listen
+#
+# // overview
 # Quick-and-dirty udp-broadcast listener. This tool is used for testing
 # some of the scenarios.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -23,9 +23,11 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
-from solent.eng import create_engine, init_logging, log, nicehex
+from solent.eng import create_engine
+from solent.log import init_logging
+from solent.log import log
+from solent.log import nicehex
 
 import sys
 import traceback

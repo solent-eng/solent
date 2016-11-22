@@ -1,13 +1,13 @@
 #
+# kv_source
+#
+# // overview
 # This is a way for creating shared variables that you can access from any
 # part of the codebase without them being global. You can either declare a
 # namespace in your code, or you can load from a delimited file of a
 # particular structure so that it can be used as a var source.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -24,22 +24,13 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
-
-# --------------------------------------------------------
-#   :head
-# --------------------------------------------------------
 def read_file(fname):
     f_ptr = open(fname)
     data = f_ptr.read()
     f_ptr.close()
     return data
 
-
-# --------------------------------------------------------
-#   :singleton
-# --------------------------------------------------------
 STORES = {}
 def create_kv_source_singleton(source_name, d):
     global STORES
@@ -47,10 +38,6 @@ def create_kv_source_singleton(source_name, d):
         raise Exception("multiple init calls [%s]"%(source_name))
     STORES[source_name] = d
 
-
-# --------------------------------------------------------
-#   :api
-# --------------------------------------------------------
 def kv_source_get(source_name, key):
     global STORES
     return STORES[source_name][key]

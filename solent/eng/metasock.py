@@ -66,8 +66,9 @@
 #   :head
 # --------------------------------------------------------
 from .cs import CsMsClose, CsTcpConnect, CsTcpConfail, CsTcpRecv, CsSubRecv
-from .liblog import log, nicehex
 
+from solent.log import log
+from solent.log import nicehex
 from solent.util.kv_source import kv_source_get
 
 from collections import deque

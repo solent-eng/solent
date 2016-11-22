@@ -1,10 +1,7 @@
 #
 # experimental. possibly wacky. not yet completely given up on the idea.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -21,7 +18,6 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
 class DictPool(object):
     def __init__(self, solent_type, keys, initial_allocation):

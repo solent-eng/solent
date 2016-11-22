@@ -1,4 +1,4 @@
-from solent.eng import log
+from solent.log import log
 
 from collections import deque
 from collections import OrderedDict as od
