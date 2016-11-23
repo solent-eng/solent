@@ -57,7 +57,7 @@ class CogGruelServer(object):
             addr=addr,
             port=port,
             cb_tcp_connect=self.engine_on_tcp_connect,
-            cb_tcp_confail=self.engine_on_tcp_confail,
+            cb_tcp_condrop=self.engine_on_tcp_condrop,
             cb_tcp_recv=self.engine_on_tcp_recv)
     def close(self):
         self.engine.close_tcp_server(self.server_sid)
@@ -77,12 +77,12 @@ class CogGruelServer(object):
         engine.send(
             sid=client_sid,
             data='')
-    def engine_on_tcp_confail(self, cs_tcp_confail):
-        engine = cs_tcp_confail.engine
-        client_sid = cs_tcp_confail.client_sid
-        message = cs_tcp_confail.message
+    def engine_on_tcp_condrop(self, cs_tcp_condrop):
+        engine = cs_tcp_condrop.engine
+        client_sid = cs_tcp_condrop.client_sid
+        message = cs_tcp_condrop.message
         #
-        log("confail/%s/%s/%s"%(self.name, client_sid, message))
+        log("condrop/%s/%s/%s"%(self.name, client_sid, message))
         key = (engine, client_sid)
         del self.received[key]
     def engine_on_tcp_recv(self, cs_tcp_recv):

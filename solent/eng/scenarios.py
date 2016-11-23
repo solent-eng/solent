@@ -235,7 +235,7 @@ def scenario_broadcast_listen_and_unlisten(engine):
                 log('turn %s (cogs active: %s)'%(
                     self.turn_count, len(self.cogs)))
             elif self.turn_count == 10:
-                log('test has succeeded or failed by here.')
+                log('test has succeeded or dropped by here.')
             #
             for cog in self.cogs:
                 data = cog.pull()
@@ -277,7 +277,7 @@ def scenario_multiple_tcp_servers(engine):
                 addr=addr,
                 port=port,
                 cb_tcp_connect=self.engine_on_tcp_connect,
-                cb_tcp_confail=self.engine_on_tcp_confail,
+                cb_tcp_condrop=self.engine_on_tcp_condrop,
                 cb_tcp_recv=self.engine_on_tcp_recv)
         def close(self):
             self.engine.close_tcp_server(self.server_sid)
@@ -297,12 +297,12 @@ def scenario_multiple_tcp_servers(engine):
             engine.send(
                 sid=client_sid,
                 data='hello, %s:%s!\n'%(addr, port))
-        def engine_on_tcp_confail(self, cs_tcp_confail):
-            engine = cs_tcp_confail.engine
-            client_sid = cs_tcp_confail.client_sid
-            message = cs_tcp_confail.message
+        def engine_on_tcp_condrop(self, cs_tcp_condrop):
+            engine = cs_tcp_condrop.engine
+            client_sid = cs_tcp_condrop.client_sid
+            message = cs_tcp_condrop.message
             #
-            log("confail/%s/%s/%s"%(self.name, client_sid, message))
+            log("condrop/%s/%s/%s"%(self.name, client_sid, message))
             key = (engine, client_sid)
             del self.received[key]
         def engine_on_tcp_recv(self, cs_tcp_recv):
@@ -356,7 +356,7 @@ def scenario_close_tcp_servers(engine):
                 addr=addr,
                 port=port,
                 cb_tcp_connect=self.engine_on_tcp_connect,
-                cb_tcp_confail=self.engine_on_tcp_confail,
+                cb_tcp_condrop=self.engine_on_tcp_condrop,
                 cb_tcp_recv=self.engine_on_tcp_recv)
         def engine_on_tcp_connect(self, cs_tcp_connect):
             addr = cs_tcp_connect.addr
@@ -373,12 +373,12 @@ def scenario_close_tcp_servers(engine):
             engine.send(
                 sid=sid,
                 data='hello, %s:%s!\n'%(addr, port))
-        def engine_on_tcp_confail(self, cs_tcp_confail):
-            engine = cs_tcp_confail.engine
-            client_sid = cs_tcp_confail.client_sid
-            message = cs_tcp_confail.message
+        def engine_on_tcp_condrop(self, cs_tcp_condrop):
+            engine = cs_tcp_condrop.engine
+            client_sid = cs_tcp_condrop.client_sid
+            message = cs_tcp_condrop.message
             #
-            log("%s: confail, sid %s"%(
+            log("%s: condrop, sid %s"%(
                 self.name,
                 client_sid))
             key = (engine, client_sid)
@@ -411,7 +411,7 @@ def scenario_close_tcp_servers(engine):
             if self.turn_count <= 30:
                 log('turn %s'%self.turn_count)
             elif self.turn_count == 30:
-                log('test should have succeeded or failed by here.')
+                log('test should have succeeded or dropped by here.')
             #
             for cog in self.cogs:
                 cog.at_turn(
@@ -431,7 +431,7 @@ def scenario_close_tcp_servers(engine):
 
 def scenario_tcp_client_cannot_connect(engine):
     print('''
-        test: look for the confail callback
+        test: look for the condrop callback
     ''')
     #
     class Cog(object):
@@ -445,7 +445,7 @@ def scenario_tcp_client_cannot_connect(engine):
                 addr=addr,
                 port=port,
                 cb_tcp_connect=self.engine_on_tcp_connect,
-                cb_tcp_confail=self.engine_on_tcp_confail,
+                cb_tcp_condrop=self.engine_on_tcp_condrop,
                 cb_tcp_recv=self.engine_on_tcp_recv)
         def engine_on_tcp_connect(self, cs_tcp_connect):
             engine = cs_tcp_connect.engine
@@ -455,13 +455,13 @@ def scenario_tcp_client_cannot_connect(engine):
             #
             log('connect/%s/%s/%s'%(client_sid, addr, port))
             self.received = deque()
-        def engine_on_tcp_confail(self, cs_tcp_confail):
-            engine = cs_tcp_confail.engine
-            client_sid = cs_tcp_confail.client_sid
-            message = cs_tcp_confail.message
+        def engine_on_tcp_condrop(self, cs_tcp_condrop):
+            engine = cs_tcp_condrop.engine
+            client_sid = cs_tcp_condrop.client_sid
+            message = cs_tcp_condrop.message
             #
             self.received = None
-            log('** connfail callback %s'%(client_sid))
+            log('** conndrop callback %s'%(client_sid))
         def engine_on_tcp_recv(self, cs_tcp_recv):
             engine = cs_tcp_recv.engine
             client_sid = cs_tcp_recv.client_sid
@@ -516,9 +516,9 @@ def scenario_tcp_client_mixed_scenarios(engine):
                 addr=addr,
                 port=port,
                 cb_tcp_connect=self.engine_on_tcp_connect,
-                cb_tcp_confail=self.engine_on_tcp_confail,
+                cb_tcp_condrop=self.engine_on_tcp_condrop,
                 cb_tcp_recv=self.engine_on_tcp_recv)
-            self.b_failed = False
+            self.b_dropped = False
             # form: (addr, port) : deque containing data
             self.received = None
         def engine_on_tcp_connect(self, cs_tcp_connect):
@@ -529,14 +529,15 @@ def scenario_tcp_client_mixed_scenarios(engine):
             #
             log('connect/%s/%s/%s'%(client_sid, addr, port))
             self.received = deque()
-        def engine_on_tcp_confail(self, cs_tcp_confail):
-            engine = cs_tcp_confail.engine
-            client_sid = cs_tcp_confail.client_sid
-            message = cs_tcp_confail.message
+            self.b_dropped = False
+        def engine_on_tcp_condrop(self, cs_tcp_condrop):
+            engine = cs_tcp_condrop.engine
+            client_sid = cs_tcp_condrop.client_sid
+            message = cs_tcp_condrop.message
             #
-            log("confail/%s/%s/%s"%(self.name, client_sid, message))
+            log("condrop/%s/%s/%s"%(self.name, client_sid, message))
             self.received = None
-            self.b_failed = True
+            self.b_dropped = True
         def engine_on_tcp_recv(self, cs_tcp_recv):
             engine = cs_tcp_recv.engine
             client_sid = cs_tcp_recv.client_sid
@@ -544,7 +545,7 @@ def scenario_tcp_client_mixed_scenarios(engine):
             #
             self.received.append(data)
         def at_turn(self, activity):
-            if self.b_failed:
+            if self.b_dropped:
                 return
             while self.received:
                 activity.mark(
@@ -592,7 +593,7 @@ def scenario_broadcast_post(engine):
     addr = '127.255.255.255'
     port = 50000
     log('''You can watch this data with the qd_listen tool:
-        python3 -m solent.eng.qd_listen %s %s'''%(addr, port))
+        python3 -m solent.tools.qd_listen %s %s'''%(addr, port))
     #
     class Cog(object):
         def __init__(self, engine, orb, addr, port):
@@ -686,14 +687,14 @@ def main():
         #
         # Comment these in or out as you want to test scenarios.
         #
-        scenario_broadcast_listen(engine)
+        #scenario_broadcast_listen(engine)
         #scenario_broadcast_listen_and_unlisten(engine)
         #scenario_multiple_tcp_servers(engine)
         #scenario_close_tcp_servers(engine)
         #scenario_tcp_client_cannot_connect(engine)
         #scenario_tcp_client_mixed_scenarios(engine)
         #scenario_broadcast_post(engine)
-        #scenario_broadcast_post_with_del(engine)
+        scenario_broadcast_post_with_del(engine)
         pass
     except KeyboardInterrupt:
         pass

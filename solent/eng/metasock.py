@@ -65,7 +65,7 @@
 # --------------------------------------------------------
 #   :head
 # --------------------------------------------------------
-from .cs import CsMsClose, CsTcpConnect, CsTcpConfail, CsTcpRecv, CsSubRecv
+from .cs import CsMsClose, CsTcpConnect, CsTcpCondrop, CsTcpRecv, CsSubRecv
 
 from solent.log import log
 from solent.log import nicehex
@@ -144,8 +144,8 @@ class Metasock(object):
         #
         self.cb_tcp_connect = l_cb_error('cb_tcp_connect not set')
         self.cs_tcp_connect = CsTcpConnect()
-        self.cb_tcp_confail = l_cb_error('cb_tcp_confail not set')
-        self.cs_tcp_confail = CsTcpConfail()
+        self.cb_tcp_condrop = l_cb_error('cb_tcp_condrop not set')
+        self.cs_tcp_condrop = CsTcpCondrop()
         self.cb_sub_recv = l_cb_error('cb_sub_recv not set')
         self.cs_sub_recv = CsSubRecv()
         self.cb_tcp_recv = l_cb_error('cb_tcp_recv not set')
@@ -153,7 +153,7 @@ class Metasock(object):
         #
         # This is designed to be a callback into the engine, to help the
         # engine track sockets that close during an event loop. Don't confuse
-        # it with confail.
+        # it with condrop.
         self.cb_ms_close = l_cb_error('cb_ms_close not set')
         self.cs_ms_close = CsMsClose()
     def desires_recv(self):
@@ -187,11 +187,11 @@ class Metasock(object):
             pass
         #
         if self.is_it_a_tcp_client:
-            self.cs_tcp_confail.engine = self.engine
-            self.cs_tcp_confail.client_sid = self.sid
-            self.cs_tcp_confail.message = message
-            self.cb_tcp_confail(
-                cs_tcp_confail=self.cs_tcp_confail)
+            self.cs_tcp_condrop.engine = self.engine
+            self.cs_tcp_condrop.client_sid = self.sid
+            self.cs_tcp_condrop.message = message
+            self.cb_tcp_condrop(
+                cs_tcp_condrop=self.cs_tcp_condrop)
         #
         self.cs_ms_close.ms = self
         self.cs_ms_close.message = message
@@ -242,7 +242,7 @@ class Metasock(object):
                 csock=csock,
                 addr=addr,
                 port=port,
-                cb_tcp_confail=self.cb_tcp_confail,
+                cb_tcp_condrop=self.cb_tcp_condrop,
                 cb_tcp_recv=self.cb_tcp_recv,
                 cb_ms_close=cb_ms_close)
             #
@@ -315,7 +315,7 @@ def metasock_create_broadcast_listener(engine, sid, addr, port, cb_sub_recv):
     ms.cb_sub_recv = cb_sub_recv
     return ms
 
-def metasock_create_tcp_server(engine, sid, addr, port, cb_tcp_connect, cb_tcp_confail, cb_tcp_recv):
+def metasock_create_tcp_server(engine, sid, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
     log('metasock_create_tcp_server %s (%s:%s)'%(sid, addr, port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -331,7 +331,7 @@ def metasock_create_tcp_server(engine, sid, addr, port, cb_tcp_connect, cb_tcp_c
     ms.is_it_a_tcp_server = True
     ms.is_it_a_tcp_client = False
     ms.cb_tcp_connect = cb_tcp_connect
-    ms.cb_tcp_confail = cb_tcp_confail
+    ms.cb_tcp_condrop = cb_tcp_condrop
     ms.cb_tcp_recv = cb_tcp_recv
     log('// cb_connect %s'%(ms.cb_tcp_connect.__doc__))
     return ms
@@ -351,7 +351,7 @@ def metasock_create_broadcast_sender(engine, sid, addr, port):
     ms.is_it_a_tcp_client = False
     return ms
 
-def metasock_create_tcp_client(engine, sid, addr, port, cb_tcp_connect, cb_tcp_confail, cb_tcp_recv):
+def metasock_create_tcp_client(engine, sid, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
     log('metasock_create_tcp_client %s (%s:%s)'%(sid, addr, port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setblocking(0)
@@ -366,11 +366,11 @@ def metasock_create_tcp_client(engine, sid, addr, port, cb_tcp_connect, cb_tcp_c
     ms.is_it_a_tcp_client = True
     ms.is_tcp_client_connecting = True
     ms.cb_tcp_connect = cb_tcp_connect
-    ms.cb_tcp_confail = cb_tcp_confail
+    ms.cb_tcp_condrop = cb_tcp_condrop
     ms.cb_tcp_recv = cb_tcp_recv
     return ms
 
-def metasock_create_accepted_tcp_client(engine, sid, csock, addr, port, cb_tcp_confail, cb_tcp_recv, cb_ms_close):
+def metasock_create_accepted_tcp_client(engine, sid, csock, addr, port, cb_tcp_condrop, cb_tcp_recv, cb_ms_close):
     """This is in the chain of functions that get called after a tcp
     server accepts a client connection."""
     log('metasock_create_accepted_tcp_client %s (%s:%s)'%(sid, addr, port))
@@ -381,7 +381,7 @@ def metasock_create_accepted_tcp_client(engine, sid, csock, addr, port, cb_tcp_c
     ms.recv_len = int(const('CORE_MTU'))
     ms.is_it_a_tcp_server = False
     ms.is_it_a_tcp_client = True
-    ms.cb_tcp_confail = cb_tcp_confail
+    ms.cb_tcp_condrop = cb_tcp_condrop
     ms.cb_tcp_recv = cb_tcp_recv
     ms.cb_ms_close = cb_ms_close
     return ms

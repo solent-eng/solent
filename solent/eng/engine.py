@@ -252,7 +252,7 @@ class Engine(object):
             return True
         else:
             return False
-    def register_accepted_tcp_csock(self, csock, addr, port, cb_tcp_confail, cb_tcp_recv, cb_ms_close):
+    def register_accepted_tcp_csock(self, csock, addr, port, cb_tcp_condrop, cb_tcp_recv, cb_ms_close):
         """When metasock has a tcp server, it will create a new socket
         whenever it does an accept. At this point, it passes that new
         sock here so that we can set up a new metasock to manage it."""
@@ -263,7 +263,7 @@ class Engine(object):
             csock=csock,
             addr=addr,
             port=port,
-            cb_tcp_confail=cb_tcp_confail,
+            cb_tcp_condrop=cb_tcp_condrop,
             cb_tcp_recv=cb_tcp_recv,
             cb_ms_close=cb_ms_close)
         self.sid_to_metasock[client_sid] = ms
@@ -286,7 +286,7 @@ class Engine(object):
         return sid
     def close_broadcast_sender(self, sid):
         self._close_metasock(sid, 'close_broadcast_sender %s'%(sid))
-    def open_tcp_server(self, addr, port, cb_tcp_connect, cb_tcp_confail, cb_tcp_recv):
+    def open_tcp_server(self, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
         sid = self.create_sid()
         ms = metasock_create_tcp_server(
             engine=self,
@@ -294,13 +294,13 @@ class Engine(object):
             addr=addr,
             port=port,
             cb_tcp_connect=cb_tcp_connect,
-            cb_tcp_confail=cb_tcp_confail,
+            cb_tcp_condrop=cb_tcp_condrop,
             cb_tcp_recv=cb_tcp_recv)
         self.sid_to_metasock[sid] = ms
         return sid
     def close_tcp_server(self, sid):
         self._close_metasock(sid, 'close_tcp_server')
-    def open_tcp_client(self, addr, port, cb_tcp_connect, cb_tcp_confail, cb_tcp_recv):
+    def open_tcp_client(self, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
         sid = self.create_sid()
         ms = metasock_create_tcp_client(
             engine=self,
@@ -308,7 +308,7 @@ class Engine(object):
             addr=addr,
             port=port,
             cb_tcp_connect=cb_tcp_connect,
-            cb_tcp_confail=cb_tcp_confail,
+            cb_tcp_condrop=cb_tcp_condrop,
             cb_tcp_recv=cb_tcp_recv)
         self.sid_to_metasock[sid] = ms
         return sid

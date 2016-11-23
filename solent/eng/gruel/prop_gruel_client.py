@@ -32,7 +32,7 @@ engine.open_tcp_client(
     addr=addr,
     port=port,
     cb_tcp_connect=self._engine_on_tcp_connect,
-    cb_tcp_confail=self._engine_on_tcp_confail,
+    cb_tcp_condrop=self._engine_on_tcp_condrop,
     cb_tcp_recv=self._engine_on_tcp_recv)
 '''
 
@@ -62,12 +62,12 @@ class PropGruelClient:
         engine.send(
             sid=client_sid,
             data='')
-    def _engine_on_tcp_confail(self, cs_tcp_confail):
-        engine = cs_tcp_confail.engine
-        client_sid = cs_tcp_confail.client_sid
-        message = cs_tcp_confail.message
+    def _engine_on_tcp_condrop(self, cs_tcp_condrop):
+        engine = cs_tcp_condrop.engine
+        client_sid = cs_tcp_condrop.client_sid
+        message = cs_tcp_condrop.message
         #
-        log("confail/%s/%s/%s"%(self.cog_h, client_sid, message))
+        log("condrop/%s/%s/%s"%(self.cog_h, client_sid, message))
         while self.q_received:
             self.q_received.pop()
     def _engine_on_tcp_recv(self, cs_tcp_recv):

@@ -81,17 +81,18 @@ class CsTcpConnect(object):
         return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
             [self.engine, self.client_sid, self.addr, self.port]]))
 
-class CsTcpConfail(object):
-    '''Data that is sent in the callback announcing the failure of any
-    kind of TCP client. Let's just cover those scenarios.
+class CsTcpCondrop(object):
+    '''Data that is sent in the callback announcing any kind of dropped TCP
+    connection /or connection attempt/.
+    Let's just cover those scenarios.
         * You are making an outbound tcp client connection, and it doesn't get
           established.
         * You have made a successful outbound trp client connection, and then
           it mysteriously drops.
         * You have made a successful outbound trp client connection, and then
           you close it deliberately.
-        * You are running a TCP server, and a third party connects to you.
-          At some point they disconnect.
+        * You are running a TCP server, and a third party has a TCP connection
+          to you via that server. Now, they disconnect.
     #
     Emphasis: this system tries to give non-server connections a consistent
     behaviour regardless of who initiated the connection. Hence, outbound
@@ -142,7 +143,7 @@ class CsMsClose(object):
     This callback struct is used for coordinating close events between engine
     and metasock. User code should never be concerned with it. In particular,
     it has to do with the shutdown of sockets during an event loop. Don't
-    confuse this with CsTcpConfail.
+    confuse this with CsTcpCondrop.
     '''
     def __init__(self):
         self.ms = None

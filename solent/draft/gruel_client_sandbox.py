@@ -103,12 +103,12 @@ class CogGruelClient:
         engine.send(
             sid=client_sid,
             data='')
-    def engine_on_tcp_confail(self, cs_tcp_confail):
-        engine = cs_tcp_confail.engine
-        client_sid = cs_tcp_confail.client_sid
-        message = cs_tcp_confail.message
+    def engine_on_tcp_condrop(self, cs_tcp_condrop):
+        engine = cs_tcp_condrop.engine
+        client_sid = cs_tcp_condrop.client_sid
+        message = cs_tcp_condrop.message
         #
-        log("confail/%s/%s/%s"%(self.cog_h, client_sid, message))
+        log("condrop/%s/%s/%s"%(self.cog_h, client_sid, message))
         while self.q_received:
             self.q_received.pop()
     def engine_on_tcp_recv(self, cs_tcp_recv):
@@ -194,7 +194,7 @@ class CogConsole:
             addr=self.addr,
             port=self.port,
             cb_tcp_connect=self.engine_on_tcp_connect,
-            cb_tcp_confail=self.engine_on_tcp_confail,
+            cb_tcp_condrop=self.engine_on_tcp_condrop,
             cb_tcp_recv=self.engine_on_tcp_recv)
     def _close_server(self):
         self.engine.close_tcp_server(
@@ -220,12 +220,12 @@ class CogConsole:
             client_sid,
             addr,
             port))
-    def engine_on_tcp_confail(self, cs_tcp_confail):
-        engine = cs_tcp_confail.engine
-        client_sid = cs_tcp_confail.client_sid
-        message = cs_tcp_confail.message
+    def engine_on_tcp_condrop(self, cs_tcp_condrop):
+        engine = cs_tcp_condrop.engine
+        client_sid = cs_tcp_condrop.client_sid
+        message = cs_tcp_condrop.message
         #
-        log("confail/[snoop]/%s/%s"%(client_sid, message))
+        log("condrop/[snoop]/%s/%s"%(client_sid, message))
         self.client_sid = None
         self._open_server()
     def engine_on_tcp_recv(self, cs_tcp_recv):
