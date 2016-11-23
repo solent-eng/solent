@@ -53,17 +53,16 @@ class NearcastSnoop:
         self._open_server()
     def close(self):
         self._close_server()
-    def at_turn(self):
-        "Returns a boolean which is True only if there was activity."
-        activity = False
+    def at_turn(self, activity):
         if self.q_outbound:
-            activity = True
+            activity.mark(
+                l=self,
+                s='processing q_outbound')
             while self.q_outbound:
                 data = self.q_outbound.popleft()
                 self.engine.send(
                     sid=self.client_sid,
                     data='%s\n'%(data))
-        return activity
     #
     def _open_server(self):
         self.server_sid = self.engine.open_tcp_server(

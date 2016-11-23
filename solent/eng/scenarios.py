@@ -134,7 +134,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import create_engine
+from solent.eng import engine_new
 from solent.eng import QuitEvent
 from solent.log import init_logging
 from solent.log import log
@@ -180,13 +180,13 @@ def scenario_broadcast_listen(engine):
     class Orb(object):
         def __init__(self):
             self.cog = Cog()
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             data = self.cog.pull()
             if data:
-                activity = True
+                activity.mark(
+                    l='scenario_broadcast_listen',
+                    s='found data in cog')
                 log('! received [%s] :)'%data)
-            return activity
     orb = Orb()
     engine.add_orb(orb)
     engine.event_loop()
@@ -228,9 +228,7 @@ def scenario_broadcast_listen_and_unlisten(engine):
             #
             self.cogs = [Cog(engine)]
             self.turn_count = 0
-        def at_turn(self):
-            activity = False
-            #
+        def at_turn(self, activity):
             self.turn_count += 1
             #
             if self.turn_count < 10:
@@ -242,17 +240,24 @@ def scenario_broadcast_listen_and_unlisten(engine):
             for cog in self.cogs:
                 data = cog.pull()
                 if data:
-                    activity = True
+                    activity.mark(
+                        l='scenario_broadcast_listen_and_unlisten',
+                        s='found data in cog')
                     log('received [%s] :)'%data.strip())
                 elif self.turn_count >= 6:
-                    activity = True
+                    activity.mark(
+                        l='scenario_broadcast_listen_and_unlisten',
+                        s='special rule at turn 6.')
                     log('poke note: exit criteria reached [%s]'%(cog.sid))
                     cog.close()
                     self.cogs.remove(cog)
-            #
-            return activity
     orb = Orb(engine)
     engine.add_orb(orb)
+    #
+    # You can use this to print more info about the event loop. This would be
+    # useful if you had a flailing event loop and could not work out what was
+    # causing the activity.
+    engine.debug_eloop_on()
     engine.event_loop()
 
 def scenario_multiple_tcp_servers(engine):
@@ -310,19 +315,15 @@ def scenario_multiple_tcp_servers(engine):
             engine.send(
                 sid=client_sid,
                 data='received %s\n'%len(data))
-        def at_turn(self):
-            "Returns a boolean which is True only if there was activity."
-            activity = False
-            return activity
+        def at_turn(self, activity):
+            pass
     class Orb(object):
         def __init__(self):
             self.cogs = []
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             for cog in self.cogs:
-                if cog.at_turn():
-                    activity = True
-            return activity
+                cog.at_turn(
+                    activity=activity)
     #
     details = [ ('x', '127.0.0.1', 4120)
               , ('y', '127.0.0.1', 4121)
@@ -333,6 +334,7 @@ def scenario_multiple_tcp_servers(engine):
         cog = Cog(name, engine, addr, port)
         orb.cogs.append(cog)
     engine.add_orb(orb)
+    engine.debug_eloop_on()
     engine.event_loop()
 
 def scenario_close_tcp_servers(engine):
@@ -391,33 +393,30 @@ def scenario_close_tcp_servers(engine):
             engine.send(
                 sid=client_sid,
                 data='received %s\n'%len(data))
-        def at_turn(self):
-            "Returns a boolean which is True only if there was activity."
-            activity = False
+        def at_turn(self, activity):
             if self.orb.turn_count >= self.exit_turn:
-                activity = True
+                activity.mark(
+                    l='scenario_close_tcp_servers',
+                    s='reached turn count')
                 log('ordering remove for %s'%self.sid)
                 engine.close_tcp_server(self.sid)
                 self.orb.cogs.remove(self)
-            return activity
     class Orb(object):
         def __init__(self, engine):
             self.engine = engine
             #
             self.cogs = []
             self.turn_count = 0
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             if self.turn_count <= 30:
                 log('turn %s'%self.turn_count)
             elif self.turn_count == 30:
                 log('test should have succeeded or failed by here.')
             #
             for cog in self.cogs:
-                if cog.at_turn():
-                    activity = True
+                cog.at_turn(
+                    activity=activity)
             self.turn_count += 1
-            return activity
     orb = Orb(engine)
     details = [ ('x', '127.0.0.1', 4120, 25)
               , ('y', '127.0.0.1', 4121, 10)
@@ -469,20 +468,16 @@ def scenario_tcp_client_cannot_connect(engine):
             data = cs_tcp_recv.data
             #
             self.received.append(data)
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             while self.received:
                 log('client|%s'%(self.received.popleft().strip()))
-            return activity
     class Orb(object):
         def __init__(self):
             self.cogs = []
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             for cog in self.cogs:
-                if cog.at_turn():
-                    activity = True
-            return activity
+                cog.at_turn(
+                    activity=activity)
     orb = Orb()
     engine.add_orb(orb)
     #
@@ -548,32 +543,31 @@ def scenario_tcp_client_mixed_scenarios(engine):
             data = cs_tcp_recv.data
             #
             self.received.append(data)
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             if self.b_failed:
-                return activity
+                return
             while self.received:
-                activity = True
+                activity.mark(
+                    l='scenario_tcp_client_mixed_scenarios',
+                    s='received data from net')
                 log('client|%s'%(self.received.popleft().strip()))
             if self.orb.turn_count == self.close_turn:
                 log('closing %s/%s on turn %s'%(
                     self.name, self.sid, self.orb.turn_count))
-                activity = True
+                activity.mark(
+                    l='scenario_tcp_client_mixed_scenarios',
+                    s='reached turn count')
                 engine.close_tcp_client(self.sid)
                 self.orb.cogs.remove(self)
-            return activity
     class Orb(object):
         def __init__(self):
             self.cogs = []
             self.turn_count = 0
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             for cog in self.cogs:
-                result = cog.at_turn()
-                if result:
-                    activity = True
+                cog.at_turn(
+                    activity=activity)
             self.turn_count += 1
-            return activity
     #
     # ports we will create
     details = { 'p': ('songseed.org', 22, 7)
@@ -609,27 +603,25 @@ def scenario_broadcast_post(engine):
                 addr=addr,
                 port=port)
             self.last_t = time.time()
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             t = time.time()
             if t - self.last_t > 2:
-                activity = True
+                activity.mark(
+                    l='scenario_broadcast_post',
+                    s='two seconds passed')
                 self.last_t = t
                 self.engine.send(
                     sid=self.sid,
                     data='from poke [%s]'%t)
-            return activity
     class Orb(object):
         def __init__(self, engine):
             self.engine = engine
             #
             self.cogs = []
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             for cog in self.cogs:
-                if cog.at_turn():
-                    activity = True
-            return activity
+                cog.at_turn(
+                    activity=activity)
     orb = Orb(engine)
     orb.cogs.append(Cog(engine, orb, addr, port))
     engine.add_orb(orb)
@@ -652,11 +644,12 @@ def scenario_broadcast_post_with_del(engine):
                 port=port)
             self.last_t = time.time()
             self.count_turns = 0
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             t = time.time()
             if t - self.last_t > 1:
-                activity = True
+                activity.mark(
+                    l='scenario_broadcast_post_with_del',
+                    s='time interval')
                 log('sending to %s:%s'%(self.addr, self.port))
                 engine.send(
                     sid=self.sid,
@@ -664,22 +657,21 @@ def scenario_broadcast_post_with_del(engine):
                 self.last_t = t
             self.count_turns += 1
             if self.count_turns == 20:
-                activity = True
+                activity.mark(
+                    l='scenario_broadcast_post_with_del',
+                    s='count interval')
                 log('cog is self-closing')
                 engine.close_broadcast_sender(self.sid)
                 self.orb.cogs.remove(self)
-            return activity
     class Orb(object):
         def __init__(self, engine):
             self.engine = engine
             #
             self.cogs = []
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             for cog in self.cogs:
-                if cog.at_turn():
-                    activity = True
-            return activity
+                cog.at_turn(
+                    activity=activity)
     orb = Orb(engine)
     engine.add_orb(orb)
     cog = Cog(engine, orb, addr, port)
@@ -689,7 +681,7 @@ def scenario_broadcast_post_with_del(engine):
 def main():
     init_logging()
 
-    engine = create_engine()
+    engine = engine_new()
     try:
         #
         # Comment these in or out as you want to test scenarios.

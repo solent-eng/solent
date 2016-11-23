@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .engine import engine_new as create_engine
+from .engine import engine_new as engine_new
 from .engine import engine_new as QuitEvent
 from .nearcast_orb import nearcast_orb_new
 from .nearcast_schema import nearcast_schema_new

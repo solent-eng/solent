@@ -26,7 +26,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import create_engine
+from solent.eng import engine_new
 from solent.eng import nearcast_orb_new
 from solent.eng import nearcast_schema_new
 from solent.eng import nearcast_snoop_new
@@ -82,10 +82,9 @@ class CogGruelClient:
         self.client_sid = None
     def close(self):
         self.engine.close_tcp_server(self.server_sid)
-    def at_turn(self):
+    def at_turn(self, activity):
         "Returns a boolean which is True only if there was activity."
-        activity = False
-        return activity
+        pass
     #
     def on_send_something(self, text):
         pass
@@ -186,10 +185,9 @@ class CogConsole:
         self._open_server()
     def close(self):
         self._close_server()
-    def at_turn(self):
+    def at_turn(self, activity):
         "Returns a boolean which is True only if there was activity."
-        activity = False
-        return activity
+        pass
     #
     def _open_server(self):
         self.server_sid = self.engine.open_tcp_server(
@@ -273,10 +271,8 @@ class CogEventSource:
         self.engine = engine
         #
         self.t_something = time.time()
-    def at_turn(self):
+    def at_turn(self, activity):
         "Returns a boolean which is True only if there was activity."
-        activity = False
-        #
         t_something = time.time()
         if t_something - self.t_something > 1:
             self.nearcast_orb.nearcast(
@@ -284,12 +280,10 @@ class CogEventSource:
                 message_h='something',
                 text='here it is!')
             self.t_something = t_something
-        #
-        return activity
 
 def main():
     init_logging()
-    engine = create_engine()
+    engine = engine_new()
     try:
         nearcast_schema = nearcast_schema_new(
             i_nearcast=I_NEARCAST_SCHEMA)

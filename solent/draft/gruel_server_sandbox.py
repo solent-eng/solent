@@ -26,7 +26,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import create_engine
+from solent.eng import engine_new
 from solent.eng import nearcast_orb_new
 from solent.eng import nearcast_schema_new
 from solent.eng import nearcast_snoop_new
@@ -96,10 +96,8 @@ class CogGruelServer(object):
         engine.send(
             sid=client_sid,
             data='received %s\n'%len(data))
-    def at_turn(self):
-        "Returns a boolean which is True only if there was activity."
-        activity = False
-        return activity
+    def at_turn(self, activity):
+        pass
 
 def cog_gruel_server_new(name, engine, addr, port):
     ob = CogGruelServer(
@@ -140,7 +138,7 @@ def create_orb(engine):
 
 def main():
     init_logging()
-    engine = create_engine()
+    engine = engine_new()
     try:
         engine.add_orb(
             orb=create_orb(

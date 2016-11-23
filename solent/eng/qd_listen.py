@@ -24,7 +24,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import create_engine
+from solent.eng import engine_new
 from solent.log import init_logging
 from solent.log import log
 from solent.log import nicehex
@@ -88,13 +88,13 @@ def operate_a_udp_broadcast_listener(engine, net_addr, net_port):
     class Orb(object):
         def __init__(self):
             self.cog = Cog()
-        def at_turn(self):
-            activity = False
+        def at_turn(self, activity):
             data = self.cog.pull()
             if data:
-                activity = True
+                activity.mark(
+                    l='qd_listen orb',
+                    s='received data')
                 nicehex(data, 'Received from %s:%s'%(net_addr, net_port))
-            return activity
     orb = Orb()
     engine.add_orb(orb)
     engine.event_loop()
@@ -106,7 +106,7 @@ def main():
         usage()
     #
     init_logging()
-    engine = create_engine()
+    engine = engine_new()
     try:
         net_addr = sys.argv[1]
         net_port = int(sys.argv[2])

@@ -47,22 +47,18 @@ class NearcastOrb:
         #
         self.cogs = []
         self.pending = deque()
-    def at_turn(self):
-        activity = False
+    def at_turn(self, activity):
         #
         self.distribute()
         #
         if self.nearcast_snoop:
-            res = self.nearcast_snoop.at_turn()
-            if res:
-                activity = True
+            self.nearcast_snoop.at_turn(
+                activity=activity)
         for cog in self.cogs:
             if 'at_turn' in dir(cog):
-                fn = getattr(cog, 'at_turn')
-                res = fn()
-                if res:
-                    activity = True
-        return activity
+                fn_at_turn = getattr(cog, 'at_turn')
+                fn_at_turn(
+                    activity=activity)
     def add_cog(self, cog):
         self.cogs.append(cog)
     def nearcast(self, cog_h, message_h, **d_fields):

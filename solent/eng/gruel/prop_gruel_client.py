@@ -45,10 +45,8 @@ class PropGruelClient:
         self.client_sid = None
     def close(self):
         self.engine.close_tcp_server(self.server_sid)
-    def at_turn(self):
-        "Returns a boolean which is True only if there was activity."
-        activity = False
-        return activity
+    def at_turn(self, activity):
+        pass
     #
     def _engine_on_tcp_connect(self, cs_tcp_connect):
         engine = cs_tcp_connect.engine

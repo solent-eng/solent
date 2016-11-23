@@ -36,6 +36,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from .activity import activity_new
 from .metasock import MetasockCloseCondition
 from .metasock import metasock_create_accepted_tcp_client
 from .metasock import metasock_create_broadcast_listener
@@ -58,12 +59,21 @@ class QuitEvent(Exception):
     def __init__(self, message=None):
         self.message = message
 
+def eloop_debug(msg):
+    log('(@) %s'%msg)
+
 class Engine(object):
     def __init__(self):
         self.sid_to_metasock = {}
         self.lst_orbs = []
         #
+        self.activity = activity_new()
+        self.b_debug_eloop = False
         self.sid_counter = 0
+    def debug_eloop_on(self):
+        self.b_debug_eloop = True
+    def debug_eloop_off(self):
+        self.b_debug_eloop = False
     def create_sid(self):
         next = self.sid_counter
         self.sid_counter += 1
@@ -99,22 +109,28 @@ class Engine(object):
             while not b_quit:
                 #
                 # Caller's callback
-                any_activity_at_all = False
+                b_any_activity_at_all = False
                 for orb in self.lst_orbs:
-                    activity_from_orb = orb.at_turn()
-                    if None == activity_from_orb:
-                        raise Exception('WARNING: at_turn must return bool.')
-                    if activity_from_orb:
-                        any_activity_at_all = True
+                    orb.at_turn(
+                        activity=self.activity)
+                lst_orb_activity = self.activity.get()
+                if lst_orb_activity:
+                    self.activity.clear()
+                    b_any_activity_at_all = True
+                    if self.b_debug_eloop:
+                        for s in lst_orb_activity:
+                            eloop_debug('*ACTIVITY* %s'%(s))
                 #
                 # Select
                 activity_from_select = self._call_select(timeout)
                 if activity_from_select:
-                    any_activity_at_all = True
+                    b_any_activity_at_all = True
+                    if self.b_debug_eloop:
+                        eloop_debug('select activity')
                 #
                 # If we have activity, we don't want select jamming
                 # things up with delays.
-                if any_activity_at_all:
+                if b_any_activity_at_all:
                     # i.e. nothing
                     timeout = 0
                 else:
