@@ -4,6 +4,7 @@ NOW=$(date +%Y%m%d)
 WATCHFILE=/tmp/$NOW
 
 clear
+echo "[watch]"
 
 while [[ "1" == "1" ]]; do
     inotifywait -e close_write -r solent testing > $WATCHFILE 2>/dev/null
