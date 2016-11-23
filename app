@@ -11,6 +11,6 @@ popd
 
 #python -m solent.eng.scenarios
 
-python -m solent.eng.draft_term
-#python -m solent.eng.sandbox
+#python -m solent.draft.gruel_server_sandbox
+python -m solent.draft.gruel_client_sandbox
 
