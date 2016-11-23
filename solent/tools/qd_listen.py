@@ -58,10 +58,6 @@ def usage():
 
 def operate_a_udp_broadcast_listener(engine, net_addr, net_port):
     #
-    print('''test this with
-        echo "Hello" | socat - UDP-DATAGRAM:%s:%s,broadcast
-    '''%(net_addr, net_port))
-    #
     # We'll gather data to here
     class Cog(object):
         def __init__(self):
