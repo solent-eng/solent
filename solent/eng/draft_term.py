@@ -27,7 +27,6 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.eng import create_engine
-from solent.eng import cog_gruel_client_new
 from solent.eng import nearcast_orb_new
 from solent.eng import nearcast_schema_new
 from solent.eng import nearcast_snoop_new
@@ -65,6 +64,73 @@ I_NEARCAST_SCHEMA = '''
         field password
         field notes
 '''
+
+
+# --------------------------------------------------------
+#   :cog_gruel_client
+# --------------------------------------------------------
+class CogGruelClient:
+    def __init__(self, cog_h, nearcast_orb, engine, addr, port):
+        self.cog_h = cog_h
+        self.nearcast_orb = nearcast_orb
+        self.engine = engine
+        self.addr = addr
+        self.port = port
+        #
+        # form: (addr, port) : deque containing data
+        self.q_received = deque()
+        self.client_sid = None
+    def close(self):
+        self.engine.close_tcp_server(self.server_sid)
+    def at_turn(self):
+        "Returns a boolean which is True only if there was activity."
+        activity = False
+        return activity
+    #
+    def on_send_something(self, text):
+        pass
+    #
+    def engine_on_tcp_connect(self, cs_tcp_connect):
+        engine = cs_tcp_connect.engine
+        client_sid = cs_tcp_connect.client_sid
+        addr = cs_tcp_connect.addr
+        port = cs_tcp_connect.port
+        #
+        log("connect/%s/%s/%s/%s"%(
+            self.cog_h,
+            client_sid,
+            addr,
+            port))
+        engine.send(
+            sid=client_sid,
+            data='')
+    def engine_on_tcp_confail(self, cs_tcp_confail):
+        engine = cs_tcp_confail.engine
+        client_sid = cs_tcp_confail.client_sid
+        message = cs_tcp_confail.message
+        #
+        log("confail/%s/%s/%s"%(self.cog_h, client_sid, message))
+        while self.q_received:
+            self.q_received.pop()
+    def engine_on_tcp_recv(self, cs_tcp_recv):
+        engine = cs_tcp_recv.engine
+        client_sid = cs_tcp_recv.client_sid
+        data = cs_tcp_recv.data
+        #
+        self.q_received.append(data)
+        engine.send(
+            sid=client_sid,
+            data='q_received %s\n'%len(data))
+
+def cog_gruel_client_new(cog_h, nearcast_orb, engine, addr, port):
+    ob = CogGruelClient(
+        cog_h=cog_h,
+        nearcast_orb=nearcast_orb,
+        engine=engine,
+        addr=addr,
+        port=port)
+    return ob
+
 
 
 # --------------------------------------------------------

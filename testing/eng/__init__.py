@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -18,8 +16,5 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import nearcast_orb_new
-
-if __name__ == '__main__':
-    run_tests   
+from .engine import engine_fake
 
