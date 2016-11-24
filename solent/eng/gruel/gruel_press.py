@@ -55,12 +55,11 @@ class GruelPress:
         #
         # render
         offset = 0
-        for (field_h, field_value) in fields.items():
-            field_dt = message_stencil.dt_for_field(
-                field_h=field_h)
+        for (field_h, field_dt) in message_stencil.items():
+            field_value = fields[field_h]
             # struct docs: https://docs.python.org/3.1/library/struct.html
             print('%s %s'%(field_h, type(field_value)))
-            if field_dt == 'u1':
+            if field_dt.name == 'u1':
                 bsize = 1
                 struct.pack_into(
                     '!B',        # fmt. B is unsigned char
@@ -68,7 +67,7 @@ class GruelPress:
                     offset,      # offset
                     field_value)
                 offset += bsize
-            elif field_dt == 'u2':
+            elif field_dt.name == 'u2':
                 bsize = 2
                 struct.pack_into(
                     '!H',        # fmt. H is unsigned short
@@ -76,7 +75,7 @@ class GruelPress:
                     offset,      # offset
                     field_value)
                 offset += bsize
-            elif field_dt == 's40':
+            elif field_dt.name == 's40':
                 bsize = 40
                 struct.pack_into(
                     '40s',       # fmt.
@@ -84,7 +83,7 @@ class GruelPress:
                     offset,      # offset
                     bytes(field_value, 'utf8'))
                 offset += bsize
-            elif field_dt == 's100':
+            elif field_dt.name == 's100':
                 bsize = 100
                 struct.pack_into(
                     '100s',      # fmt.
@@ -92,7 +91,7 @@ class GruelPress:
                     offset,      # offset
                     bytes(field_value, 'utf8'))
                 offset += bsize
-            elif field_dt == 'vs':
+            elif field_dt.name == 'vs':
                 s_len = len(field_value)
                 # first we do a two-byte length, network-endian
                 bsize = 2
@@ -112,7 +111,7 @@ class GruelPress:
                 offset += bsize
             else:
                 raise Exception("Datatype not recognised/handled: %s"%(
-                    field_dt))
+                    field_dt.name))
 
 def gruel_press_new(gruel_schema, mtu):
     ob = GruelPress(

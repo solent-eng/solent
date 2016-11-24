@@ -113,6 +113,9 @@ class MessageStencil:
     def field_datatypes(self):
         return [dt.name for dt in self.fields.values()]
     def items(self):
+        '''
+        For each field, returns (field_name, field_dt).
+        '''
         return self.fields.items()
     def __repr__(self):
         sb = []
