@@ -27,7 +27,7 @@
 from solent.eng import engine_new
 from solent.log import init_logging
 from solent.log import log
-from solent.log import nicehex
+from solent.log import hexdump_string
 
 import sys
 import traceback
@@ -90,7 +90,9 @@ def operate_a_udp_broadcast_listener(engine, net_addr, net_port):
                 activity.mark(
                     l='qd_listen orb',
                     s='received data')
-                nicehex(data, 'Received from %s:%s'%(net_addr, net_port))
+                hexdump_string(
+                    s=data,
+                    'Received from %s:%s'%(net_addr, net_port))
     orb = Orb()
     engine.add_orb(orb)
     engine.event_loop()

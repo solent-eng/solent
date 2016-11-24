@@ -18,23 +18,186 @@
 
 from testing import run_tests
 from testing import test
-
 from testing.eng import engine_fake
 
+from solent.eng import activity_new
+from solent.eng import cs
 from solent.eng import prop_gruel_client_new
+from solent.util import uniq
 
-def create_prop_gruel_client():
-    engine = engine_fake()
-    addr = '127.0.0.1'
-    port = 1234
-    prop_gruel_client = prop_gruel_client_new(
-        engine=engine)
-    return prop_gruel_client
+import sys
+
+class ConnectionInfo:
+    def __init__(self):
+        self.calls_to_on_connect = 0
+        self.calls_to_on_condrop = 0
+    def on_connect(self, cs_tcp_connect):
+        self.calls_to_on_connect += 1
+    def on_condrop(self, cs_tcp_condrop):
+        self.calls_to_on_condrop += 1
 
 @test
-def test_connection():
-    prop_gruel_client = create_prop_gruel_client()
+def test_status_at_rest():
+    engine = engine_fake()
+    prop_gruel_client = prop_gruel_client_new(
+        engine=engine)
+    #
+    # confirm status
+    assert prop_gruel_client.get_status() == 'dormant'
+    #
+    return True
+
+@test
+def test_attempt_connection():
+    addr = '127.0.0.1'
+    port = 4098
+    #
+    engine = engine_fake()
+    prop_gruel_client = prop_gruel_client_new(
+        engine=engine)
+    #
+    connection_info = ConnectionInfo()
+    #
+    # connection attempt
+    assert 0 == len(engine.events)
+    prop_gruel_client.attempt_connection(
+        addr=addr,
+        port=port,
+        username='uname',
+        password='pword',
+        cb_connect=connection_info.on_connect,
+        cb_condrop=connection_info.on_condrop)
+    #
+    # confirm effects
+    assert 0 == connection_info.calls_to_on_condrop
+    assert 0 == connection_info.calls_to_on_connect
+    assert 1 == len(engine.events)
+    assert engine.events[-1] == ('open_tcp_client', addr, port)
+    assert prop_gruel_client.get_status() == 'attempting_tcp_connection'
+    #
+    return True
+
+@test
+def test_failed_tcp_connection():
+    addr = '127.0.0.1'
+    port = 4098
+    #
+    engine = engine_fake()
+    prop_gruel_client = prop_gruel_client_new(
+        engine=engine)
+    #
+    connection_info = ConnectionInfo()
+    #
+    # connection attempt
+    assert 0 == len(engine.events)
+    prop_gruel_client.attempt_connection(
+        addr=addr,
+        port=port,
+        username='uname',
+        password='pword',
+        cb_connect=connection_info.on_connect,
+        cb_condrop=connection_info.on_condrop)
+    #
+    # confirm effects
+    assert prop_gruel_client.get_status() == 'attempting_tcp_connection'
+    #
+    # simulate the engine rejecting the connection
+    cs_tcp_condrop = cs.CsTcpCondrop()
+    cs_tcp_condrop.engine = engine
+    cs_tcp_condrop.sid = uniq()
+    cs_tcp_condrop.message = 'test123'
+    prop_gruel_client._engine_on_tcp_condrop(
+        cs_tcp_condrop=cs_tcp_condrop)
+    #
+    # confirm effects
+    assert 0 == connection_info.calls_to_on_connect
+    assert 1 == connection_info.calls_to_on_condrop
+    assert prop_gruel_client.get_status() == 'dormant'
+    #
+    return True
+
+@test
+def test_successful_tcp_connection():
+    addr = '127.0.0.1'
+    port = 4098
+    #
+    engine = engine_fake()
+    prop_gruel_client = prop_gruel_client_new(
+        engine=engine)
+    #
+    connection_info = ConnectionInfo()
+    #
+    # connection attempt
+    assert 0 == len(engine.events)
+    prop_gruel_client.attempt_connection(
+        addr=addr,
+        port=port,
+        username='uname',
+        password='pword',
+        cb_connect=connection_info.on_connect,
+        cb_condrop=connection_info.on_condrop)
+    #
+    # have engine indicate connection success
+    cs_tcp_connect = cs.CsTcpConnect()
+    cs_tcp_connect.engine = engine
+    cs_tcp_connect.sid = uniq()
+    cs_tcp_connect.message = 'test123'
+    prop_gruel_client._engine_on_tcp_connect(
+        cs_tcp_connect=cs_tcp_connect)
+    #
+    # confirm effects
+    assert 1 == connection_info.calls_to_on_connect
+    assert 0 == connection_info.calls_to_on_condrop
+    assert prop_gruel_client.get_status() == 'ready_to_attempt_login'
+    #
+    return True
+
+@test
+def test_after_connection_attempts_logon():
+    addr = '127.0.0.1'
+    port = 4098
+    #
+    activity = activity_new()
+    engine = engine_fake()
+    prop_gruel_client = prop_gruel_client_new(
+        engine=engine)
+    #
+    connection_info = ConnectionInfo()
+    #
+    # connection attempt
+    assert 0 == len(engine.events)
+    prop_gruel_client.attempt_connection(
+        addr=addr,
+        port=port,
+        username='uname',
+        password='pword',
+        cb_connect=connection_info.on_connect,
+        cb_condrop=connection_info.on_condrop)
+    #
+    # have engine indicate connection success
+    cs_tcp_connect = cs.CsTcpConnect()
+    cs_tcp_connect.engine = engine
+    cs_tcp_connect.sid = uniq()
+    cs_tcp_connect.message = 'test123'
+    prop_gruel_client._engine_on_tcp_connect(
+        cs_tcp_connect=cs_tcp_connect)
+    #
+    # once we have connection success, this should be the status
+    assert prop_gruel_client.get_status() == 'ready_to_attempt_login'
+    #
+    # give it a turn so it can make its move towards logging in.
+    prop_gruel_client.at_turn(
+        activity=activity)
+    #
+    # confirm effects
+    assert activity.get()[-1] == 'PropGruelClient/sending login'
+    assert prop_gruel_client.get_status() == 'login_message_in_flight'
+    #
+    # and now confirm that the message actually is in flight
+    #xxx
+    return False # xxx stays like this until we are happy with the test
 
 if __name__ == '__main__':
-    run_tests()
+    run_tests(
+        unders_file=sys.modules['__main__'].__file__)
 

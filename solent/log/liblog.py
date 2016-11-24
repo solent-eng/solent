@@ -39,6 +39,8 @@ def outer_exception():
 
 def log(msg):
     global LOGGER
+    if None == LOGGER:
+        init_logging()
     LOGGER(str(msg))
 
 def newliney_info(msg):
@@ -91,7 +93,7 @@ def init_logging_to_udp(addr, port, nid):
                 pack = self._encase(sized_s, is_stderr)
                 #
                 #sys.stdout = orig_stdout
-                #nicehex(pack, title='logpack')
+                #hexdump_string(pack, title='logpack')
                 #sys.stdout = io_hijack
                 #
                 sock.send(pack)
@@ -137,42 +139,73 @@ def init_logging_to_udp(addr, port, nid):
             io_hijack.write(s, True)
     sys.stderr = StdErrWrapper()
 
-def nicehex(lst_bytes, title='nicehex'):
-    print('= %s'%(title))
-    sb = []
+def hexdump_string(s, title='hexdump'):
+    int_buffer = []
+    for c in s:
+        int_buffer.append(ord(c))
+    b = bytearray(int_buffer)
+    hexdump_bytearray(
+        arr=b,
+        title=title)
+
+def hexdump_bytearray(arr, title='hexdump'):
+    #
+    # Awkward implementation of. Mixes up print-as-you-go (for the bytes
+    # on the left) with buffer-building (for the displayable characters
+    # on the right).
+    #
+    arr_len = len(arr)
+    DOT = ord('.')
+    SPACE = ord(' ')
+    BAR = ord('|')
+    #
+    # This is the buffer where we accumulate things to print on the
+    # right-hand-side of the buffer (i.e. displayable characters where
+    # we can, or a substitute period to represent non-displayable
+    # characters)
+    bb = []
+    def append_dot():
+        bb.append(DOT)
+    def append_bar():
+        bb.append(BAR)
+    def append_space():
+        bb.append(SPACE)
     def render_sb():
         print(':::', end=' ')
-        print(''.join(sb))
-        while sb: sb.pop()
-    for (idx, c) in enumerate(lst_bytes):
-        print('%02x'%(ord(c)), end=' ')
-        # xxx
-        '''
-        if ord(c) >= ord('a') and ord(c) <= ord('z'):
-            sb.append(c)
-        elif ord(c) >= ord('A') and ord(c) <= ord('Z'):
-            sb.append(c)
-        elif ord(c) >= ord('0') and ord(c) <= ord('0'):
-            sb.append(c)
-        '''
-        if ord(c) >= ord(' ') and ord(c) <= ord('~'):
-            sb.append(c)
+        print(''.join( [chr(b) for b in bb] ))
+        while bb: bb.pop()
+    #
+    # Heading
+    print('// %s [%s bytes]'%(title, arr_len))
+    #
+    # Main content
+    for (idx, b) in enumerate(arr):
+        print('%02x'%(b), end=' ')
+        if b >= ord(' ') and b <= ord('~'):
+            bb.append(b)
         else:
-            sb.append('.')
+            append_dot()
         if (idx+1) % 16 == 0:
             render_sb()
         elif (idx+1) % 8 == 0:
-            sb.append(' | ')
+            append_space()
+            append_bar()
+            append_space()
             print('|', end=' ')
     idx += 1
+    #
+    # Cleanup on the final line
     if (idx+1) % 16 != 0:
         while (idx+1) % 16 != 0:
             print('..', end=' ')
-            sb.append(' ')
+            append_space()
             if (idx+1) % 8 == 0:
                 print('|', end=' ')
             idx += 1
         print('..', end=' ')
         render_sb()
-    print('. (%s)'%(len(lst_bytes)))
+    print()
+
+if __name__ == '__main__':
+    hexdump_string('abc')
 

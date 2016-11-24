@@ -1,6 +1,3 @@
-#
-# See scenarios.py for guidance about this module.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -19,15 +16,19 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .activity import activity_new
-from .engine import engine_new as engine_new
-from .engine import engine_new as QuitEvent
-from .nearcast_orb import nearcast_orb_new
-from .nearcast_schema import nearcast_schema_new
-from .nearcast_snoop import nearcast_snoop_new
+from testing import run_tests
+from testing import test
 
-from .gruel.gruel_press import gruel_press_new
-from .gruel.gruel_schema import gruel_schema_new
-from .gruel.prop_gruel_client import prop_gruel_client_new
-#from .gruel.prop_gruel_server import prop_gruel_server_new
+from solent.eng import gruel_schema_new
+
+import sys
+
+@test
+def test_creation():
+    gruel_schema = gruel_schema_new()
+
+if __name__ == '__main__':
+    run_tests(
+        unders_file=sys.modules['__main__'].__file__)
+
 

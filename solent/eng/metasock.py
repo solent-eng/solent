@@ -68,7 +68,6 @@
 from .cs import CsMsClose, CsTcpConnect, CsTcpCondrop, CsTcpRecv, CsSubRecv
 
 from solent.log import log
-from solent.log import nicehex
 from solent.util.kv_source import kv_source_get
 
 from collections import deque
