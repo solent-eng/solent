@@ -252,7 +252,7 @@ class Game(object):
             s=3,
             e=3,
             c='"',
-            cpair=SOL_CPAIR_GREEN_T)
+            cpair=SOL_CPAIR_WHITE_T)
         self.initiative.add_meep(
             meep=self.algobunny_meep)
         #

@@ -27,6 +27,7 @@ from .nearcast_schema import nearcast_schema_new
 from .nearcast_snoop import nearcast_snoop_new
 
 from .gruel.gruel_press import gruel_press_new
+from .gruel.gruel_puff import gruel_puff_new
 from .gruel.gruel_schema import gruel_schema_new
 from .gruel.prop_gruel_client import prop_gruel_client_new
 #from .gruel.prop_gruel_server import prop_gruel_server_new

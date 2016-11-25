@@ -1,3 +1,13 @@
+#
+# gruel_press tests
+#
+# // note
+# There are more extensive tests of this found in prop_gruel_client. The
+# reason is that this class and the gruel puff are heavily related, and it
+# seemed straightforward to develop them against one another. (This does leave
+# open the possibility for bugs where they're both wrong, but for this stage
+# in the project it's OK. If there's bugs, we will get to them.)
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -35,7 +45,7 @@ def test_creation():
     return True
 
 @test
-def test_login_message_creation():
+def test_client_login_creation():
     gruel_schema = gruel_schema_new()
     gruel_press = gruel_press_new(
         mtu=500,
@@ -43,26 +53,94 @@ def test_login_message_creation():
     #
     message_h = 'client_login'
     #
-    arr = gruel_press.get_bytearray()
     message_stencil = gruel_schema.get_message_stencil(
         message_h=message_h)
-    MessageType = gruel_schema.get_message_type_enum()
-    gruel_press.apply(
-        message_h=message_h,
-        message_type=MessageType.client_login.value,
-        seconds_between_heartbeats=1,
-        max_packet_len_in_bytes=1490,
-        max_doc_size_in_bytes=1400,
-        protocol_h='proto_h',
+    payload = gruel_press.create_client_login_payload(
         username='uname',
-        password='password_value',
-        notes='text for notes')
-    '''
-    print(hexdump_string(
-        s=' 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789abcdefghijklmnop'))
+        password='password_value')
     '''
     print(hexdump_bytearray(
-        arr=arr))
+        arr=payload))
+    '''
+    #
+    return True
+
+@test
+def test_server_greet_creation():
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        mtu=500,
+        gruel_schema=gruel_schema)
+    #
+    message_h = 'server_greet'
+    #
+    message_stencil = gruel_schema.get_message_stencil(
+        message_h=message_h)
+    payload = gruel_press.create_server_greet_payload()
+    '''
+    print(hexdump_bytearray(
+        arr=payload))
+    '''
+    #
+    return True
+
+@test
+def test_server_bye_creation():
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        mtu=500,
+        gruel_schema=gruel_schema)
+    #
+    message_h = 'server_bye'
+    #
+    message_stencil = gruel_schema.get_message_stencil(
+        message_h=message_h)
+    payload = gruel_press.create_server_bye_payload()
+    '''
+    print(hexdump_bytearray(
+        arr=payload))
+    '''
+    #
+    return True
+
+@test
+def test_heartbeat_creation():
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        mtu=500,
+        gruel_schema=gruel_schema)
+    #
+    message_h = 'heartbeat'
+    #
+    message_stencil = gruel_schema.get_message_stencil(
+        message_h=message_h)
+    payload = gruel_press.create_heartbeat_payload()
+    '''
+    print(hexdump_bytearray(
+        arr=payload))
+    '''
+    #
+    return True
+
+@test
+def test_docdata_creation():
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        mtu=500,
+        gruel_schema=gruel_schema)
+    #
+    message_h = 'docdata'
+    #
+    message_stencil = gruel_schema.get_message_stencil(
+        message_h=message_h)
+    payload = gruel_press.create_docdata_payload(
+        b_doc_terminates=1,
+        sender_doc_h='sender_01',
+        payload='some content for the payload block')
+    '''
+    print(hexdump_bytearray(
+        arr=payload))
+    '''
     #
     return True
 

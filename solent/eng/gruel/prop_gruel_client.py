@@ -22,36 +22,12 @@
 from solent.log import log
 from solent.util import ns
 from solent.util import uniq
+from solent.eng import gruel_press_new
 
 from collections import deque
 from collections import OrderedDict as od
 from enum import Enum
 
-
-# --------------------------------------------------------
-#   :login manager
-# --------------------------------------------------------
-class LoginManager:
-    def __init__(self):
-        self.username = None
-        self.password = None
-    def set_credentials(self, username, password):
-        self.username = username
-        self.password = password
-    def clear(self):
-        self.username = None
-        self.password = None
-    def create_payload(self):
-        pass
-
-def login_manager_new():
-    ob = LoginManager()
-    return ob
-
-
-# --------------------------------------------------------
-#   :rest
-# --------------------------------------------------------
 class ClientStatus(Enum):
     dormant = uniq()
     attempting_tcp_connection = uniq()
@@ -59,12 +35,14 @@ class ClientStatus(Enum):
     login_message_in_flight = uniq()
 
 class PropGruelClient:
-    def __init__(self, engine):
+    def __init__(self, engine, gruel_press, gruel_puff):
         self.engine = engine
+        self.gruel_press = gruel_press
+        self.gruel_puff = gruel_puff
         #
         self.status = ClientStatus.dormant
+        self.login_credentials = ns()
         #
-        self.login_manager = login_manager_new()
         # form: (addr, port) : deque containing data
         self.cb_connect = None
         self.cb_condrop = None
@@ -94,7 +72,7 @@ class PropGruelClient:
         '''
         self.cb_connect = cb_connect
         self.cb_condrop = cb_condrop
-        self.login_manager.set_credentials(
+        self._set_login_credentials(
             username=username,
             password=password)
         self.engine.open_tcp_client(
@@ -133,12 +111,22 @@ class PropGruelClient:
             sid=client_sid,
             data='q_received %s\n'%len(data))
     #
+    def _set_login_credentials(self, username, password):
+        self.login_credentials.username = username
+        self.login_credentials.password = password
     def _attempt_login(self):
-        payload = self.login_manager.create_payload()
+        arr = self.gruel_press.create_client_login_payload(
+            username=self.login_credentials.username,
+            password=self.login_credentials.password)
+        self.engine.send(
+            sid=self.client_sid,
+            data=arr)
         self.status = ClientStatus.login_message_in_flight
 
-def prop_gruel_client_new(engine):
+def prop_gruel_client_new(engine, gruel_press, gruel_puff):
     ob = PropGruelClient(
-        engine=engine)
+        engine=engine,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
     return ob
 

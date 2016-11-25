@@ -40,7 +40,7 @@ class Datatype(Enum):
     # variable string (u2 tells payload length, then payload)
     vs = uniq()
 
-class MessageType(Enum):
+class GruelMessageType(Enum):
     client_login = 0
     server_greet = 1
     server_bye = 2
@@ -93,7 +93,7 @@ I_MESSAGE_DEF = '''
         u1 message_type
         # set to true in the last packet of each document
         u1 b_doc_terminates
-        s40 sender_doc_id
+        s40 sender_doc_h
         vs payload
 '''
 
@@ -132,8 +132,8 @@ class GruelSchema:
         self.d_message_stencils = d_message_stencils
     def __contains__(self, key):
         return key in self.d_message_stencils
-    def get_message_type_enum(self):
-        return MessageType
+    def get_gruel_message_type_enum(self):
+        return GruelMessageType
     def get_message_stencil(self, message_h):
         return self.d_message_stencils[message_h]
 

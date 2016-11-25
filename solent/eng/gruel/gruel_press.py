@@ -24,20 +24,23 @@
 
 import struct
 
+SECONDS_BETWEEN_HEARTBEAT = 1
+
+MAX_PACKET_LEN_IN_BYTES = 1400
+MAX_DOC_SIZE_IN_BYTES = 1200
+
+PROTOCOL_H = 'proto_h/change_me_later'
+
 class GruelPress:
     def __init__(self, gruel_schema, mtu):
         self.gruel_schema = gruel_schema
         self.mtu = mtu
         #
-        # This is the block of memory we will render to. Note: we 
+        # This is the block of memory we will render to. Emphasis: a single
+        # array of memory is used to prepare messages for the wire. (So you
+        # would not want to buffer this anywhere.)
         self.arr = bytearray(self.mtu)
-    def get_bytearray(self):
-        '''
-        Emphasis: a single array of memory is used to prepare messages for
-        the wire. (So you would not want to buffer this anywhere.)
-        '''
-        return self.arr
-    def apply(self, message_h, **fields):
+    def _apply(self, message_h, **fields):
         '''
         Render the supplied message values to the bytearray.
         '''
@@ -58,7 +61,7 @@ class GruelPress:
         for (field_h, field_dt) in message_stencil.items():
             field_value = fields[field_h]
             # struct docs: https://docs.python.org/3.1/library/struct.html
-            print('%s %s'%(field_h, type(field_value)))
+            #print('%s %s'%(field_h, type(field_value)))
             if field_dt.name == 'u1':
                 bsize = 1
                 struct.pack_into(
@@ -99,19 +102,90 @@ class GruelPress:
                     '!H',        # fmt. H is unsigned short
                     self.arr,    # buffer
                     offset,      # offset
-                    str(s_len))
+                    s_len)
                 offset += bsize
-                # Now we put that string into the array. Note that it will
+                # Now we put that string into the array. Note that it may
                 # not be null-terminated.
                 struct.pack_into(
-                    '%sc'%s_len+1,  # fmt.
-                    self.arr,       # buffer
-                    offset,         # offset
+                    '%ss'%(s_len+1), # fmt.
+                    self.arr,        # buffer
+                    offset,          # offset
                     bytes(field_value, 'utf8'))
                 offset += bsize
             else:
                 raise Exception("Datatype not recognised/handled: %s"%(
                     field_dt.name))
+    #
+    def create_client_login_payload(self, username, password):
+        gmt_enum = self.gruel_schema.get_gruel_message_type_enum()
+        gmt = gmt_enum.client_login
+        #
+        message_h = gmt.name
+        message_type = gmt.value
+        self._apply(
+            message_h=message_h,
+            # fields are below
+            message_type=message_type,
+            seconds_between_heartbeats=SECONDS_BETWEEN_HEARTBEAT,
+            max_packet_len_in_bytes=MAX_PACKET_LEN_IN_BYTES,
+            max_doc_size_in_bytes=MAX_DOC_SIZE_IN_BYTES,
+            protocol_h=PROTOCOL_H,
+            username=username,
+            password=password,
+            notes='text for notes')
+        return self.arr
+    def create_server_greet_payload(self):
+        gmt_enum = self.gruel_schema.get_gruel_message_type_enum()
+        gmt = gmt_enum.server_greet
+        #
+        message_h = gmt.name
+        message_type = gmt.value
+        self._apply(
+            message_h=message_h,
+            # fields are below
+            message_type=message_type,
+            max_packet_len_in_bytes=MAX_PACKET_LEN_IN_BYTES,
+            max_doc_size_in_bytes=MAX_DOC_SIZE_IN_BYTES,
+            notes='text for notes')
+        return self.arr
+    def create_server_bye_payload(self):
+        gmt_enum = self.gruel_schema.get_gruel_message_type_enum()
+        gmt = gmt_enum.server_bye
+        #
+        message_h = gmt.name
+        message_type = gmt.value
+        self._apply(
+            message_h=message_h,
+            # fields are below
+            message_type=message_type,
+            notes='text in goodbye message')
+        return self.arr
+
+    def create_heartbeat_payload(self):
+        gmt_enum = self.gruel_schema.get_gruel_message_type_enum()
+        gmt = gmt_enum.heartbeat
+        #
+        message_h = gmt.name
+        message_type = gmt.value
+        self._apply(
+            message_h=message_h,
+            # fields are below
+            message_type=message_type)
+        return self.arr
+    def create_docdata_payload(self, b_doc_terminates, sender_doc_h, payload):
+        gmt_enum = self.gruel_schema.get_gruel_message_type_enum()
+        gmt = gmt_enum.docdata
+        #
+        message_h = gmt.name
+        message_type = gmt.value
+        self._apply(
+            message_h=message_h,
+            # fields are below
+            message_type=message_type,
+            b_doc_terminates=b_doc_terminates,
+            sender_doc_h=sender_doc_h,
+            payload=payload)
+        return self.arr
 
 def gruel_press_new(gruel_schema, mtu):
     ob = GruelPress(

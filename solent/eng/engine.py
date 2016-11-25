@@ -326,11 +326,19 @@ def engine_new():
     # don't can set it themselves before they construct the first engine.
     # Doing this here is a bit klunky, but reduces the barrier-of-entry for
     # new users.
+    #
+    # xxx there is a task in the queue to replace this arrangement with an
+    # engine construction argument.
     if not kv_source_exists('const'):
         d_const = { 'CORE_MTU': '1492'
                   }
         kv_source_register_dict('const', d_const)
+    mtu = kv_source_register_dict('const', d_const)
+    mtu = kv_source_get(
+        source_name='const',
+        key='CORE_MTU')
     #
-    ob = Engine()
+    ob = Engine(
+        mtu=mtu)
     return ob
 

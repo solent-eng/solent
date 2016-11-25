@@ -22,6 +22,9 @@ from testing.eng import engine_fake
 
 from solent.eng import activity_new
 from solent.eng import cs
+from solent.eng import gruel_puff_new
+from solent.eng import gruel_press_new
+from solent.eng import gruel_schema_new
 from solent.eng import prop_gruel_client_new
 from solent.util import uniq
 
@@ -36,11 +39,22 @@ class ConnectionInfo:
     def on_condrop(self, cs_tcp_condrop):
         self.calls_to_on_condrop += 1
 
+MTU = 1492
+
 @test
 def test_status_at_rest():
     engine = engine_fake()
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
     prop_gruel_client = prop_gruel_client_new(
-        engine=engine)
+        engine=engine,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
     #
     # confirm status
     assert prop_gruel_client.get_status() == 'dormant'
@@ -53,8 +67,17 @@ def test_attempt_connection():
     port = 4098
     #
     engine = engine_fake()
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
     prop_gruel_client = prop_gruel_client_new(
-        engine=engine)
+        engine=engine,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
     #
     connection_info = ConnectionInfo()
     #
@@ -83,8 +106,17 @@ def test_failed_tcp_connection():
     port = 4098
     #
     engine = engine_fake()
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
     prop_gruel_client = prop_gruel_client_new(
-        engine=engine)
+        engine=engine,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
     #
     connection_info = ConnectionInfo()
     #
@@ -122,8 +154,17 @@ def test_successful_tcp_connection():
     port = 4098
     #
     engine = engine_fake()
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
     prop_gruel_client = prop_gruel_client_new(
-        engine=engine)
+        engine=engine,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
     #
     connection_info = ConnectionInfo()
     #
@@ -159,8 +200,17 @@ def test_after_connection_attempts_logon():
     #
     activity = activity_new()
     engine = engine_fake()
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
     prop_gruel_client = prop_gruel_client_new(
-        engine=engine)
+        engine=engine,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
     #
     connection_info = ConnectionInfo()
     #
@@ -194,8 +244,9 @@ def test_after_connection_attempts_logon():
     assert prop_gruel_client.get_status() == 'login_message_in_flight'
     #
     # and now confirm that the message actually is in flight
-    #xxx
-    return False # xxx stays like this until we are happy with the test
+    assert 1 == len(engine.sent_data)
+    #
+    return True
 
 if __name__ == '__main__':
     run_tests(

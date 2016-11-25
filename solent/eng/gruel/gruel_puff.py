@@ -1,3 +1,10 @@
+#
+# gruel_puff
+#
+# // overview
+# Used for expanding gruel-protocol messages from their wire form into
+# something that is useful to application software.
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -16,20 +23,14 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from testing import run_tests
-from testing import test
+class GruelPuff:
+    def __init__(self, gruel_schema, mtu):
+        self.gruel_schema = gruel_schema
+        self.mtu = mtu
 
-from solent.eng import gruel_schema_new
-
-import sys
-
-@test
-def test_creation():
-    gruel_schema = gruel_schema_new()
-    return True
-
-if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
-
+def gruel_puff_new(gruel_schema, mtu):
+    ob = GruelPuff(
+        gruel_schema=gruel_schema,
+        mtu=mtu)
+    return ob
 
