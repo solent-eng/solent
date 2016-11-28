@@ -37,9 +37,11 @@ def test(fn):
                 print('[SUCCESS]')
             else:
                 print('[FAILED]')
+                sys.exit(1)
         except:
             traceback.print_exc()
             print('[ABORTED]')
+            sys.exit(1)
         print('')
     global TESTS
     TESTS.append(go)

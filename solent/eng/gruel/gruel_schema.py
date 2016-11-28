@@ -24,7 +24,8 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.util import uniq
-from solent.util.interface_script import SignalConsumer, init_interface_script_parser
+from solent.util.interface_script import init_interface_script_parser
+from solent.util.interface_script import SignalConsumer
 
 from collections import OrderedDict as od
 from enum import Enum
@@ -47,6 +48,18 @@ class GruelMessageType(Enum):
     heartbeat = 3
     docdata = 4
 
+def gmt_value_to_name(value):
+    d = {}
+    for n in dir(GruelMessageType):
+        if n.startswith('_'):
+            continue
+        itm = getattr(GruelMessageType, n)
+        d[itm.value] = itm.name
+    if value not in d:
+        raise Exception("Invalid mtype value %s. (Corrupt payload?)"%(
+            value))
+    return d[value]
+
 I_MESSAGE_DEF = '''
     i message h
         i u1 field_h
@@ -57,16 +70,19 @@ I_MESSAGE_DEF = '''
 
     message client_login
         u1 message_type
-        u1 seconds_between_heartbeats
-        # This is useful for situations where you have routing limitations
-        # between yourself and the server venue.
-        u2 max_packet_len_in_bytes
-        # This mechanism is in here to prevent a situation where a single
-        # client could run a denial-of-service attack on a server by causing
-        # the server to buffer an infinate amount of doc data. It indicates
-        # what the maximum doc size could be (which might span several docdata
-        # messages, but must be within a well-defined maximum size).
-        u2 max_doc_size_in_bytes
+        u1 heartbeat_interval
+        # Indicates the maximum packet size that the server should send to the
+        # client. This is useful for situations where you have routing
+        # limitations between yourself and the server venue.
+        u2 max_packet_len
+        # Indicates the maximum doc size that the client can consume from
+        # the server. If this is zero, then there is no limit. This mechanism
+        # is in here to prevent a situation where a single client could run a
+        # denial-of-service attack on a server by causing the server to buffer
+        # an infinate amount of doc data. It indicates what the maximum doc
+        # size could be (which might span several docdata messages, but must
+        # be within a well-defined maximum size).
+        u2 max_doc_size
         s100 protocol_h
         s100 username
         s100 password
@@ -76,25 +92,26 @@ I_MESSAGE_DEF = '''
         u1 message_type
         # If this number comes back and is smaller than what the client wrote
         # in client_login, then the client must adjust down to this size.
-        u2 max_packet_len_in_bytes
-        # If this number comes back and is smaller than what the client wrote
-        # in client_login, then the client must adjust down to this size.
-        u2 max_doc_size_in_bytes
-        vs notes
+        u2 max_packet_len
+        # This is the buffer size that the server makes available to the
+        # client. Documents larger than this cannot be handled. If this is
+        # zero then there is no limit
+        u2 max_doc_size
+        s100 notes
 
     message server_bye
         u1 message_type
-        vs notes
+        s100 notes
 
     message heartbeat
         u1 message_type
 
     message docdata
         u1 message_type
-        # set to true in the last packet of each document
-        u1 b_doc_terminates
         s40 sender_doc_h
-        vs payload
+        # set to 1 in the last packet of each document
+        u1 b_complete
+        vs data
 '''
 
 class MessageStencil:
@@ -130,12 +147,22 @@ class GruelSchema:
     '''
     def __init__(self, d_message_stencils):
         self.d_message_stencils = d_message_stencils
+        #
+        self.d_gmt_id_to_message_stencil = {}
+        for (message_h, message_stencil) in self.d_gmt_id_to_message_stencil.items():
+            self.d_gmt_id_to_message_stencil[message_h] = message_stencil.gmt()
     def __contains__(self, key):
         return key in self.d_message_stencils
-    def get_gruel_message_type_enum(self):
-        return GruelMessageType
+    def items(self):
+        'Returns (message_h, message_stencil)'
+        return self.d_message_stencils.items()
     def get_message_stencil(self, message_h):
         return self.d_message_stencils[message_h]
+    def get_message_stencil_from_fmt_id(self, gmt_id):
+        message_h = gmt_value_to_name(
+            value=gmt_id)
+        return self.get_message_stencil(
+            message_h=message_h)
 
 def gruel_schema_new():
     '''

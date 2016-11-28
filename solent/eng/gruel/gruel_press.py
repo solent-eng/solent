@@ -22,12 +22,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from .gruel_schema import GruelMessageType
+
 import struct
 
-SECONDS_BETWEEN_HEARTBEAT = 1
-
 MAX_PACKET_LEN_IN_BYTES = 1400
-MAX_DOC_SIZE_IN_BYTES = 1200
+MAX_DOC_SIZE_IN_BYTES = 0
 
 PROTOCOL_H = 'proto_h/change_me_later'
 
@@ -116,9 +116,8 @@ class GruelPress:
                 raise Exception("Datatype not recognised/handled: %s"%(
                     field_dt.name))
     #
-    def create_client_login_payload(self, username, password):
-        gmt_enum = self.gruel_schema.get_gruel_message_type_enum()
-        gmt = gmt_enum.client_login
+    def create_client_login_payload(self, username, password, heartbeat_interval):
+        gmt = GruelMessageType.client_login
         #
         message_h = gmt.name
         message_type = gmt.value
@@ -126,17 +125,16 @@ class GruelPress:
             message_h=message_h,
             # fields are below
             message_type=message_type,
-            seconds_between_heartbeats=SECONDS_BETWEEN_HEARTBEAT,
-            max_packet_len_in_bytes=MAX_PACKET_LEN_IN_BYTES,
-            max_doc_size_in_bytes=MAX_DOC_SIZE_IN_BYTES,
+            heartbeat_interval=heartbeat_interval,
+            max_packet_len=MAX_PACKET_LEN_IN_BYTES,
+            max_doc_size=MAX_DOC_SIZE_IN_BYTES,
             protocol_h=PROTOCOL_H,
             username=username,
             password=password,
             notes='text for notes')
         return self.arr
-    def create_server_greet_payload(self):
-        gmt_enum = self.gruel_schema.get_gruel_message_type_enum()
-        gmt = gmt_enum.server_greet
+    def create_server_greet_payload(self, max_packet_len):
+        gmt = GruelMessageType.server_greet
         #
         message_h = gmt.name
         message_type = gmt.value
@@ -144,13 +142,12 @@ class GruelPress:
             message_h=message_h,
             # fields are below
             message_type=message_type,
-            max_packet_len_in_bytes=MAX_PACKET_LEN_IN_BYTES,
-            max_doc_size_in_bytes=MAX_DOC_SIZE_IN_BYTES,
+            max_packet_len=max_packet_len,
+            max_doc_size=MAX_DOC_SIZE_IN_BYTES,
             notes='text for notes')
         return self.arr
     def create_server_bye_payload(self):
-        gmt_enum = self.gruel_schema.get_gruel_message_type_enum()
-        gmt = gmt_enum.server_bye
+        gmt = GruelMessageType.server_bye
         #
         message_h = gmt.name
         message_type = gmt.value
@@ -162,8 +159,7 @@ class GruelPress:
         return self.arr
 
     def create_heartbeat_payload(self):
-        gmt_enum = self.gruel_schema.get_gruel_message_type_enum()
-        gmt = gmt_enum.heartbeat
+        gmt = GruelMessageType.heartbeat
         #
         message_h = gmt.name
         message_type = gmt.value
@@ -172,9 +168,8 @@ class GruelPress:
             # fields are below
             message_type=message_type)
         return self.arr
-    def create_docdata_payload(self, b_doc_terminates, sender_doc_h, payload):
-        gmt_enum = self.gruel_schema.get_gruel_message_type_enum()
-        gmt = gmt_enum.docdata
+    def create_docdata_payload(self, sender_doc_h, b_complete, data):
+        gmt = GruelMessageType.docdata
         #
         message_h = gmt.name
         message_type = gmt.value
@@ -182,9 +177,9 @@ class GruelPress:
             message_h=message_h,
             # fields are below
             message_type=message_type,
-            b_doc_terminates=b_doc_terminates,
+            b_complete=b_complete,
             sender_doc_h=sender_doc_h,
-            payload=payload)
+            data=data)
         return self.arr
 
 def gruel_press_new(gruel_schema, mtu):

@@ -1,11 +1,11 @@
 #!/usr/bin/python
 #
-# Intends to demonstrate basic use of the experience class
+# demo_experience
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
+# // overview
+# Intends to exercise the client module.
 #
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -22,7 +22,6 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
 from .turnlib.algobunny_mind import algobunny_mind_new
 from .turnlib.menu import menu_new
@@ -412,7 +411,6 @@ class Husk(object):
     def event_loop(self):
         self._render()
         while True:
-            print('eloop')
             #
             # Defensive
             if self.game == None:
@@ -473,7 +471,7 @@ def husk_new(console):
 
 
 # --------------------------------------------------------
-#   :alg
+#   :rest
 # --------------------------------------------------------
 def main():
     if '--tty' in sys.argv:

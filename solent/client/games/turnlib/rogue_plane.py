@@ -1,4 +1,7 @@
 #
+# rogue plane
+#
+# // work schedule
 # xxx to glossary
 # A plane is a dimension that (1) represents meeps and (2) has its own laws
 # of physics. Examples:
@@ -10,10 +13,7 @@
 #   *   Mobius plane might be similar to rogue plane, but have particular
 #       wrapping laws.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -30,7 +30,6 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
 from .meep import meep_new
 

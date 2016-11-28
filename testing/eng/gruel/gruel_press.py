@@ -57,7 +57,8 @@ def test_client_login_creation():
         message_h=message_h)
     payload = gruel_press.create_client_login_payload(
         username='uname',
-        password='password_value')
+        password='password_value',
+        heartbeat_interval=1)
     '''
     print(hexdump_bytearray(
         arr=payload))
@@ -76,7 +77,8 @@ def test_server_greet_creation():
     #
     message_stencil = gruel_schema.get_message_stencil(
         message_h=message_h)
-    payload = gruel_press.create_server_greet_payload()
+    payload = gruel_press.create_server_greet_payload(
+        max_packet_len=800)
     '''
     print(hexdump_bytearray(
         arr=payload))
@@ -134,9 +136,9 @@ def test_docdata_creation():
     message_stencil = gruel_schema.get_message_stencil(
         message_h=message_h)
     payload = gruel_press.create_docdata_payload(
-        b_doc_terminates=1,
         sender_doc_h='sender_01',
-        payload='some content for the payload block')
+        b_complete=1,
+        data='some content for the payload block')
     '''
     print(hexdump_bytearray(
         arr=payload))

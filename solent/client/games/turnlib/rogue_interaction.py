@@ -138,9 +138,6 @@ class RogueInteraction(object):
         if key in movement:
             movement[key](
                 meep=meep)
-            self.logbook.log(
-                t=self.t,
-                s='t %s: meep moved to %ss%se'%(self.t, meep.coords.s, meep.coords.e))
             return
 
 def rogue_interaction_new(console, cursor):

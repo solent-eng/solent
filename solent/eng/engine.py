@@ -17,7 +17,6 @@
 # Berkeley sockets API, and there's an unusual amount of complexity to
 # facading that. Good luck.
 #
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -45,6 +44,7 @@ from .metasock import metasock_create_tcp_client
 from .metasock import metasock_create_tcp_server
 
 from solent.log import log
+from solent.util.clock import clock_new
 from solent.util.kv_source import kv_source_get
 from solent.util.kv_source import kv_source_exists
 from solent.util.kv_source import kv_source_register_dict
@@ -62,7 +62,10 @@ def eloop_debug(msg):
     log('(@) %s'%msg)
 
 class Engine(object):
-    def __init__(self):
+    def __init__(self, mtu):
+        self.mtu = mtu
+        #
+        self.clock = clock_new()
         self.sid_to_metasock = {}
         self.lst_orbs = []
         #
@@ -73,6 +76,12 @@ class Engine(object):
         self.b_debug_eloop = True
     def debug_eloop_off(self):
         self.b_debug_eloop = False
+    def get_clock(self):
+        return self.clock
+    def get_mtu(self):
+        return self.mtu
+    def set_mtu(self, mtu):
+        self.mtu = mtu
     def create_sid(self):
         next = self.sid_counter
         self.sid_counter += 1
@@ -333,7 +342,6 @@ def engine_new():
         d_const = { 'CORE_MTU': '1492'
                   }
         kv_source_register_dict('const', d_const)
-    mtu = kv_source_register_dict('const', d_const)
     mtu = kv_source_get(
         source_name='const',
         key='CORE_MTU')

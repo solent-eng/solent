@@ -1,3 +1,6 @@
+#
+# prop_gruel_client
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -19,6 +22,7 @@
 from testing import run_tests
 from testing import test
 from testing.eng import engine_fake
+from testing.util import clock_fake
 
 from solent.eng import activity_new
 from solent.eng import cs
@@ -26,6 +30,7 @@ from solent.eng import gruel_puff_new
 from solent.eng import gruel_press_new
 from solent.eng import gruel_schema_new
 from solent.eng import prop_gruel_client_new
+from solent.log import hexdump_bytearray
 from solent.util import uniq
 
 import sys
@@ -42,7 +47,7 @@ class ConnectionInfo:
 MTU = 1492
 
 @test
-def test_status_at_rest():
+def should_start_at_dormant_status():
     engine = engine_fake()
     gruel_schema = gruel_schema_new()
     gruel_press = gruel_press_new(
@@ -62,7 +67,7 @@ def test_status_at_rest():
     return True
 
 @test
-def test_attempt_connection():
+def should_attempt_connection():
     addr = '127.0.0.1'
     port = 4098
     #
@@ -101,7 +106,7 @@ def test_attempt_connection():
     return True
 
 @test
-def test_failed_tcp_connection():
+def should_return_to_dormant_on_failed_connection():
     addr = '127.0.0.1'
     port = 4098
     #
@@ -149,7 +154,7 @@ def test_failed_tcp_connection():
     return True
 
 @test
-def test_successful_tcp_connection():
+def should_handle_successful_tcp_connection():
     addr = '127.0.0.1'
     port = 4098
     #
@@ -194,12 +199,13 @@ def test_successful_tcp_connection():
     return True
 
 @test
-def test_after_connection_attempts_logon():
-    addr = '127.0.0.1'
-    port = 4098
+def should_attempt_login_and_receive_login_success():
+    MAX_PACKET_LEN = 800
     #
-    activity = activity_new()
+    # get our engine going
     engine = engine_fake()
+    clock = engine.get_clock()
+    #
     gruel_schema = gruel_schema_new()
     gruel_press = gruel_press_new(
         gruel_schema=gruel_schema,
@@ -211,20 +217,30 @@ def test_after_connection_attempts_logon():
         engine=engine,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)
+    assert prop_gruel_client.heartbeat_interval == 1
     #
+    # other bits we'll need
+    activity = activity_new()
     connection_info = ConnectionInfo()
     #
-    # connection attempt
+    # scenario: connection attempt
     assert 0 == len(engine.events)
+    addr = '127.0.0.1'
+    port = 4098
+    username = 'uname'
+    password = 'pword'
     prop_gruel_client.attempt_connection(
         addr=addr,
         port=port,
-        username='uname',
-        password='pword',
+        username=username,
+        password=password,
         cb_connect=connection_info.on_connect,
         cb_condrop=connection_info.on_condrop)
     #
-    # have engine indicate connection success
+    # scenario: successful connection
+    # (here we simulate the engine calling back to the client to say
+    # that there connection was successful)
+    clock.set(5)
     cs_tcp_connect = cs.CsTcpConnect()
     cs_tcp_connect.engine = engine
     cs_tcp_connect.sid = uniq()
@@ -232,10 +248,12 @@ def test_after_connection_attempts_logon():
     prop_gruel_client._engine_on_tcp_connect(
         cs_tcp_connect=cs_tcp_connect)
     #
-    # once we have connection success, this should be the status
+    # confirm effects
     assert prop_gruel_client.get_status() == 'ready_to_attempt_login'
+    assert prop_gruel_client.last_heartbeat_recv == 5
+    assert prop_gruel_client.last_heartbeat_sent == 5
     #
-    # give it a turn so it can make its move towards logging in.
+    # give the client a turn so it can move to logging in.
     prop_gruel_client.at_turn(
         activity=activity)
     #
@@ -243,8 +261,102 @@ def test_after_connection_attempts_logon():
     assert activity.get()[-1] == 'PropGruelClient/sending login'
     assert prop_gruel_client.get_status() == 'login_message_in_flight'
     #
-    # and now confirm that the message actually is in flight
+    # do we see the login message in-flight?
     assert 1 == len(engine.sent_data)
+    latest_payload = engine.sent_data[-1]
+    d_client_login = gruel_puff.unpack(
+        payload=latest_payload)
+    assert d_client_login['message_h'] == 'client_login'
+    assert d_client_login['username'] == username
+    assert d_client_login['password'] == password
+    assert d_client_login['heartbeat_interval'] == 1
+    #
+    # simulate server sending back a successful login. (first, we create
+    # the kind of payload that the server would have created in this
+    # circumstance. Then we call back to the client in the same way that
+    # a real engine would call back to it.)
+    def server_sends_greet_payload():
+        server_greet_payload = gruel_press.create_server_greet_payload(
+            max_packet_len=MAX_PACKET_LEN)
+        cs_tcp_recv = cs.CsTcpRecv()
+        cs_tcp_recv.engine = engine
+        cs_tcp_recv.client_sid = 'fake_sid'
+        cs_tcp_recv.data = server_greet_payload
+        prop_gruel_client._engine_on_tcp_recv(
+            cs_tcp_recv=cs_tcp_recv)
+    server_sends_greet_payload()
+    #
+    # confirm effects
+    assert prop_gruel_client.get_status() == 'streaming'
+    #
+    # scenario: server sends a heartbeat
+    clock.set(10)
+    def server_sends_heartbeat():
+        server_heartbeat = gruel_press.create_heartbeat_payload()
+        cs_tcp_recv = cs.CsTcpRecv()
+        cs_tcp_recv.engine = engine
+        cs_tcp_recv.client_sid = 'fake_sid'
+        cs_tcp_recv.data = server_heartbeat
+        prop_gruel_client._engine_on_tcp_recv(
+            cs_tcp_recv=cs_tcp_recv)
+    server_sends_heartbeat()
+    #
+    # confirm effects
+    assert prop_gruel_client.get_status() == 'streaming'
+    assert prop_gruel_client.last_heartbeat_recv == 10
+    #
+    # scenario: client should send a heartbeat
+    clock.set(11)
+    prop_gruel_client.at_turn(
+        activity=activity)
+    #
+    # confirm effects
+    assert 2 == len(engine.sent_data)
+    payload = engine.sent_data[-1]
+    d_payload = gruel_puff.unpack(
+        payload=payload)
+    assert d_payload['message_h'] == 'heartbeat'
+    #
+    # confirm that it now does not send another one
+    prop_gruel_client.at_turn(
+        activity=activity)
+    assert 2 == len(engine.sent_data)
+    #
+    # scenario: client sends a small payload
+    small_doc = '''
+        i greet message
+        greet "hello, world!"
+    '''
+    mcount_before = len(engine.sent_data)
+    prop_gruel_client.send_document(
+        doc=small_doc)
+    prop_gruel_client.at_turn(
+        activity=activity)
+    #
+    # confirm effects
+    payload = engine.sent_data[-2]
+    hexdump_bytearray(payload)
+    assert len(engine.sent_data) == (mcount_before + 1)
+    payload = engine.sent_data[-1]
+    d_payload = gruel_puff.unpack(
+        payload=payload)
+    assert d_payload['message_h'] == 'docdata'
+    assert d_payload['b_complete'] == 1
+    assert d_payload['data'] == small_doc
+    #
+    # scenario: client sends a payload that must span several
+    # packets
+    #
+    # confirm effects
+    #
+    # scenario: client receives a single-packet payload
+    #
+    # confirm effects
+    #
+    # scenario: client receives a multi-packet payload that requires
+    # buffering
+    #
+    # confirm effects
     #
     return True
 
