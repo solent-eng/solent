@@ -1,5 +1,5 @@
 #
-# prop_gruel_client
+# prop_gruel_client (testing)
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -33,7 +33,10 @@ from solent.eng import prop_gruel_client_new
 from solent.log import hexdump_bytearray
 from solent.util import uniq
 
+from collections import deque
 import sys
+
+MTU = 1492
 
 class ConnectionInfo:
     def __init__(self):
@@ -44,7 +47,11 @@ class ConnectionInfo:
     def on_condrop(self, cs_tcp_condrop):
         self.calls_to_on_condrop += 1
 
-MTU = 1492
+class DocReceiver:
+    def __init__(self):
+        self.docs = []
+    def on_doc(self, doc):
+        self.docs.append(doc)
 
 @test
 def should_start_at_dormant_status():
@@ -85,6 +92,7 @@ def should_attempt_connection():
         gruel_puff=gruel_puff)
     #
     connection_info = ConnectionInfo()
+    doc_receiver = DocReceiver()
     #
     # connection attempt
     assert 0 == len(engine.events)
@@ -94,7 +102,8 @@ def should_attempt_connection():
         username='uname',
         password='pword',
         cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop)
+        cb_condrop=connection_info.on_condrop,
+        cb_doc=doc_receiver.on_doc)
     #
     # confirm effects
     assert 0 == connection_info.calls_to_on_condrop
@@ -124,6 +133,7 @@ def should_return_to_dormant_on_failed_connection():
         gruel_puff=gruel_puff)
     #
     connection_info = ConnectionInfo()
+    doc_receiver = DocReceiver()
     #
     # connection attempt
     assert 0 == len(engine.events)
@@ -133,7 +143,8 @@ def should_return_to_dormant_on_failed_connection():
         username='uname',
         password='pword',
         cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop)
+        cb_condrop=connection_info.on_condrop,
+        cb_doc=doc_receiver.on_doc)
     #
     # confirm effects
     assert prop_gruel_client.get_status() == 'attempting_tcp_connection'
@@ -172,6 +183,7 @@ def should_handle_successful_tcp_connection():
         gruel_puff=gruel_puff)
     #
     connection_info = ConnectionInfo()
+    doc_receiver = DocReceiver()
     #
     # connection attempt
     assert 0 == len(engine.events)
@@ -181,7 +193,8 @@ def should_handle_successful_tcp_connection():
         username='uname',
         password='pword',
         cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop)
+        cb_condrop=connection_info.on_condrop,
+        cb_doc=doc_receiver.on_doc)
     #
     # have engine indicate connection success
     cs_tcp_connect = cs.CsTcpConnect()
@@ -199,7 +212,7 @@ def should_handle_successful_tcp_connection():
     return True
 
 @test
-def should_attempt_login_and_receive_login_success():
+def should_simulate_common_behaviour():
     MAX_PACKET_LEN = 800
     #
     # get our engine going
@@ -222,6 +235,7 @@ def should_attempt_login_and_receive_login_success():
     # other bits we'll need
     activity = activity_new()
     connection_info = ConnectionInfo()
+    doc_receiver = DocReceiver()
     #
     # scenario: connection attempt
     assert 0 == len(engine.events)
@@ -235,7 +249,8 @@ def should_attempt_login_and_receive_login_success():
         username=username,
         password=password,
         cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop)
+        cb_condrop=connection_info.on_condrop,
+        cb_doc=doc_receiver.on_doc)
     #
     # scenario: successful connection
     # (here we simulate the engine calling back to the client to say
@@ -344,7 +359,7 @@ def should_attempt_login_and_receive_login_success():
     #
     # scenario: client sends a payload that must span several
     # packets
-    large_doc = 'w%sy'%('x'*(2*MAX_PACKET_LEN))
+    large_doc = 'w/%s/y'%('x'*(2*MAX_PACKET_LEN))
     mcount_before = len(engine.sent_data)
     prop_gruel_client.send_document(
         doc=large_doc)
@@ -374,14 +389,63 @@ def should_attempt_login_and_receive_login_success():
     assert d_payload['b_complete'] == 1
     assert d_payload['data'][-1] == 'y'
     #
-    # scenario: client receives a single-packet payload
+    # scenario: client receives a single-packet payload from server
+    docs_received = len(doc_receiver.docs)
+    small_doc = '''
+        i arbitrary message
+        arbitrary "message content"
+    '''
+    def server_sends_small_payload():
+        payload = gruel_press.create_docdata_payload(
+            sender_doc_h='doc_%s'%uniq(), # arbitrary doc id
+            b_complete=1,
+            data=small_doc)
+        cs_tcp_recv = cs.CsTcpRecv()
+        cs_tcp_recv.engine = engine
+        cs_tcp_recv.client_sid = 'fake_sid'
+        cs_tcp_recv.data = payload
+        prop_gruel_client._engine_on_tcp_recv(
+            cs_tcp_recv=cs_tcp_recv)
+    server_sends_small_payload()
     #
     # confirm effects
+    assert len(doc_receiver.docs) == docs_received+1
+    assert doc_receiver.docs[-1] == small_doc
     #
-    # scenario: client receives a multi-packet payload that requires
-    # buffering
+    # scenario: client receives a multi-packet doc that requires
+    # buffering on the client side
+    docs_received = len(doc_receiver.docs)
+    large_doc_segments = 'h/%s/j'%('i'*(2*MAX_PACKET_LEN))
+    large_doc = ''.join(large_doc_segments)
+    def server_sends_large_doc():
+        remaining = large_doc_segments
+        to_send = deque()
+        while remaining != '':
+            doc = remaining[:50]
+            remaining = remaining[50:]
+            to_send.append(doc)
+        while to_send:
+            docpart = to_send.popleft()
+            b_complete = 0
+            if not to_send:
+                b_complete = 1
+            #
+            payload = gruel_press.create_docdata_payload(
+                sender_doc_h='doc_%s'%uniq(), # arbitrary doc id
+                b_complete=b_complete,
+                data=docpart)
+            #
+            cs_tcp_recv = cs.CsTcpRecv()
+            cs_tcp_recv.engine = engine
+            cs_tcp_recv.client_sid = 'fake_sid'
+            cs_tcp_recv.data = payload
+            prop_gruel_client._engine_on_tcp_recv(
+                cs_tcp_recv=cs_tcp_recv)
+    server_sends_large_doc()
     #
     # confirm effects
+    assert len(doc_receiver.docs) > docs_received
+    assert doc_receiver.docs[-1] == large_doc
     #
     return True
 

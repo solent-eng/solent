@@ -57,6 +57,8 @@ class PropGruelClient:
         # form: (addr, port) : deque containing data
         self.cb_connect = None
         self.cb_condrop = None
+        self.cb_doc = None
+        self.doc_accumulator = None
         self.client_sid = None
     def close(self):
         self.engine.close_tcp_server(self.server_sid)
@@ -92,8 +94,6 @@ class PropGruelClient:
                 doc = doc[:max_doc_size]
                 b_complete = 0
             #
-            print('send %s'%(b_complete))
-            print('doc %s'%(doc))
             payload = self.gruel_press.create_docdata_payload(
                 sender_doc_h='doc_%s'%uniq(), # arbitrary doc id
                 b_complete=b_complete,
@@ -110,7 +110,7 @@ class PropGruelClient:
         what state it is in.
         '''
         return self.status.name
-    def attempt_connection(self, addr, port, username, password, cb_connect, cb_condrop):
+    def attempt_connection(self, addr, port, username, password, cb_connect, cb_condrop, cb_doc):
         '''
         The reason for the callbacks is because the class that this is
         emcapsulated within will probably want to log that activity.
@@ -119,6 +119,8 @@ class PropGruelClient:
         '''
         self.cb_connect = cb_connect
         self.cb_condrop = cb_condrop
+        self.cb_doc = cb_doc
+        self.doc_accumulator = deque()
         self._set_login_credentials(
             username=username,
             password=password)
@@ -167,6 +169,13 @@ class PropGruelClient:
             # this is us receiving a heartbeat from the server. so, we
             # send a heartbeat back
             self.last_heartbeat_recv = self.engine.get_clock().now()
+        elif gmt == 'docdata':
+            self.doc_accumulator.append(d_message['data'])
+            if d_message['b_complete']:
+                doc = ''.join(self.doc_accumulator)
+                self.doc_accumulator = deque()
+                self.cb_doc(
+                    doc=doc)
         else:
             hexdump_bytearray(data)
             raise Exception("Unhandled message type %s"%gmt)
