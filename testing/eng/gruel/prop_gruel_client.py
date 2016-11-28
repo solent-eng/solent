@@ -334,8 +334,6 @@ def should_attempt_login_and_receive_login_success():
         activity=activity)
     #
     # confirm effects
-    payload = engine.sent_data[-2]
-    hexdump_bytearray(payload)
     assert len(engine.sent_data) == (mcount_before + 1)
     payload = engine.sent_data[-1]
     d_payload = gruel_puff.unpack(
@@ -346,8 +344,35 @@ def should_attempt_login_and_receive_login_success():
     #
     # scenario: client sends a payload that must span several
     # packets
+    large_doc = 'w%sy'%('x'*(2*MAX_PACKET_LEN))
+    mcount_before = len(engine.sent_data)
+    prop_gruel_client.send_document(
+        doc=large_doc)
+    # give it several turns to allow doc to be dispatched
+    prop_gruel_client.at_turn(activity)
+    prop_gruel_client.at_turn(activity)
+    prop_gruel_client.at_turn(activity)
     #
     # confirm effects
+    assert len(engine.sent_data) > mcount_before
+    #   (inspect first packet)
+    d_payload = gruel_puff.unpack(
+        payload=engine.sent_data[mcount_before])
+    assert d_payload['message_h'] == 'docdata'
+    assert d_payload['b_complete'] == 0
+    assert d_payload['data'][0] == 'w'
+    #   (inspect next-to-last packet)
+    d_payload = gruel_puff.unpack(
+        payload=engine.sent_data[-2])
+    assert d_payload['message_h'] == 'docdata'
+    assert d_payload['b_complete'] == 0
+    assert d_payload['data'][-1] == 'x'
+    #   (inspect last packet)
+    d_payload = gruel_puff.unpack(
+        payload=engine.sent_data[-1])
+    assert d_payload['message_h'] == 'docdata'
+    assert d_payload['b_complete'] == 1
+    assert d_payload['data'][-1] == 'y'
     #
     # scenario: client receives a single-packet payload
     #

@@ -92,6 +92,8 @@ class PropGruelClient:
                 doc = doc[:max_doc_size]
                 b_complete = 0
             #
+            print('send %s'%(b_complete))
+            print('doc %s'%(doc))
             payload = self.gruel_press.create_docdata_payload(
                 sender_doc_h='doc_%s'%uniq(), # arbitrary doc id
                 b_complete=b_complete,
