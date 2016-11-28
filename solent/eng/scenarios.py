@@ -18,9 +18,9 @@
 #
 # // How do I use eng?
 #
-# Find a scenario in function main below that matches what you are trying to do.
-# These scenarios have dual uses. They're useful for eng developers to test
-# scenarios when they are working on the system. And they're useful for
+# Find a scenario in function main below that matches what you are trying to
+# do. These scenarios have dual uses. They're useful for eng developers to
+# test scenarios when they are working on the system. And they're useful for
 # application developers to learn-by-example.
 #
 #
@@ -682,7 +682,8 @@ def scenario_broadcast_post_with_del(engine):
 def main():
     init_logging()
 
-    engine = engine_new()
+    engine = engine_new(
+        mtu=1492)
     try:
         #
         # Comment these in or out as you want to test scenarios.

@@ -92,7 +92,7 @@ def operate_a_udp_broadcast_listener(engine, net_addr, net_port):
                     s='received data')
                 hexdump_string(
                     s=data,
-                    'Received from %s:%s'%(net_addr, net_port))
+                    title='Received')
     orb = Orb()
     engine.add_orb(orb)
     engine.event_loop()
@@ -104,7 +104,8 @@ def main():
         usage()
     #
     init_logging()
-    engine = engine_new()
+    engine = engine_new(
+        mtu=1492)
     try:
         net_addr = sys.argv[1]
         net_port = int(sys.argv[2])

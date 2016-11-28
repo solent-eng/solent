@@ -45,9 +45,6 @@ from .metasock import metasock_create_tcp_server
 
 from solent.log import log
 from solent.util.clock import clock_new
-from solent.util.kv_source import kv_source_get
-from solent.util.kv_source import kv_source_exists
-from solent.util.kv_source import kv_source_register_dict
 
 import errno
 import select
@@ -329,23 +326,7 @@ class Engine(object):
         ms.close(reason)
         del self.sid_to_metasock[sid]
 
-def engine_new():
-    #
-    # Most users will be happy with a conservative value for mtu. Those who
-    # don't can set it themselves before they construct the first engine.
-    # Doing this here is a bit klunky, but reduces the barrier-of-entry for
-    # new users.
-    #
-    # xxx there is a task in the queue to replace this arrangement with an
-    # engine construction argument.
-    if not kv_source_exists('const'):
-        d_const = { 'CORE_MTU': '1492'
-                  }
-        kv_source_register_dict('const', d_const)
-    mtu = kv_source_get(
-        source_name='const',
-        key='CORE_MTU')
-    #
+def engine_new(mtu):
     ob = Engine(
         mtu=mtu)
     return ob

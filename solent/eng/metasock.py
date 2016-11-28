@@ -74,8 +74,6 @@ from collections import deque
 import socket
 import traceback
 
-const = lambda k: kv_source_get('const', k)
-
 def l_cb_error(cb_struct):
     def fn(*args):
         raise Exception(cb_struct)
@@ -310,7 +308,7 @@ def metasock_create_broadcast_listener(engine, sid, addr, port, cb_sub_recv):
     ms.sock = sock
     ms.can_it_recv = True
     ms.can_it_send = False
-    ms.recv_len = int(const('CORE_MTU'))
+    ms.recv_len = engine.mtu
     ms.cb_sub_recv = cb_sub_recv
     return ms
 
@@ -326,7 +324,7 @@ def metasock_create_tcp_server(engine, sid, addr, port, cb_tcp_connect, cb_tcp_c
     ms.sock = sock
     ms.can_it_recv = True
     ms.can_it_send = True
-    ms.recv_len = int(const('CORE_MTU'))
+    ms.recv_len = engine.mtu
     ms.is_it_a_tcp_server = True
     ms.is_it_a_tcp_client = False
     ms.cb_tcp_connect = cb_tcp_connect
@@ -360,7 +358,7 @@ def metasock_create_tcp_client(engine, sid, addr, port, cb_tcp_connect, cb_tcp_c
     ms.sock = sock
     ms.can_it_recv = True
     ms.can_it_send = True
-    ms.recv_len = int(const('CORE_MTU'))
+    ms.recv_len = engine.mtu
     ms.is_it_a_tcp_server = False
     ms.is_it_a_tcp_client = True
     ms.is_tcp_client_connecting = True
@@ -377,7 +375,7 @@ def metasock_create_accepted_tcp_client(engine, sid, csock, addr, port, cb_tcp_c
     ms.sock = csock
     ms.can_it_recv = True
     ms.can_it_send = True
-    ms.recv_len = int(const('CORE_MTU'))
+    ms.recv_len = engine.mtu
     ms.is_it_a_tcp_server = False
     ms.is_it_a_tcp_client = True
     ms.cb_tcp_condrop = cb_tcp_condrop
