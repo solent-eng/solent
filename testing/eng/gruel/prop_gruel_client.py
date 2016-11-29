@@ -42,9 +42,9 @@ class ConnectionInfo:
     def __init__(self):
         self.calls_to_on_connect = 0
         self.calls_to_on_condrop = 0
-    def on_connect(self, cs_tcp_connect):
+    def on_tcp_connect(self, cs_tcp_connect):
         self.calls_to_on_connect += 1
-    def on_condrop(self, cs_tcp_condrop):
+    def on_tcp_condrop(self, cs_tcp_condrop):
         self.calls_to_on_condrop += 1
 
 class DocReceiver:
@@ -101,8 +101,8 @@ def should_attempt_connection():
         port=port,
         username='uname',
         password='pword',
-        cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop,
+        cb_connect=connection_info.on_tcp_connect,
+        cb_condrop=connection_info.on_tcp_condrop,
         cb_doc=doc_receiver.on_doc)
     #
     # confirm effects
@@ -142,8 +142,8 @@ def should_return_to_dormant_on_failed_connection():
         port=port,
         username='uname',
         password='pword',
-        cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop,
+        cb_connect=connection_info.on_tcp_connect,
+        cb_condrop=connection_info.on_tcp_condrop,
         cb_doc=doc_receiver.on_doc)
     #
     # confirm effects
@@ -192,8 +192,8 @@ def should_handle_successful_tcp_connection():
         port=port,
         username='uname',
         password='pword',
-        cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop,
+        cb_connect=connection_info.on_tcp_connect,
+        cb_condrop=connection_info.on_tcp_condrop,
         cb_doc=doc_receiver.on_doc)
     #
     # have engine indicate connection success
@@ -248,8 +248,8 @@ def should_simulate_common_behaviour():
         port=port,
         username=username,
         password=password,
-        cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop,
+        cb_connect=connection_info.on_tcp_connect,
+        cb_condrop=connection_info.on_tcp_condrop,
         cb_doc=doc_receiver.on_doc)
     #
     # scenario: successful connection

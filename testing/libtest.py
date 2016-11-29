@@ -31,18 +31,21 @@ def test(fn):
         print('// --------------------------------------------------------')
         print('//   %s'%(fn.__name__))
         print('// --------------------------------------------------------')
+        b_exit_condition = False
         try:
             res = fn()
             if res == True:
                 print('[SUCCESS]')
             else:
                 print('[FAILED]')
-                sys.exit(1)
+                b_exit_condition = True
         except:
             traceback.print_exc()
             print('[ABORTED]')
-            sys.exit(1)
+            b_exit_condition = True
         print('')
+        if b_exit_condition:
+            sys.exit(1)
     global TESTS
     TESTS.append(go)
     return fn
