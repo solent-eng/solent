@@ -1,5 +1,5 @@
 #
-# ip_permission_store (testing)
+# ip_validator (testing)
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -24,7 +24,7 @@ from testing import test
 from testing.eng import engine_fake
 from testing.util import clock_fake
 
-from solent.eng import ip_permission_store_new
+from solent.eng import ip_validator_new
 
 import sys
 
@@ -33,20 +33,20 @@ def should_accept_and_reject_ips():
     test_ip = '127.0.0.1'
     second_ip = '203.15.93.2'
     #
-    ip_permission_store = ip_permission_store_new()
-    ip_permission_store.add_ip(
+    ip_validator = ip_validator_new()
+    ip_validator.add_ip(
         ip=test_ip)
     #
-    assert True == ip_permission_store.is_ok(
+    assert True == ip_validator.is_ok(
         ip=test_ip)
-    assert False == ip_permission_store.is_ok(
+    assert False == ip_validator.is_ok(
         ip=second_ip)
     #
-    ip_permission_store.add_ip(
+    ip_validator.add_ip(
         ip=second_ip)
-    assert True == ip_permission_store.is_ok(
+    assert True == ip_validator.is_ok(
         ip=test_ip)
-    assert True == ip_permission_store.is_ok(
+    assert True == ip_validator.is_ok(
         ip=second_ip)
     #
     return True
@@ -56,14 +56,14 @@ def should_allow_all_ips_to_be_accepted():
     test_ip = '127.0.0.1'
     second_ip = '203.15.93.2'
     #
-    ip_permission_store = ip_permission_store_new()
+    ip_validator = ip_validator_new()
     #
-    assert False == ip_permission_store.is_ok(
+    assert False == ip_validator.is_ok(
         ip=test_ip)
     #
-    ip_permission_store.accept_any_ip()
+    ip_validator.accept_any_ip()
     #
-    assert True == ip_permission_store.is_ok(
+    assert True == ip_validator.is_ok(
         ip=test_ip)
     #
     return True

@@ -22,6 +22,7 @@
 from .activity import activity_new
 from .engine import engine_new as engine_new
 from .engine import engine_new as QuitEvent
+from .ip_validator import ip_validator_new
 from .nearcast_orb import nearcast_orb_new
 from .nearcast_schema import nearcast_schema_new
 from .nearcast_snoop import nearcast_snoop_new

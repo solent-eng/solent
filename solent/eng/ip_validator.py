@@ -1,5 +1,5 @@
 #
-# ip_permission_store
+# ip_validator
 #
 # // overview
 # Simple mechanism for testing whether an IP is permissioned or not. At the
@@ -24,7 +24,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-class IpPermissionStore:
+class IpValidator:
     def __init__(self):
         self.b_accept_any_ip = False
         self.permissioned_ips = []
@@ -41,7 +41,7 @@ class IpPermissionStore:
             raise Exception("Please do not do this.")
         self.permissioned_ips.append(ip)
 
-def ip_permission_store_new():
-    ob = IpPermissionStore()
+def ip_validator_new():
+    ob = IpValidator()
     return ob
 
