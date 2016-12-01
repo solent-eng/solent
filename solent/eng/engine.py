@@ -101,46 +101,57 @@ class Engine(object):
         self.lst_orbs.append(orb)
     def del_orb(self, orb):
         self.lst_orbs.remove(orb)
-    def event_loop(self):
-        #log('event_loop (orbs:%s)'%(len(self.lst_orbs)))
+    def turn(self, timeout=0):
         #
-        # By this point we have a nice reactor-like thing all set
-        # up and ready-to-go held within libasync. All we need to
-        # do is to run our while loop, with most of the work to
-        # be done for select having been exported to that module.
+        # Caller's callback
+        b_any_activity_at_all = False
+        for orb in self.lst_orbs:
+            orb.at_turn(
+                activity=self.activity)
+        lst_orb_activity = self.activity.get()
+        if lst_orb_activity:
+            self.activity.clear()
+            b_any_activity_at_all = True
+            if self.b_debug_eloop:
+                for s in lst_orb_activity:
+                    eloop_debug('*ACTIVITY* %s'%(s))
+        #
+        # Select
+        activity_from_select = self._call_select(timeout)
+        if activity_from_select:
+            b_any_activity_at_all = True
+            if self.b_debug_eloop:
+                eloop_debug('select activity')
+        #
+        # If we have activity, we don't want select jamming
+        # things up with delays.
+        if b_any_activity_at_all:
+            # i.e. nothing
+            timeout = 0
+        else:
+            # i.e. something
+            timeout = 0.2
+        return timeout
+    def cycle(self):
+        '''
+        This causes a sequence of turns to run until there is no more
+        activity. This can be useful for testing and troubleshooting.
+        '''
+        timeout = 0
+        while timeout == 0:
+            timeout = self.turn()
+    def event_loop(self):
+        '''
+        Lets the engine take ownership of the application's initiative by
+        running the event loop. Typically, an application would set up its
+        orbs, add them to the engine, and then call this function to surrender
+        initiative to the engine.
+        '''
         timeout = 0
         try:
-            b_quit = False
-            while not b_quit:
-                #
-                # Caller's callback
-                b_any_activity_at_all = False
-                for orb in self.lst_orbs:
-                    orb.at_turn(
-                        activity=self.activity)
-                lst_orb_activity = self.activity.get()
-                if lst_orb_activity:
-                    self.activity.clear()
-                    b_any_activity_at_all = True
-                    if self.b_debug_eloop:
-                        for s in lst_orb_activity:
-                            eloop_debug('*ACTIVITY* %s'%(s))
-                #
-                # Select
-                activity_from_select = self._call_select(timeout)
-                if activity_from_select:
-                    b_any_activity_at_all = True
-                    if self.b_debug_eloop:
-                        eloop_debug('select activity')
-                #
-                # If we have activity, we don't want select jamming
-                # things up with delays.
-                if b_any_activity_at_all:
-                    # i.e. nothing
-                    timeout = 0
-                else:
-                    # i.e. something
-                    timeout = 0.2
+            while True:
+                timeout = self.turn(
+                    timeout=timeout)
         except QuitEvent as e:
             log('QuitEvent [%s]'%(e.message))
     def send(self, sid, data):

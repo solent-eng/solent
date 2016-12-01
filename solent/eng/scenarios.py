@@ -500,7 +500,9 @@ def scenario_tcp_client_mixed_scenarios(engine):
     #
     print('''
         If you want to run a netcat server on localhost :1234, you can do this:
-        nc -l -p 1234
+          nc -l -p 1234
+        (This can be useful to verify that a condrop gets called even
+        when the disconnect is initiated from this side.)
     ''')
     #
     class Cog(object):
@@ -688,14 +690,14 @@ def main():
         #
         # Comment these in or out as you want to test scenarios.
         #
-        scenario_broadcast_listen(engine)
+        #scenario_broadcast_listen(engine)
         #scenario_broadcast_listen_and_unlisten(engine)
         #scenario_multiple_tcp_servers(engine)
         #scenario_close_tcp_servers(engine)
         #scenario_tcp_client_cannot_connect(engine)
         #scenario_tcp_client_mixed_scenarios(engine)
         #scenario_broadcast_post(engine)
-        #scenario_broadcast_post_with_del(engine)
+        scenario_broadcast_post_with_del(engine)
         pass
     except KeyboardInterrupt:
         pass
