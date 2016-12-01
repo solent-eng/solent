@@ -28,6 +28,9 @@ class IpValidator:
     def __init__(self):
         self.b_accept_any_ip = False
         self.permissioned_ips = []
+    def clear(self):
+        self.b_accept_any_ip = False
+        self.permissioned_ips = []
     def accept_any_ip(self, b=True):
         self.b_accept_any_ip = b
     def is_ok(self, ip):

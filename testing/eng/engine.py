@@ -8,6 +8,8 @@ class Engine:
         self.clock = clock_fake()
         self.events = []
         self.sent_data = []
+        #
+        self.mtu = 500
     def get_clock(self):
         return self.clock
     def send(self, sid, data):

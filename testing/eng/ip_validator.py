@@ -68,6 +68,38 @@ def should_allow_all_ips_to_be_accepted():
     #
     return True
 
+@test
+def should_clear_when_told_to():
+    first_ip = '127.0.0.1'
+    second_ip = '203.15.93.2'
+    #
+    ip_validator = ip_validator_new()
+    assert False == ip_validator.is_ok(
+        ip=first_ip)
+    assert False == ip_validator.is_ok(
+        ip=second_ip)
+    #
+    ip_validator.add_ip(
+        ip=first_ip)
+    assert True == ip_validator.is_ok(
+        ip=first_ip)
+    assert False == ip_validator.is_ok(
+        ip=second_ip)
+    #
+    ip_validator.accept_any_ip()
+    assert True == ip_validator.is_ok(
+        ip=first_ip)
+    assert True == ip_validator.is_ok(
+        ip=second_ip)
+    #
+    ip_validator.clear()
+    assert False == ip_validator.is_ok(
+        ip=first_ip)
+    assert False == ip_validator.is_ok(
+        ip=second_ip)
+    #
+    return True
+
 if __name__ == '__main__':
     run_tests(
         unders_file=sys.modules['__main__'].__file__)

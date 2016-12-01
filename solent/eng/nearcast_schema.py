@@ -27,7 +27,7 @@ from collections import OrderedDict as od
 
 I_NEARCAST_EXAMPLE = '''
     i message h
-    i field h
+        i field h
 
     # declare a message called organisation that takes certain fields
     message organisation
@@ -109,6 +109,5 @@ def nearcast_schema_new(i_nearcast):
     parser.parse(i_nearcast)
     nearcast_schema = NearcastSchema(
         d_messages=signal_consumer.messages)
-    log('in schema: %s'%nearcast_schema.messages)
     return nearcast_schema
 

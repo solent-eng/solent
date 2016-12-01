@@ -31,6 +31,8 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 #
 
+from .activity import activity_new
+
 from solent.log import log
 from solent.util import uniq
 
@@ -59,6 +61,18 @@ class NearcastOrb:
                 fn_at_turn = getattr(cog, 'at_turn')
                 fn_at_turn(
                     activity=activity)
+    def cycle(self):
+        # This is useful for testing. It keeps calling at_turn until there
+        # is no more activity left to do
+        activity = activity_new()
+        while True:
+            self.at_turn(
+                activity=activity)
+            if activity.get():
+                # clears, and then we do another circuit of the while loop
+                activity.clear()
+            else:
+                break
     def add_cog(self, cog):
         self.cogs.append(cog)
     def nearcast(self, cog_h, message_h, **d_fields):

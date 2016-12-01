@@ -1,6 +1,13 @@
 #
 # prop_gruel_server
 #
+# // overview
+# At the obvious level, this provides an abstraction that you can use to
+# create a server for gruel protocol.
+#
+# It also serves a demonstration of the way you can use nearcasting to build a
+# subsystem that has complex needs, whilst keeping the code simple.
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -19,183 +26,160 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .gruel_schema import GruelMessageType
-from .gruel_schema import gmt_value_to_name
+from .server.tcp_server_cog import tcp_server_cog_new
 
 from solent.log import log
 from solent.log import hexdump_bytearray
 from solent.util import ns
 from solent.util import uniq
 from solent.eng import gruel_press_new
+from solent.eng import nearcast_orb_new
+from solent.eng import nearcast_schema_new
 
 from collections import deque
 from collections import OrderedDict as od
 from enum import Enum
 
-class ServerStatus(Enum):
-    stopped = uniq()
-    listening = uniq()
-    tcp_up_awaiting_login = uniq()
-    authorised_connection = uniq()
-    # on a bad logon, we want to sleep a bit before we kick people. This
-    # impedes brute-force attacks. This mode is for when we are in that
-    # in between time when we are going to boot someone but haven't yet.
-    preparing_to_boot = uniq()
+I_NEARCAST_GRUEL_SERVER = '''
+    i message h
+        i field h
+
+    message nearnote
+        field s
+
+    message valid_ip
+        field ip
+
+    message all_ips_are_valid
+
+    message start_service
+        field addr
+        field port
+        field username
+        field password
+
+    message stop_service
+
+    message announce_client_connect
+        field ip
+        field port
+
+    message announce_client_condrop
+
+    message boot_client
+        field seconds_to_wait
+        field message
+
+    # A message from the client that has not yet been through the login cog.
+    # Once a TCP connection is done, all activity should flow to the login
+    # cog, which should act as a gateway.
+    message suspect_client_message
+        field d_gruel
+
+    message authorised_client_message
+        field d_gruel
+
+    message outgoing_message_settings
+        field max_packet_size
+        field max_doc_size
+
+    message inbound_heartbeat
+
+    message outbound_heartbeat
+
+    message outbound_document
+        field doc_h
+        field doc
+
+'''
+
+class UplinkCog:
+    def __init__(self, cog_h, orb, engine, cb_nearnote):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+        self.cb_nearnote = cb_nearnote
+    #
+    def on_nearnote(self, s):
+        self.cb_nearnote(
+            s=s)
+    #
+    def send_nearnote(self, s):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='nearnote',
+            s=s)
+    def send_start_service(self, addr, port, username, password):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='start_service',
+            addr=addr,
+            port=port,
+            username=username,
+            password=password)
+    def send_stop_service(self):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='stop_service')
 
 class PropGruelServer:
-    def __init__(self, engine, gruel_press, gruel_puff):
+    def __init__(self, engine, cb_nearnote, cb_client_doc):
         self.engine = engine
-        self.gruel_press = gruel_press
-        self.gruel_puff = gruel_puff
+        self.cb_nearnote = None
+        self.cb_client_doc = None
         #
-        self.status = ServerStatus.stopped
-        self.server_addr = None
-        self.server_port = None
-        self.server_username = None
-        self.server_password = None
-        self.server_sid = None
-        self.cb_tcp_connect = None
-        self.cb_tcp_condrop = None
-        self.cb_doc_recv = None
-        self.client_sid = None
+        self.b_active = False
         #
-        self.t_boot = None
-        self.boot_message = None
-    def get_status(self):
-        return self.status.name
+        self.gruel_server_nearcast = nearcast_orb_new(
+            engine=self.engine,
+            nearcast_schema=nearcast_schema_new(
+                i_nearcast=I_NEARCAST_GRUEL_SERVER))
+        #
+        self.tcp_server_cog = tcp_server_cog_new(
+            cog_h='tcp_server_cog',
+            orb=self.gruel_server_nearcast,
+            engine=engine)
+        self.gruel_server_nearcast.add_cog(
+            cog=self.tcp_server_cog)
+        #
+        self.uplink = UplinkCog(
+            cog_h='uplink',
+            orb=self.gruel_server_nearcast,
+            engine=engine,
+            cb_nearnote=cb_nearnote)
+        self.gruel_server_nearcast.add_cog(
+            cog=self.uplink)
+        #
+        self.uplink.send_nearnote(
+            s='prop_gruel_server: nearcast_started')
     def at_turn(self, activity):
-        pass
-    def activate(self, addr, port, username, password, cb_tcp_connect, cb_tcp_condrop, cb_doc):
-        self.server_addr = addr
-        self.server_port = port
-        self.server_username = username
-        self.server_password = password
+        self.gruel_server_nearcast.at_turn(
+            activity=activity)
+    #
+    def get_status(self):
+        return self.b_active
+    def start(self, addr, port, username, password):
+        if self.b_active:
+            raise Exception('server is already started')
         #
-        if self.status != ServerStatus.stopped:
-            raise Exception('server is not currently stopped')
-        #
-        self.cb_tcp_connect = cb_tcp_connect
-        self.cb_tcp_condrop = cb_tcp_condrop
-        self.cb_doc = cb_doc
-        #
-        self._raise_server()
-        self.status = ServerStatus.listening
+        self.uplink.send_start_service(
+            addr=addr,
+            port=port,
+            username=username,
+            password=password)
+        self.b_active = True
     def stop(self):
-        if self.status == ServerStatus.stopped:
+        if not self.b_active:
             raise Exception('server is already stopped')
             return
-        if self.status == ServerStatus.listening:
-            self.engine.close_tcp_server(
-                sid=self.server_sid)
-            self.server_sid = None
-            self.server_addr = None
-            self.server_port = None
-            self.t_boot = None
-            self.boot_message = None
-            self.status = ServerStatus.stopped
-            return
-        if self.status == ServerStatus.tcp_up_awaiting_login:
-            self.engine.close_tcp_client(
-                sid=self.client_sid)
-            self.client_sid = None
-            self.server_addr = None
-            self.server_port = None
-            self.t_boot = None
-            self.boot_message = None
-            self.status = ServerStatus.stopped
-            return
-        raise Exception('status %s not handled'%(self.status.name))
-    #
-    def _engine_on_tcp_connect(self, cs_tcp_connect):
-        engine = cs_tcp_connect.engine
-        client_sid = cs_tcp_connect.client_sid
-        addr = cs_tcp_connect.addr
-        port = cs_tcp_connect.port
         #
-        self.client_sid = client_sid
-        self.engine.close_tcp_server(
-            sid=self.server_sid)
-        self.server_sid = None
-        self.status = ServerStatus.tcp_up_awaiting_login
-        #
-        self.cb_tcp_connect(
-            cs_tcp_connect=cs_tcp_connect)
-    def _engine_on_tcp_condrop(self, cs_tcp_condrop):
-        engine = cs_tcp_condrop.engine
-        client_sid = cs_tcp_condrop.client_sid
-        message = cs_tcp_condrop.message
-        #
-        self.client_sid = None
-        self._raise_server()
-        self.status = ServerStatus.listening
-        #
-        self.cb_tcp_condrop(
-            cs_tcp_condrop=cs_tcp_condrop)
-    def _engine_on_tcp_recv(self, cs_tcp_recv):
-        engine = cs_tcp_recv.engine
-        client_sid = cs_tcp_recv.client_sid
-        data = cs_tcp_recv.data
-        #
-        d_message = self.gruel_puff.unpack(
-            payload=data)
-        if self.status == ServerStatus.stopped:
-            raise Exception("should not happen")
-        elif self.status == ServerStatus.listening:
-            raise Exception("should not happen")
-        elif self.status == ServerStatus.tcp_up_awaiting_login:
-            if d_message['message_h'] != 'client_login':
-                log('WEIRD: client is not logged in but sending %s'%(
-                    d_message['message_h']))
-                self._move_to_boot(
-                    message='not logged in')
-                return
-            if d_message['username'] != self.server_username:
-                log('Invalid credentials')
-                self._move_to_boot(
-                    message='invalid credentials')
-                return
-            if d_message['password'] != self.server_password:
-                log('Invalid credentials')
-                self._move_to_boot(
-                    message='invalid credentials')
-                return
-            self.status = ServerStatus.authorised_connection
-        elif self.status == ServerStatus.authorised_connection:
-            if d_message['message_h'] == 'heartbeat':
-                raise Exception('xxx')
-            if d_message['message_h'] == 'client_login':
-                log('WEIRD: client already logged in.')
-                self._move_to_boot(
-                    message="Was already logged in, pls don't be weird")
-                return
-            if d_message['message_h'] == 'doc_data':
-                raise Exception('xxx')
-        elif self.status == ServerStatus.pausing_to_boot:
-            # we don't care about anything the client has to say in this
-            # case. they'll be booted regardless.
-            return
-    # on a bad logon, we want to sleep a bit before we kick people. This
-    # impedes brute-force attacks. This mode is for when we are in that
-    # in between time when we are going to boot someone but haven't yet.
-    pausing_to_boot = uniq()
-    #
-    def _raise_server(self):
-        self.server_sid = self.engine.open_tcp_server(
-            addr=self.server_addr,
-            port=self.server_port,
-            cb_tcp_connect=self._engine_on_tcp_connect,
-            cb_tcp_condrop=self._engine_on_tcp_condrop,
-            cb_tcp_recv=self._engine_on_tcp_recv)
-    def _move_to_boot(self, message):
-        log('Preparing to boot (%s)'%(message))
-        self.status = ServerStatus.preparing_to_boot
-        self.t_boot = self.engine.get_clock().now() + 3
-        self.boot_message = message
+        self.uplink.send_stop_service()
+        self.b_active = False
 
-def prop_gruel_server_new(engine, gruel_press, gruel_puff):
+def prop_gruel_server_new(engine, cb_nearnote, cb_client_doc):
     ob = PropGruelServer(
         engine=engine,
-        gruel_press=gruel_press,
-        gruel_puff=gruel_puff)
+        cb_nearnote=cb_nearnote,
+        cb_client_doc=cb_client_doc)
     return ob
 
