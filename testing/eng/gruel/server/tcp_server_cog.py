@@ -27,7 +27,7 @@ from solent.eng import nearcast_orb_new
 from solent.eng import nearcast_schema_new
 from solent.eng.cs import *
 from solent.eng.gruel.gruel_schema import GruelMessageType
-from solent.eng.gruel.prop_gruel_server import I_NEARCAST_GRUEL_SERVER
+from solent.eng.gruel.server.gs_nearcast_schema import gs_nearcast_schema_new
 from solent.eng.gruel.server.tcp_server_cog import tcp_server_cog_new
 from solent.log import log
 from solent.util import uniq
@@ -35,6 +35,8 @@ from solent.util import uniq
 from testing import run_tests
 from testing import test
 from testing.eng import engine_fake
+from testing.eng import nearcast_snoop_fake
+from testing.eng.gruel.receiver_cog import receiver_cog_fake
 
 import sys
 
@@ -43,49 +45,13 @@ MTU = 500
 def create_sid():
     return 'fake_sid_%s'%(uniq())
 
-class ReceiverCog:
-    def __init__(self, cog_h, orb, engine):
-        self.cog_h = cog_h
-        self.orb = orb
-        self.engine = engine
-        #
-        self.nearnote = []
-        self.suspect_client_message = []
-    #
-    def on_nearnote(self, s):
-        self.nearnote.append(s)
-    def count_nearnote(self):
-        return len(self.nearnote)
-    def get_nearnote(self):
-        return self.nearnote
-    def last_nearnote(self):
-        return self.nearnote[-1]
-    def log_nearnote(self):
-        for l in self.nearnote:
-            log(l)
-    #
-    def on_suspect_client_message(self, d_gruel):
-        log('on_suspect_client_message')
-        self.suspect_client_message.append(d_gruel)
-    def count_suspect_client_message(self):
-        return len(self.suspect_client_message)
-    def last_suspect_client_message(self):
-        return self.suspect_client_message[-1]
-
-def start_service(orb, addr, port, username, password):
+def start_service(orb, ip, port, password):
     orb.nearcast(
         cog_h='testing',
         message_h='start_service',
-        addr=addr,
+        ip=ip,
         port=port,
-        username=username,
         password=password)
-    orb.cycle()
-
-def send_all_ips_are_valid(orb):
-    orb.nearcast(
-        cog_h='testing',
-        message_h='all_ips_are_valid')
     orb.cycle()
 
 def stop_service(orb):
@@ -94,11 +60,12 @@ def stop_service(orb):
         message_h='stop_service')
     orb.cycle()
 
-def send_valid_ip(orb, ip):
+def send_announce_tcp_connect(orb, ip, port):
     orb.nearcast(
         cog_h='testing',
-        message_h='valid_ip',
-        ip=ip)
+        message_h='announce_tcp_connect',
+        ip=ip,
+        port=port)
     orb.cycle()
 
 def simulate_client_connect(engine, orb, tcp_server_cog, ip, port):
@@ -120,7 +87,7 @@ def simulate_client_condrop(engine, orb, tcp_server_cog):
         cs_tcp_condrop=cs_tcp_condrop)
     orb.cycle()
 
-def simulate_client_send_login(engine, orb, tcp_server_cog, uname, pw, hbint):
+def simulate_client_send_login(engine, orb, tcp_server_cog, pw, hbint):
     gruel_schema = gruel_schema_new()
     gruel_press = gruel_press_new(
         gruel_schema=gruel_schema,
@@ -130,7 +97,6 @@ def simulate_client_send_login(engine, orb, tcp_server_cog, uname, pw, hbint):
         mtu=MTU)
     #
     payload = gruel_press.create_client_login_payload(
-        username=uname,
         password=pw,
         heartbeat_interval=hbint)
     cs_tcp_recv = CsTcpRecv()
@@ -144,46 +110,35 @@ def simulate_client_send_login(engine, orb, tcp_server_cog, uname, pw, hbint):
 @test
 def should_start_and_stop():
     engine = engine_fake()
-    nearcast_schema = nearcast_schema_new(
-        i_nearcast=I_NEARCAST_GRUEL_SERVER)
+    nearcast_schema = gs_nearcast_schema_new()
+    snoop = nearcast_snoop_fake(
+        nearcast_schema=nearcast_schema)
+    snoop.disable()
     orb = nearcast_orb_new(
         engine=engine,
-        nearcast_schema=nearcast_schema)
-    #
-    r = ReceiverCog(
-        cog_h='receiver_cog',
-        orb=orb,
-        engine=engine)
-    tcp_server_cog = tcp_server_cog_new(
-        cog_h='tcp_server_cog',
-        orb=orb,
-        engine=engine)
-    #
-    orb.add_cog(r)
-    orb.add_cog(tcp_server_cog)
+        nearcast_schema=nearcast_schema,
+        nearcast_snoop=snoop)
+    r = orb.init_cog(
+        fn=receiver_cog_fake)
+    tcp_server_cog = orb.init_cog(
+        fn=tcp_server_cog_new)
     #
     addr = '127.0.0.1'
     port = 5000
-    username = 'aaa'
     password = 'bbb'
     #
     # confirm starting state
     orb.cycle()
-    assert 0 == r.count_nearnote()
     assert tcp_server_cog.server_sid == None
     assert tcp_server_cog.client_sid == None
     #
     # scenario: start the server
-    start_service(
-        orb=orb,
-        addr=addr,
+    r.nc_start_service(
+        ip=addr,
         port=port,
-        username=username,
         password=password)
     #
     # confirm effects
-    assert r.count_nearnote() == 1
-    assert r.last_nearnote() == 'tcp_server_cog: listening'
     assert tcp_server_cog.server_sid != None
     assert tcp_server_cog.client_sid == None
     #
@@ -192,8 +147,6 @@ def should_start_and_stop():
         orb=orb)
     #
     # confirm effects
-    assert r.count_nearnote() == 2
-    assert r.last_nearnote() == 'tcp_server_cog: stopped'
     assert tcp_server_cog.server_sid == None
     assert tcp_server_cog.client_sid == None
     #
@@ -202,80 +155,52 @@ def should_start_and_stop():
 @test
 def should_handle_client_connect_and_then_boot_client():
     engine = engine_fake()
-    nearcast_schema = nearcast_schema_new(
-        i_nearcast=I_NEARCAST_GRUEL_SERVER)
+    nearcast_schema = gs_nearcast_schema_new()
+    snoop = nearcast_snoop_fake(
+        nearcast_schema=nearcast_schema)
+    snoop.disable()
     orb = nearcast_orb_new(
         engine=engine,
-        nearcast_schema=nearcast_schema)
-    #
-    r = ReceiverCog(
-        cog_h='receiver_cog',
-        orb=orb,
-        engine=engine)
-    tcp_server_cog = tcp_server_cog_new(
-        cog_h='tcp_server_cog',
-        orb=orb,
-        engine=engine)
-    #
-    orb.add_cog(r)
-    orb.add_cog(tcp_server_cog)
+        nearcast_schema=nearcast_schema,
+        nearcast_snoop=snoop)
+    r = orb.init_cog(
+        fn=receiver_cog_fake)
+    tcp_server_cog = orb.init_cog(
+        fn=tcp_server_cog_new)
     #
     addr = '127.0.0.1'
     port = 5000
-    username = 'aaa'
     password = 'bbb'
     #
     # confirm starting state
-    orb.cycle()
-    assert 0 == r.count_nearnote()
+    assert 0 == r.count_announce_tcp_connect()
     assert tcp_server_cog.server_sid == None
     assert tcp_server_cog.client_sid == None
     #
     # scenario: start the server
     start_service(
         orb=orb,
-        addr=addr,
+        ip=addr,
         port=port,
-        username=username,
         password=password)
-    orb.cycle()
     #
     # confirm effects
-    assert r.count_nearnote() == 1
-    assert r.last_nearnote() == 'tcp_server_cog: listening'
+    assert 0 == r.count_announce_tcp_connect()
     assert tcp_server_cog.server_sid != None
     assert tcp_server_cog.client_sid == None
     #
-    # scenario: client connects from tcp-invald ip address
-    inv_ip = '203.15.93.2'
-    inv_port = 1234
+    # scenario: client connects
+    client_addr = '203.15.93.150'
+    client_port = 6000
     simulate_client_connect(
         engine=engine,
         orb=orb,
         tcp_server_cog=tcp_server_cog,
-        ip=inv_ip,
-        port=inv_port)
+        ip=client_addr,
+        port=client_port)
     #
     # confirm effects
-    assert r.last_nearnote() == 'tcp_server_cog: invalid_ip/%s:%s'%(inv_ip, inv_port)
-    assert tcp_server_cog.server_sid != None
-    assert tcp_server_cog.client_sid == None
-    #
-    # scenario: permission an ip, then client connects from valid ip address
-    addr_to_permit = '203.15.93.150'
-    port_to_permit = 6000
-    send_valid_ip(
-        orb=orb,
-        ip=addr_to_permit)
-    simulate_client_connect(
-        engine=engine,
-        orb=orb,
-        tcp_server_cog=tcp_server_cog,
-        ip=addr_to_permit,
-        port=port_to_permit)
-    #
-    # confirm effects
-    assert r.last_nearnote() == 'tcp_server_cog: client_connect/%s:%s'%(addr_to_permit, port_to_permit)
+    assert 1 == r.count_announce_tcp_connect()
     assert tcp_server_cog.server_sid == None
     assert tcp_server_cog.client_sid != None
     #
@@ -284,48 +209,38 @@ def should_handle_client_connect_and_then_boot_client():
         orb=orb)
     #
     # confirm effects
-    assert r.get_nearnote()[-2] == 'tcp_server_cog: booting_client'
-    assert r.last_nearnote() == 'tcp_server_cog: stopped'
     assert tcp_server_cog.server_sid == None
     assert tcp_server_cog.client_sid == None
     #
     return True
 
 @test
-def should_broadcast_incoming_message_as_suspect():
+def should_broadcast_incoming_message_as_gruel_in():
     engine = engine_fake()
-    nearcast_schema = nearcast_schema_new(
-        i_nearcast=I_NEARCAST_GRUEL_SERVER)
+    nearcast_schema = gs_nearcast_schema_new()
+    snoop = nearcast_snoop_fake(
+        nearcast_schema=nearcast_schema)
+    snoop.disable()
     orb = nearcast_orb_new(
         engine=engine,
-        nearcast_schema=nearcast_schema)
+        nearcast_schema=nearcast_schema,
+        nearcast_snoop=snoop)
     #
-    r = ReceiverCog(
-        cog_h='receiver_cog',
-        orb=orb,
-        engine=engine)
-    tcp_server_cog = tcp_server_cog_new(
-        cog_h='tcp_server_cog',
-        orb=orb,
-        engine=engine)
-    #
-    orb.add_cog(r)
-    orb.add_cog(tcp_server_cog)
+    r = orb.init_cog(
+        fn=receiver_cog_fake)
+    tcp_server_cog = orb.init_cog(
+        fn=tcp_server_cog_new)
     #
     addr = '127.0.0.1'
     port = 5000
-    username = 'aaa'
     password = 'bbb'
     #
     # get to a point where the client is logged in
     start_service(
         orb=orb,
-        addr=addr,
+        ip=addr,
         port=port,
-        username=username,
         password=password)
-    send_all_ips_are_valid(
-        orb=orb)
     simulate_client_connect(
         engine=engine,
         orb=orb,
@@ -334,29 +249,25 @@ def should_broadcast_incoming_message_as_suspect():
         port=port)
     #
     # confirm starting position
-    assert r.last_nearnote() == 'tcp_server_cog: client_connect/%s:%s'%(
-        addr, port)
+    assert 1 == r.count_announce_tcp_connect()
     assert tcp_server_cog.server_sid == None
     assert tcp_server_cog.client_sid != None
     #
     # scenario: client sends a message
-    client_send_username = 'ccc'
     client_send_password = 'ddd'
     client_send_hbint = 3
     simulate_client_send_login(
         engine=engine,
         orb=orb,
         tcp_server_cog=tcp_server_cog,
-        uname=client_send_username,
         pw=client_send_password,
         hbint=client_send_hbint)
     #
     # confirm effects
-    assert 1 == r.count_suspect_client_message()
-    d_gruel = r.last_suspect_client_message()
+    assert 1 == r.count_gruel_recv()
+    d_gruel = r.last_gruel_recv()
     assert d_gruel['message_h'] == 'client_login'
     assert d_gruel['heartbeat_interval'] == client_send_hbint
-    assert d_gruel['username'] == client_send_username
     assert d_gruel['password'] == client_send_password
     #
     # scenario: client disconnect
@@ -379,10 +290,242 @@ def should_broadcast_incoming_message_as_suspect():
     #
     return True
 
-'''
 @test
-def should_send_heartbeat_when_told_to
-'''
+def should_boot_client_when_told_to():
+    engine = engine_fake()
+    nearcast_schema = gs_nearcast_schema_new()
+    snoop = nearcast_snoop_fake(
+        nearcast_schema=nearcast_schema)
+    snoop.disable()
+    orb = nearcast_orb_new(
+        engine=engine,
+        nearcast_schema=nearcast_schema,
+        nearcast_snoop=snoop)
+    #
+    r = orb.init_cog(
+        fn=receiver_cog_fake)
+    tcp_server_cog = orb.init_cog(
+        fn=tcp_server_cog_new)
+    #
+    addr = '127.0.0.1'
+    port = 5000
+    password = 'bbb'
+    #
+    # get to a point where the client is logged in
+    start_service(
+        orb=orb,
+        ip=addr,
+        port=port,
+        password=password)
+    simulate_client_connect(
+        engine=engine,
+        orb=orb,
+        tcp_server_cog=tcp_server_cog,
+        ip=addr,
+        port=port)
+    #
+    # confirm starting position
+    assert 1 == r.count_announce_tcp_connect()
+    assert tcp_server_cog.server_sid == None
+    assert tcp_server_cog.client_sid != None
+    #
+    # scenario: we receive a boot message
+    r.nc_please_tcp_boot()
+    #
+    # check effects: we want to see that the connection has been dropped and
+    # that the server is back up
+    assert tcp_server_cog.server_sid != None
+    assert tcp_server_cog.client_sid == None
+    #
+    return True
+
+@test
+def should_boot_client_when_invalid_gruel_is_received():
+    activity = activity_new()
+    engine = engine_fake()
+    nearcast_schema = gs_nearcast_schema_new()
+    snoop = nearcast_snoop_fake(
+        nearcast_schema=nearcast_schema)
+    snoop.disable()
+    orb = nearcast_orb_new(
+        engine=engine,
+        nearcast_schema=nearcast_schema,
+        nearcast_snoop=snoop)
+    #
+    r = orb.init_cog(
+        fn=receiver_cog_fake)
+    tcp_server_cog = orb.init_cog(
+        fn=tcp_server_cog_new)
+    #
+    addr = '127.0.0.1'
+    port = 5000
+    password = 'bbb'
+    #
+    # get to a point where the client is logged in
+    start_service(
+        orb=orb,
+        ip=addr,
+        port=port,
+        password=password)
+    simulate_client_connect(
+        engine=engine,
+        orb=orb,
+        tcp_server_cog=tcp_server_cog,
+        ip=addr,
+        port=port)
+    #
+    # confirm starting position
+    assert 1 == r.count_announce_tcp_connect()
+    assert 0 == r.count_please_tcp_boot()
+    assert tcp_server_cog.server_sid == None
+    assert tcp_server_cog.client_sid != None
+    #
+    # scenario: send invalid data as though it is gruel
+    cs_tcp_recv = CsTcpRecv()
+    cs_tcp_recv.engine = engine
+    cs_tcp_recv.client_sid = create_sid()
+    cs_tcp_recv.data = bytes('this string is invalid gruel', 'utf8')
+    tcp_server_cog._engine_on_tcp_recv(
+        cs_tcp_recv=cs_tcp_recv)
+    orb.cycle()
+    #
+    # confirm effects: nearcast a boot message
+    assert 1 == r.count_please_tcp_boot()
+    assert tcp_server_cog.server_sid != None
+    assert tcp_server_cog.client_sid == None
+    #
+    return True
+
+@test
+def should_ignore_gruel_send_when_no_client():
+    engine = engine_fake()
+    nearcast_schema = gs_nearcast_schema_new()
+    snoop = nearcast_snoop_fake(
+        nearcast_schema=nearcast_schema)
+    snoop.disable()
+    orb = nearcast_orb_new(
+        engine=engine,
+        nearcast_schema=nearcast_schema,
+        nearcast_snoop=snoop)
+    r = orb.init_cog(
+        fn=receiver_cog_fake)
+    tcp_server_cog = orb.init_cog(
+        fn=tcp_server_cog_new)
+    #
+    addr = '127.0.0.1'
+    port = 5000
+    password = 'bbb'
+    #
+    # confirm starting state
+    assert 0 == r.count_announce_tcp_connect()
+    assert tcp_server_cog.server_sid == None
+    assert tcp_server_cog.client_sid == None
+    #
+    # scenario: start the server
+    start_service(
+        orb=orb,
+        ip=addr,
+        port=port,
+        password=password)
+    #
+    # confirm effects
+    assert 0 == r.count_announce_tcp_connect()
+    assert tcp_server_cog.server_sid != None
+    assert tcp_server_cog.client_sid == None
+    #
+    # scenario: tcp_server_cog gets gruel_send but client is not connected
+    r.nc_gruel_send(
+        d_gruel={
+            'message_h': 'client_login',
+            'message_type': GruelMessageType.client_login.value,
+            'heartbeat_interval': 4,
+            'max_packet_size': 5,
+            'max_doc_size': 6,
+            'protocol_h': '7_proto',
+            'password': '8_password',
+            'notes': '9_notes'})
+    orb.cycle()
+    #
+    # confirm effects: client should still be connected, and we should have
+    # sent no packets to the engine.
+    assert tcp_server_cog.server_sid != None
+    assert tcp_server_cog.client_sid == None
+    assert 0 == len(engine.sent_data)
+    #
+    return True
+
+@test
+def should_send_gruel_send_data_to_a_connected_client():
+    engine = engine_fake()
+    nearcast_schema = gs_nearcast_schema_new()
+    snoop = nearcast_snoop_fake(
+        nearcast_schema=nearcast_schema)
+    snoop.disable()
+    orb = nearcast_orb_new(
+        engine=engine,
+        nearcast_schema=nearcast_schema,
+        nearcast_snoop=snoop)
+    r = orb.init_cog(
+        fn=receiver_cog_fake)
+    tcp_server_cog = orb.init_cog(
+        fn=tcp_server_cog_new)
+    #
+    addr = '127.0.0.1'
+    port = 5000
+    password = 'bbb'
+    #
+    # confirm starting state
+    assert 0 == r.count_announce_tcp_connect()
+    assert tcp_server_cog.server_sid == None
+    assert tcp_server_cog.client_sid == None
+    #
+    # scenario: start the server
+    start_service(
+        orb=orb,
+        ip=addr,
+        port=port,
+        password=password)
+    #
+    # confirm effects
+    assert 0 == r.count_announce_tcp_connect()
+    assert tcp_server_cog.server_sid != None
+    assert tcp_server_cog.client_sid == None
+    #
+    # scenario: client connects
+    client_addr = '203.15.93.150'
+    client_port = 6000
+    simulate_client_connect(
+        engine=engine,
+        orb=orb,
+        tcp_server_cog=tcp_server_cog,
+        ip=client_addr,
+        port=client_port)
+    #
+    # confirm baseline
+    assert 1 == r.count_announce_tcp_connect()
+    assert tcp_server_cog.server_sid == None
+    assert tcp_server_cog.client_sid != None
+    #
+    # scenario: tcp_server_cog gets gruel_send but client is not connected
+    r.nc_gruel_send(
+        d_gruel={
+            'message_h': 'client_login',
+            'message_type': GruelMessageType.client_login.value,
+            'heartbeat_interval': 4,
+            'max_packet_size': 5,
+            'max_doc_size': 6,
+            'protocol_h': '7_proto',
+            'password': '8_password',
+            'notes': '9_notes'})
+    orb.cycle()
+    #
+    # confirm effects: client should still be connected, and we should have
+    # sent no packets to the engine.
+    assert tcp_server_cog.server_sid == None
+    assert tcp_server_cog.client_sid != None
+    assert 1 == len(engine.sent_data)
+    #
+    return True
 
 if __name__ == '__main__':
     run_tests(

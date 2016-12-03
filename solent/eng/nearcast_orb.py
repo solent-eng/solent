@@ -40,6 +40,7 @@ from collections import deque
 from collections import OrderedDict as od
 import inspect
 from pprint import pprint
+import types
 
 class NearcastOrb:
     def __init__(self, engine, nearcast_schema, nearcast_snoop):
@@ -61,9 +62,14 @@ class NearcastOrb:
                 fn_at_turn = getattr(cog, 'at_turn')
                 fn_at_turn(
                     activity=activity)
-    def cycle(self):
-        # This is useful for testing. It keeps calling at_turn until there
-        # is no more activity left to do
+    def cycle(self, max_turns=20):
+        '''
+        This is useful for testing. It keeps calling at_turn until there
+        is no more activity left to do. You probably do not want an engine
+        using this behaviour, because it would lead to starvation of other
+        orbs.
+        '''
+        turn_counter = 0
         activity = activity_new()
         while True:
             self.at_turn(
@@ -73,8 +79,29 @@ class NearcastOrb:
                 activity.clear()
             else:
                 break
+            if max_turns != None and turn_counter >= max_turns:
+                log('breaking nearcast_orb.cycle (reached maxturns %s)'%(
+                    max_turns))
+                break
+            turn_counter += 1
     def add_cog(self, cog):
+        if cog in self.cogs:
+            try:
+                name = cog.cog_h
+            except:
+                name = 'unknown, has no cog_h'
+            raise Exception("Cog %s is already added."%(name))
         self.cogs.append(cog)
+    def init_cog(self, fn):
+        if type(fn) != types.FunctionType:
+            raise Exception("install_cog takes a function only.")
+        cog = fn(
+            cog_h='cog_%s_%s'%(uniq(), fn.__name__),
+            orb=self,
+            engine=self.engine)
+        self.add_cog(
+            cog=cog)
+        return cog
     def nearcast(self, cog_h, message_h, **d_fields):
         '''
         It is important that we buffer all the messages to be sequenced, and
@@ -105,7 +132,11 @@ class NearcastOrb:
             for cog in self.cogs:
                 if rname in dir(cog):
                     fn = getattr(cog, rname)
-                    fn(**d_fields)
+                    try:
+                        fn(**d_fields)
+                    except:
+                        log('problem is %s:%s'%(cog.cog_h, rname))
+                        raise
 
 def nearcast_orb_new(engine, nearcast_schema, nearcast_snoop=None):
     '''

@@ -14,3 +14,5 @@ for script_name in $(find testing -name "[0-9A-Za-z]*.py" | grep -v '__'); do
     fi
 done
 
+echo '(fini)'
+

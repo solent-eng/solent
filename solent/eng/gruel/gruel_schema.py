@@ -64,8 +64,6 @@ I_MESSAGE_DEF = '''
     i message h
         i u1 field_h
         i u2 field_h
-        i s40 field_h
-        i s100 field_h
         i vs field_h
 
     message client_login
@@ -74,7 +72,7 @@ I_MESSAGE_DEF = '''
         # Indicates the maximum packet size that the server should send to the
         # client. This is useful for situations where you have routing
         # limitations between yourself and the server venue.
-        u2 max_packet_len
+        u2 max_packet_size
         # Indicates the maximum doc size that the client can consume from
         # the server. If this is zero, then there is no limit. This mechanism
         # is in here to prevent a situation where a single client could run a
@@ -83,32 +81,30 @@ I_MESSAGE_DEF = '''
         # size could be (which might span several docdata messages, but must
         # be within a well-defined maximum size).
         u2 max_doc_size
-        s100 protocol_h
-        s100 username
-        s100 password
-        s100 notes
+        vs protocol_h
+        vs password
+        vs notes
 
     message server_greet
         u1 message_type
         # If this number comes back and is smaller than what the client wrote
         # in client_login, then the client must adjust down to this size.
-        u2 max_packet_len
+        u2 max_packet_size
         # This is the buffer size that the server makes available to the
         # client. Documents larger than this cannot be handled. If this is
         # zero then there is no limit
         u2 max_doc_size
-        s100 notes
+        vs notes
 
     message server_bye
         u1 message_type
-        s100 notes
+        vs notes
 
     message heartbeat
         u1 message_type
 
     message docdata
         u1 message_type
-        s40 sender_doc_h
         # set to 1 in the last packet of each document
         u1 b_complete
         vs data

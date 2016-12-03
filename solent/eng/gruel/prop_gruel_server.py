@@ -34,88 +34,29 @@ from solent.util import ns
 from solent.util import uniq
 from solent.eng import gruel_press_new
 from solent.eng import nearcast_orb_new
-from solent.eng import nearcast_schema_new
+from solent.eng.gruel.server.gs_nearcast_schema import gs_nearcast_schema_new
 
 from collections import deque
 from collections import OrderedDict as od
 from enum import Enum
 
-I_NEARCAST_GRUEL_SERVER = '''
-    i message h
-        i field h
-
-    message nearnote
-        field s
-
-    message valid_ip
-        field ip
-
-    message all_ips_are_valid
-
-    message start_service
-        field addr
-        field port
-        field username
-        field password
-
-    message stop_service
-
-    message announce_client_connect
-        field ip
-        field port
-
-    message announce_client_condrop
-
-    message boot_client
-        field seconds_to_wait
-        field message
-
-    # A message from the client that has not yet been through the login cog.
-    # Once a TCP connection is done, all activity should flow to the login
-    # cog, which should act as a gateway.
-    message suspect_client_message
-        field d_gruel
-
-    message authorised_client_message
-        field d_gruel
-
-    message outgoing_message_settings
-        field max_packet_size
-        field max_doc_size
-
-    message inbound_heartbeat
-
-    message outbound_heartbeat
-
-    message outbound_document
-        field doc_h
-        field doc
-
-'''
-
 class UplinkCog:
-    def __init__(self, cog_h, orb, engine, cb_nearnote):
+    def __init__(self, cog_h, orb, engine):
         self.cog_h = cog_h
         self.orb = orb
         self.engine = engine
-        self.cb_nearnote = cb_nearnote
-    #
-    def on_nearnote(self, s):
-        self.cb_nearnote(
-            s=s)
     #
     def send_nearnote(self, s):
         self.orb.nearcast(
             cog_h=self.cog_h,
             message_h='nearnote',
             s=s)
-    def send_start_service(self, addr, port, username, password):
+    def send_start_service(self, addr, port, password):
         self.orb.nearcast(
             cog_h=self.cog_h,
             message_h='start_service',
-            addr=addr,
+            ip=addr,
             port=port,
-            username=username,
             password=password)
     def send_stop_service(self):
         self.orb.nearcast(
@@ -123,17 +64,15 @@ class UplinkCog:
             message_h='stop_service')
 
 class PropGruelServer:
-    def __init__(self, engine, cb_nearnote, cb_client_doc):
+    def __init__(self, engine, cb_doc_recv):
         self.engine = engine
-        self.cb_nearnote = None
-        self.cb_client_doc = None
+        self.cb_doc_recv = cb_doc_recv
         #
         self.b_active = False
         #
         self.gruel_server_nearcast = nearcast_orb_new(
             engine=self.engine,
-            nearcast_schema=nearcast_schema_new(
-                i_nearcast=I_NEARCAST_GRUEL_SERVER))
+            nearcast_schema=gs_nearcast_schema_new())
         #
         self.tcp_server_cog = tcp_server_cog_new(
             cog_h='tcp_server_cog',
@@ -145,8 +84,7 @@ class PropGruelServer:
         self.uplink = UplinkCog(
             cog_h='uplink',
             orb=self.gruel_server_nearcast,
-            engine=engine,
-            cb_nearnote=cb_nearnote)
+            engine=engine)
         self.gruel_server_nearcast.add_cog(
             cog=self.uplink)
         #
@@ -158,14 +96,13 @@ class PropGruelServer:
     #
     def get_status(self):
         return self.b_active
-    def start(self, addr, port, username, password):
+    def start(self, addr, port, password):
         if self.b_active:
             raise Exception('server is already started')
         #
         self.uplink.send_start_service(
             addr=addr,
             port=port,
-            username=username,
             password=password)
         self.b_active = True
     def stop(self):
@@ -175,11 +112,14 @@ class PropGruelServer:
         #
         self.uplink.send_stop_service()
         self.b_active = False
+    #
+    def on_doc_recv(self, doc):
+        self.cb_doc_recv(
+            doc=doc)
 
-def prop_gruel_server_new(engine, cb_nearnote, cb_client_doc):
+def prop_gruel_server_new(engine, cb_doc_recv):
     ob = PropGruelServer(
         engine=engine,
-        cb_nearnote=cb_nearnote,
-        cb_client_doc=cb_client_doc)
+        cb_doc_recv=cb_doc_recv)
     return ob
 

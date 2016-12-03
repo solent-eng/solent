@@ -48,7 +48,7 @@ class PropGruelClient:
         self.status = ClientStatus.dormant
         #
         self.login_credentials = ns()
-        self.max_outbound_packet_len = None
+        self.max_outbound_packet_size = None
         self.heartbeat_interval = 1
         self.last_heartbeat_recv = None
         self.last_heartbeat_sent = None
@@ -84,10 +84,9 @@ class PropGruelClient:
             doc = self.q_outbound_documents.popleft()
             b_complete = 1
             #
-            # message_type(1) + sender_doc_id(40) + b_complete(1) + overhead
-            # for the vs (2) => 44
-            docpart_overhead = 44
-            max_doc_size = self.max_outbound_packet_len - docpart_overhead
+            # message_type(1) + b_complete(1) + overhead for the vs (2) => 4
+            docpart_overhead = 4
+            max_doc_size = self.max_outbound_packet_size - docpart_overhead
             if len(doc) > max_doc_size:
                 ret = doc[max_doc_size:]
                 self.q_outbound_documents.appendleft(ret)
@@ -95,7 +94,6 @@ class PropGruelClient:
                 b_complete = 0
             #
             payload = self.gruel_press.create_docdata_payload(
-                sender_doc_h='doc_%s'%uniq(), # arbitrary doc id
                 b_complete=b_complete,
                 data=doc)
             self.engine.send(
@@ -110,7 +108,7 @@ class PropGruelClient:
         what state it is in.
         '''
         return self.status.name
-    def attempt_connection(self, addr, port, username, password, cb_connect, cb_condrop, cb_doc):
+    def attempt_connection(self, addr, port, password, cb_connect, cb_condrop, cb_doc):
         '''
         The reason for the callbacks is because the class that this is
         emcapsulated within will probably want to log that activity.
@@ -122,7 +120,6 @@ class PropGruelClient:
         self.cb_doc = cb_doc
         self.doc_accumulator = deque()
         self._set_login_credentials(
-            username=username,
             password=password)
         self.engine.open_tcp_client(
             addr=addr,
@@ -163,8 +160,8 @@ class PropGruelClient:
             raise Exception("Client should not receive client_login")
         elif gmt == 'server_greet':
             self.status = ClientStatus.streaming
-            self.max_outbound_packet_len = d_message[
-                'max_packet_len']
+            self.max_outbound_packet_size = d_message[
+                'max_packet_size']
         elif gmt == 'heartbeat':
             # this is us receiving a heartbeat from the server. so, we
             # send a heartbeat back
@@ -180,12 +177,10 @@ class PropGruelClient:
             hexdump_bytearray(data)
             raise Exception("Unhandled message type %s"%gmt)
     #
-    def _set_login_credentials(self, username, password):
-        self.login_credentials.username = username
+    def _set_login_credentials(self, password):
         self.login_credentials.password = password
     def _attempt_login(self):
         arr = self.gruel_press.create_client_login_payload(
-            username=self.login_credentials.username,
             password=self.login_credentials.password,
             heartbeat_interval=self.heartbeat_interval)
         self.engine.send(

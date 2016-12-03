@@ -24,6 +24,9 @@
 
 from .gruel_schema import GruelMessageType
 
+from solent.log import log
+from solent.log import hexdump_bytearray
+
 import struct
 
 MAX_PACKET_LEN_IN_BYTES = 1400
@@ -40,7 +43,7 @@ class GruelPress:
         # array of memory is used to prepare messages for the wire. (So you
         # would not want to buffer this anywhere.)
         self.arr = bytearray(self.mtu)
-    def _apply(self, message_h, **fields):
+    def create(self, message_h, **fields):
         '''
         Render the supplied message values to the bytearray.
         '''
@@ -61,7 +64,7 @@ class GruelPress:
         for (field_h, field_dt) in message_stencil.items():
             field_value = fields[field_h]
             # struct docs: https://docs.python.org/3.1/library/struct.html
-            #print('%s %s'%(field_h, type(field_value)))
+            #log('** %s %s'%(field_h, field_value))
             if field_dt.name == 'u1':
                 bsize = 1
                 struct.pack_into(
@@ -111,51 +114,51 @@ class GruelPress:
                     self.arr,        # buffer
                     offset,          # offset
                     bytes(field_value, 'utf8'))
-                offset += bsize
+                offset += s_len
             else:
                 raise Exception("Datatype not recognised/handled: %s"%(
                     field_dt.name))
+        return self.arr
     #
-    def create_client_login_payload(self, username, password, heartbeat_interval):
+    def create_client_login_payload(self, password, heartbeat_interval):
         gmt = GruelMessageType.client_login
         #
         message_h = gmt.name
         message_type = gmt.value
-        self._apply(
+        self.create(
             message_h=message_h,
             # fields are below
             message_type=message_type,
             heartbeat_interval=heartbeat_interval,
-            max_packet_len=MAX_PACKET_LEN_IN_BYTES,
+            max_packet_size=MAX_PACKET_LEN_IN_BYTES,
             max_doc_size=MAX_DOC_SIZE_IN_BYTES,
             protocol_h=PROTOCOL_H,
-            username=username,
             password=password,
             notes='text for notes')
         return self.arr
-    def create_server_greet_payload(self, max_packet_len):
+    def create_server_greet_payload(self, max_packet_size):
         gmt = GruelMessageType.server_greet
         #
         message_h = gmt.name
         message_type = gmt.value
-        self._apply(
+        self.create(
             message_h=message_h,
             # fields are below
             message_type=message_type,
-            max_packet_len=max_packet_len,
+            max_packet_size=max_packet_size,
             max_doc_size=MAX_DOC_SIZE_IN_BYTES,
             notes='text for notes')
         return self.arr
-    def create_server_bye_payload(self):
+    def create_server_bye_payload(self, notes):
         gmt = GruelMessageType.server_bye
         #
         message_h = gmt.name
         message_type = gmt.value
-        self._apply(
+        self.create(
             message_h=message_h,
             # fields are below
             message_type=message_type,
-            notes='text in goodbye message')
+            notes=notes)
         return self.arr
 
     def create_heartbeat_payload(self):
@@ -163,22 +166,21 @@ class GruelPress:
         #
         message_h = gmt.name
         message_type = gmt.value
-        self._apply(
+        self.create(
             message_h=message_h,
             # fields are below
             message_type=message_type)
         return self.arr
-    def create_docdata_payload(self, sender_doc_h, b_complete, data):
+    def create_docdata_payload(self, b_complete, data):
         gmt = GruelMessageType.docdata
         #
         message_h = gmt.name
         message_type = gmt.value
-        self._apply(
+        self.create(
             message_h=message_h,
             # fields are below
             message_type=message_type,
             b_complete=b_complete,
-            sender_doc_h=sender_doc_h,
             data=data)
         return self.arr
 

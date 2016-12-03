@@ -25,33 +25,45 @@ Some detailed differences:
 
 # Messages
 
+
 ```
-    client_greet:   u8/message_type     0
-                    u8/beat_interval    seconds between heartbeats
-                    u16/max_packet_len  in bytes
-                    u16/max_doc_size    in bytes
-                    s100/protocol_h     identifier for the protocol
-                    s100/username
-                    s100/password
-                    s100/notes
+// Types
+    u1
+        unsigned byte, equv to uint8_t in C
 
-    server_greet:   u8/message_type     1
-                    u16/max_packet_len
-                    u16/max_doc_size    in bytes
+    u2
+        equiv to uint16_t in C
+
+    vs:
+        string of variable length. the first two bytes are an unsigned int
+        that tell you how long the rest of the field is. this string will
+        not be terminated by 0x00.
+
+// Messages
+    client_login:   u1/message_type         0
+                    u1/heartbeat_interval   seconds between heartbeats
+                    u2/max_packet_size      in bytes
+                    u2/max_doc_size         in bytes
+                    vs/protocol_h           identifier for the protocol
+                    vs/password
                     vs/notes
 
-    client_logout:  u8/message_type     2
+    server_greet:   u1/message_type         1
+                    u2/max_packet_size      in bytes
+                    u2/max_doc_size         in bytes
                     vs/notes
 
-    server_bye:     u8/message_type     3
+    server_bye:     u1/message_type         2
                     vs/notes
 
-    heartbeat:      u8/message_type     4
+    server_bye:     u1/message_type         3
+                    vs/notes
 
-    docpart:        u8/message_type     5
-                    u8/b_completes      boolean
-                    s40/sender_doc_h
-                    b/payload
+    heartbeat:      u1/message_type         4
+
+    docpart:        u1/message_type         5
+                    u1/b_completes          acts as bool. should be 0 or 1.
+                    vs/payload
 ```
 
 

@@ -19,11 +19,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import ip_validator_new
 from solent.eng.gruel.gruel_schema import gruel_schema_new
 from solent.eng.gruel.gruel_press import gruel_press_new
 from solent.eng.gruel.gruel_puff import gruel_puff_new
 from solent.log import log
+
+import traceback
 
 class TcpServerCog:
     def __init__(self, cog_h, orb, engine):
@@ -41,39 +42,54 @@ class TcpServerCog:
         #
         self.server_sid = None
         self.client_sid = None
-        self.ip_validator = ip_validator_new()
         #
         self.server_addr = None
         self.server_port = None
     #
-    def on_all_ips_are_valid(self):
-        self.ip_validator.accept_any_ip()
-    def on_valid_ip(self, ip):
-        self.ip_validator.add_ip(
-            ip=ip)
-    def on_start_service(self, addr, port, username, password):
+    def on_start_service(self, ip, port, password):
         if self.server_sid != None:
             log('weird: already listening to server (%s)'%self.server_sid)
             raise Exception('algorithm exception')
         if self.client_sid != None:
             log('weird: client connectied')
             raise Exception('algorithm exception')
+        self.server_addr = ip
+        self.server_port = port
         self._engine_raise_server()
     def on_stop_service(self):
         self._engine_lower_any_server()
         self._engine_boot_any_client()
-        self.ncsend_nearnote('stopped')
+    def on_please_tcp_boot(self):
+        self._engine_boot_any_client()
+        self._engine_raise_server()
+    def on_gruel_send(self, d_gruel):
+        if not self.client_sid:
+            return
+        payload = self.gruel_press.create(
+            **d_gruel)
+        self.engine.send(
+            sid=self.client_sid,
+            data=payload)
     #
-    def ncsend_nearnote(self, s):
+    def nc_announce_tcp_connect(self, ip, port):
         self.orb.nearcast(
             cog_h=self.cog_h,
-            message_h='nearnote',
-            s='tcp_server_cog: %s'%s,)
-    def ncsend_suspect_client_message(self, d_gruel):
+            message_h='announce_tcp_connect',
+            ip=ip,
+            port=port)
+    def nc_announce_tcp_condrop(self):
         self.orb.nearcast(
             cog_h=self.cog_h,
-            message_h='suspect_client_message',
+            message_h='announce_tcp_condrop')
+    def nc_gruel_recv(self, d_gruel):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='gruel_recv',
             d_gruel=d_gruel)
+    def nc_please_tcp_boot(self):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='please_tcp_boot')
     #
     def _engine_raise_server(self):
         self.server_sid = self.engine.open_tcp_server(
@@ -82,7 +98,6 @@ class TcpServerCog:
             cb_tcp_connect=self._engine_on_tcp_connect,
             cb_tcp_condrop=self._engine_on_tcp_condrop,
             cb_tcp_recv=self._engine_on_tcp_recv)
-        self.ncsend_nearnote('listening')
     def _engine_lower_any_server(self):
         if self.server_sid == None:
             return
@@ -92,7 +107,6 @@ class TcpServerCog:
     def _engine_boot_any_client(self):
         if self.client_sid == None:
             return
-        self.ncsend_nearnote('booting_client')
         self.engine.close_tcp_client(
             sid=self.client_sid)
         self.client_sid = None
@@ -102,22 +116,17 @@ class TcpServerCog:
         addr = cs_tcp_connect.addr
         port = cs_tcp_connect.port
         #
-        if not self.ip_validator.is_ok(addr):
-            self.engine.close_tcp_client(
-                sid=client_sid)
-            self.ncsend_nearnote('invalid_ip/%s:%s'%(addr, port))
-            return
-        #
-        self.ncsend_nearnote('client_connect/%s:%s'%(addr, port))
-        self._engine_lower_any_server()
+        self.nc_announce_tcp_connect(
+            ip=addr,
+            port=port)
         self.client_sid = client_sid
+        self._engine_lower_any_server()
     def _engine_on_tcp_condrop(self, cs_tcp_condrop):
         engine = cs_tcp_condrop.engine
         client_sid = cs_tcp_condrop.client_sid
         message = cs_tcp_condrop.message
         #
-        self.ncsend_nearnote('client condrop')
-        #
+        self.nc_announce_tcp_condrop()
         self.client_sid = None
         self._engine_raise_server()
     def _engine_on_tcp_recv(self, cs_tcp_recv):
@@ -127,10 +136,14 @@ class TcpServerCog:
         #
         # we unpack the message and broadcast it so that the login
         # server can look at it
-        d_gruel = self.gruel_puff.unpack(
-            payload=data)
-        self.ncsend_suspect_client_message(
-            d_gruel=d_gruel)
+        try:
+            d_gruel = self.gruel_puff.unpack(
+                payload=data)
+            self.nc_gruel_recv(
+                d_gruel=d_gruel)
+        except:
+            log('Could not parse payload. Likely protocol error.')
+            self.nc_please_tcp_boot()
 
 def tcp_server_cog_new(cog_h, orb, engine):
     ob = TcpServerCog(

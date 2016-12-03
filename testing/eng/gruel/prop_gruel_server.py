@@ -23,6 +23,7 @@ from testing import run_tests
 from testing import test
 from testing.eng import engine_fake
 from testing.util import clock_fake
+from testing.eng.gruel.receiver_cog import receiver_cog_fake
 
 from solent.eng import activity_new
 from solent.eng import cs
@@ -38,23 +39,14 @@ import sys
 
 MTU = 1492
 
-class Receiver:
-    def __init__(self):
-        self.nearnote = []
-        self.docs = []
-    def on_nearnote(self, s):
-        self.nearnote.append(s)
-    def latest(self):
-        return self.nearnote[-1]
-    def on_client_doc(self, doc):
-        self.docs.append(doc)
-
-def start_server(engine, prop_gruel_server, addr, port, username, password, receiver):
+def start_server(engine, prop_gruel_server, addr, port, password):
     prop_gruel_server.start(
         addr=addr,
         port=port,
-        username=username,
         password=password)
+
+def stop_server(prop_gruel_server):
+    prop_gruel_server.stop()
 
 @test
 def should_construct_and_start_and_stop():
@@ -62,7 +54,10 @@ def should_construct_and_start_and_stop():
     port = 5000
     username = 'dssd'
     password = 'fgfdgf'
-    receiver = Receiver()
+    r = receiver_cog_fake(
+        cog_h='receiver',
+        orb=None,
+        engine=None)
     #
     engine = engine_fake()
     activity = activity_new()
@@ -77,39 +72,19 @@ def should_construct_and_start_and_stop():
         mtu=MTU)
     prop_gruel_server = prop_gruel_server_new(
         engine=engine,
-        cb_nearnote=receiver.on_nearnote,
-        cb_client_doc=receiver.on_client_doc)
+        cb_doc_recv=r.on_doc_recv)
     #
-    # confirm effects
-    prop_gruel_server.at_turn(
-        activity=activity)
-    assert 1 == len(receiver.nearnote)
-    assert receiver.latest() == 'prop_gruel_server: nearcast_started'
-    #
-    # scenario: start server
+    # scenario: start and stop without crashing
     start_server(
         engine=engine,
         prop_gruel_server=prop_gruel_server,
         addr=addr,
         port=port,
-        username=username,
-        password=password,
-        receiver=receiver)
+        password=password)
+    stop_server(
+        prop_gruel_server=prop_gruel_server)
     #
-    # confirm effects
-    prop_gruel_server.at_turn(
-        activity=activity)
-    assert 2 == len(receiver.nearnote)
-    assert receiver.latest() == 'tcp_server_cog: listening'
-    #
-    # scenario: stop server
-    prop_gruel_server.stop()
-    #
-    # confirm effects
-    prop_gruel_server.at_turn(
-        activity=activity)
-    assert 3 == len(receiver.nearnote)
-    assert receiver.latest() == 'tcp_server_cog: stopped'
+    return True
 
 if __name__ == '__main__':
     run_tests(

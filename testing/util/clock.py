@@ -7,8 +7,8 @@ class Clock:
         self.t += n
     def set(self, t):
         self.t = t
-    def inc(self):
-        self.t += 1
+    def inc(self, amt=1):
+        self.t += amt
     def now(self):
         return self.t
 

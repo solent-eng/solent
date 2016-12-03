@@ -31,6 +31,7 @@ from solent.eng import gruel_press_new
 from solent.eng import gruel_schema_new
 from solent.eng import prop_gruel_client_new
 from solent.log import hexdump_bytearray
+from solent.log import log
 from solent.util import uniq
 
 from collections import deque
@@ -99,7 +100,6 @@ def should_attempt_connection():
     prop_gruel_client.attempt_connection(
         addr=addr,
         port=port,
-        username='uname',
         password='pword',
         cb_connect=connection_info.on_tcp_connect,
         cb_condrop=connection_info.on_tcp_condrop,
@@ -140,7 +140,6 @@ def should_return_to_dormant_on_failed_connection():
     prop_gruel_client.attempt_connection(
         addr=addr,
         port=port,
-        username='uname',
         password='pword',
         cb_connect=connection_info.on_tcp_connect,
         cb_condrop=connection_info.on_tcp_condrop,
@@ -190,7 +189,6 @@ def should_handle_successful_tcp_connection():
     prop_gruel_client.attempt_connection(
         addr=addr,
         port=port,
-        username='uname',
         password='pword',
         cb_connect=connection_info.on_tcp_connect,
         cb_condrop=connection_info.on_tcp_condrop,
@@ -241,12 +239,10 @@ def should_simulate_common_behaviour():
     assert 0 == len(engine.events)
     addr = '127.0.0.1'
     port = 4098
-    username = 'uname'
     password = 'pword'
     prop_gruel_client.attempt_connection(
         addr=addr,
         port=port,
-        username=username,
         password=password,
         cb_connect=connection_info.on_tcp_connect,
         cb_condrop=connection_info.on_tcp_condrop,
@@ -282,7 +278,6 @@ def should_simulate_common_behaviour():
     d_client_login = gruel_puff.unpack(
         payload=latest_payload)
     assert d_client_login['message_h'] == 'client_login'
-    assert d_client_login['username'] == username
     assert d_client_login['password'] == password
     assert d_client_login['heartbeat_interval'] == 1
     #
@@ -292,7 +287,7 @@ def should_simulate_common_behaviour():
     # a real engine would call back to it.)
     def server_sends_greet_payload():
         server_greet_payload = gruel_press.create_server_greet_payload(
-            max_packet_len=MAX_PACKET_LEN)
+            max_packet_size=MAX_PACKET_LEN)
         cs_tcp_recv = cs.CsTcpRecv()
         cs_tcp_recv.engine = engine
         cs_tcp_recv.client_sid = 'fake_sid'
@@ -397,7 +392,6 @@ def should_simulate_common_behaviour():
     '''
     def server_sends_small_payload():
         payload = gruel_press.create_docdata_payload(
-            sender_doc_h='doc_%s'%uniq(), # arbitrary doc id
             b_complete=1,
             data=small_doc)
         cs_tcp_recv = cs.CsTcpRecv()
@@ -431,7 +425,6 @@ def should_simulate_common_behaviour():
                 b_complete = 1
             #
             payload = gruel_press.create_docdata_payload(
-                sender_doc_h='doc_%s'%uniq(), # arbitrary doc id
                 b_complete=b_complete,
                 data=docpart)
             #
