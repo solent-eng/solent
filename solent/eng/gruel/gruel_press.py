@@ -30,7 +30,7 @@ from solent.log import hexdump_bytearray
 import struct
 
 MAX_PACKET_LEN_IN_BYTES = 1400
-MAX_DOC_SIZE_IN_BYTES = 0
+MAX_FULLDOC_SIZE_IN_BYTES = 0
 
 PROTOCOL_H = 'proto_h/change_me_later'
 
@@ -64,7 +64,7 @@ class GruelPress:
         for (field_h, field_dt) in message_stencil.items():
             field_value = fields[field_h]
             # struct docs: https://docs.python.org/3.1/library/struct.html
-            #log('** %s %s'%(field_h, field_value))
+            #log('** o%s press %s %s'%(offset, field_h, field_value))
             if field_dt.name == 'u1':
                 bsize = 1
                 struct.pack_into(
@@ -81,22 +81,6 @@ class GruelPress:
                     offset,      # offset
                     field_value)
                 offset += bsize
-            elif field_dt.name == 's40':
-                bsize = 40
-                struct.pack_into(
-                    '40s',       # fmt.
-                    self.arr,    # buffer
-                    offset,      # offset
-                    bytes(field_value, 'utf8'))
-                offset += bsize
-            elif field_dt.name == 's100':
-                bsize = 100
-                struct.pack_into(
-                    '100s',      # fmt.
-                    self.arr,    # buffer
-                    offset,      # offset
-                    bytes(field_value, 'utf8'))
-                offset += bsize
             elif field_dt.name == 'vs':
                 s_len = len(field_value)
                 # first we do a two-byte length, network-endian
@@ -107,12 +91,12 @@ class GruelPress:
                     offset,      # offset
                     s_len)
                 offset += bsize
-                # Now we put that string into the array. Note that it may
-                # not be null-terminated.
+                # Now we put that string into the array. Emphasis: these
+                # strings are not zero-terminated.
                 struct.pack_into(
-                    '%ss'%(s_len+1), # fmt.
-                    self.arr,        # buffer
-                    offset,          # offset
+                    '%ss'%s_len, # fmt.
+                    self.arr,    # buffer
+                    offset,      # offset
                     bytes(field_value, 'utf8'))
                 offset += s_len
             else:
@@ -131,7 +115,7 @@ class GruelPress:
             message_type=message_type,
             heartbeat_interval=heartbeat_interval,
             max_packet_size=MAX_PACKET_LEN_IN_BYTES,
-            max_doc_size=MAX_DOC_SIZE_IN_BYTES,
+            max_fulldoc_size=MAX_FULLDOC_SIZE_IN_BYTES,
             protocol_h=PROTOCOL_H,
             password=password,
             notes='text for notes')
@@ -146,7 +130,7 @@ class GruelPress:
             # fields are below
             message_type=message_type,
             max_packet_size=max_packet_size,
-            max_doc_size=MAX_DOC_SIZE_IN_BYTES,
+            max_fulldoc_size=MAX_FULLDOC_SIZE_IN_BYTES,
             notes='text for notes')
         return self.arr
     def create_server_bye_payload(self, notes):

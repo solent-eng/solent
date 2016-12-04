@@ -58,11 +58,11 @@ I_NEARCAST_GRUEL_SERVER = '''
         field d_gruel
 
     message gruel_send
-        field d_gruel
+        field payload
 
     message announce_login
         field max_packet_size
-        field max_doc_size
+        field max_fulldoc_size
 
     # received from the client
     message doc_recv

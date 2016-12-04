@@ -130,32 +130,36 @@ class ReceiverCog:
             cog_h=self.cog_h,
             message_h='gruel_recv',
             d_gruel=d_gruel)
+        self.orb.cycle()
     #
     def count_gruel_send(self):
         return len(self.acc_gruel_send)
+    def get_gruel_send(self):
+        return self.acc_gruel_send
     def last_gruel_send(self):
         return self.acc_gruel_send[-1]
-    def on_gruel_send(self, d_gruel):
-        log('on_gruel_send') # xxx
-        self.acc_gruel_send.append(d_gruel)
-    def nc_gruel_send(self, d_gruel):
+    def on_gruel_send(self, payload):
+        self.acc_gruel_send.append(payload[:])
+    def nc_gruel_send(self, payload):
         self.orb.nearcast(
             cog_h=self.cog_h,
             message_h='gruel_send',
-            d_gruel=d_gruel)
+            payload=payload)
+        self.orb.cycle()
     #
     def count_announce_login(self):
         return len(self.acc_announce_login)
     def last_announce_login(self):
         return self.acc_announce_login[-1]
-    def nc_announce_login(self, max_packet_size, max_doc_size):
+    def nc_announce_login(self, max_packet_size, max_fulldoc_size):
         self.orb.nearcast(
             cog_h=self.cog_h,
             message_h='announce_login',
             max_packet_size=max_packet_size,
-            max_doc_size=max_doc_size)
-    def on_announce_login(self, max_packet_size, max_doc_size):
-        self.acc_announce_login.append( (max_packet_size, max_doc_size) )
+            max_fulldoc_size=max_fulldoc_size)
+        self.orb.cycle()
+    def on_announce_login(self, max_packet_size, max_fulldoc_size):
+        self.acc_announce_login.append( (max_packet_size, max_fulldoc_size) )
     #
     def on_doc_recv(self, doc):
         self.acc_doc_recv.append(doc)
@@ -164,12 +168,18 @@ class ReceiverCog:
     def last_doc_recv(self):
         return self.acc_doc_recv[-1]
     #
-    def on_doc_send(self, doc):
-        self.acc_doc_send.append(doc)
     def count_doc_send(self):
         return len(self.acc_doc_send)
     def last_doc_send(self):
         return self.acc_doc_send[-1]
+    def on_doc_send(self, doc):
+        self.acc_doc_send.append(doc)
+    def nc_doc_send(self, doc):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='doc_send',
+            doc=doc)
+        self.orb.cycle()
     #
     def on_heartbeat_recv(self):
         self.acc_heartbeat_recv.append(None)

@@ -34,7 +34,11 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent.eng.gruel.gruel_schema import DOCPART_OVERHEAD
 from solent.eng.gruel.gruel_schema import GruelMessageType
+
+from solent.eng import gruel_press_new
+from solent.eng import gruel_schema_new
 from solent.log import log
 from solent.util import uniq
 
@@ -70,9 +74,16 @@ class ServerCustomsCog:
         #
         # long-lived variables
         self.expected_password = None
+        self.gruel_schema = gruel_schema_new()
+        self.gruel_press = gruel_press_new(
+            gruel_schema=self.gruel_schema,
+            mtu=engine.mtu)
         #
         # variables that are zeroed between each client session
         self.state = ServerCustomsState.awaiting_login
+        self.max_fulldoc_size = None
+        self.max_packet_size = None
+        self.max_docpart_size = None
         self.reject_clock_time = None
         self.reject_message = None
         self.recv_doc_buffer = None
@@ -82,6 +93,9 @@ class ServerCustomsCog:
         Resets the state between client connections.
         """
         self.state = ServerCustomsState.awaiting_login
+        self.max_fulldoc_size = None
+        self.max_packet_size = None
+        self.max_docpart_size = None
         self.reject_clock_time = None
         self.reject_message = None
         self.recv_doc_buffer = []
@@ -102,9 +116,7 @@ class ServerCustomsCog:
                     l=self,
                     s='preparing server_bye')
                 self.nc_gruel_send(
-                    d_gruel=create_d(
-                        message_h='server_bye',
-                        message_type=GruelMessageType.server_bye.value,
+                    payload=self.gruel_press.create_server_bye_payload(
                         notes=self.reject_message))
                 self.state = ServerCustomsState.reject_stage_b
         elif self.state == ServerCustomsState.reject_stage_b:
@@ -116,6 +128,21 @@ class ServerCustomsCog:
                     s='requesting boot')
                 self.nc_please_tcp_boot()
                 self.state = ServerCustomsState.rejected
+        elif self.send_doc_q:
+            activity.mark(
+                l=self,
+                s='preparing docpart')
+            data = self.send_doc_q.popleft()
+            b_complete = 1
+            if len(data) > self.max_docpart_size:
+                self.send_doc_q.appendleft(
+                    data[self.max_docpart_size:])
+                data = data[:self.max_docpart_size]
+                b_complete = 0
+            self.nc_gruel_send(
+                payload=self.gruel_press.create_docdata_payload(
+                    data=data,
+                    b_complete=b_complete))
     def on_announce_tcp_connect(self, ip, port):
         self._zero()
     def on_announce_tcp_condrop(self):
@@ -132,16 +159,8 @@ class ServerCustomsCog:
                 self._to_rejection(
                     s='expected login message first')
                 return
-            if d_gruel['password'] != self.expected_password:
-                self._to_rejection(
-                    s='bad login')
-                return
-            # ok: so this is a successful login
-            self.nc_announce_login(
-                max_packet_size=d_gruel['max_packet_size'],
-                max_doc_size=d_gruel['max_doc_size'])
-            self.state = ServerCustomsState.authorised
-            return
+            self._attempt_to_handle_login(
+                d_gruel=d_gruel)
         elif self.state == ServerCustomsState.authorised:
             if message_h == 'client_login':
                 self._to_rejection(
@@ -171,32 +190,78 @@ class ServerCustomsCog:
         else:
             log('Currently disconnecting client. Ignoring %s.'%message_h)
             return
+    def on_doc_send(self, doc):
+        if self.max_fulldoc_size != None:
+            if len(doc) > self.max_fulldoc_size:
+                # Haven't worked out what to do in this situation. It is
+                # caused by us trying to send a packet that is larger than
+                # what the client is set up to handle. Maybe we need to
+                # call back to our application when the client sets a max
+                # doc size so we know. Not sure.
+                raise Exception('xxx')
+        self.send_doc_q.append(doc)
     #
     def _to_rejection(self, s):
         self.state = ServerCustomsState.reject_stage_a
         self.reject_clock_time = self.engine.get_clock().now()
         self.reject_message = s
+    def _attempt_to_handle_login(self, d_gruel):
+        if d_gruel['password'] != self.expected_password:
+            self._to_rejection(
+                s='bad login')
+            return
+        #
+        # ok: this looks like a valid login. now we have to massage our
+        # figures for document and payload sizes.
+        self.max_fulldoc_size = d_gruel['max_fulldoc_size']
+        if 0 == self.max_fulldoc_size:
+            self.max_fulldoc_size = None
+        elif self.max_fulldoc_size < 400:
+            self._to_rejection(
+                s='ludicrously small doc size.')
+            return
+        #
+        self.max_packet_size = d_gruel['max_packet_size']
+        if 0 == self.max_packet_size:
+            self.max_packet_size = self.engine.mtu
+        elif self.max_packet_size < 400:
+            self._to_rejection(
+                s='unreasonably small packet size.')
+            return
+        elif self.max_packet_size > self.engine.mtu:
+            self.max_packet_size = self.engine.mtu
+        #
+        self.max_docpart_size = self.max_packet_size - DOCPART_OVERHEAD
+        # announce and confirm this successful login
+        self.nc_announce_login(
+            max_packet_size=0,
+            max_fulldoc_size=0)
+        self.nc_gruel_send(
+            payload=self.gruel_press.create_server_greet_payload(
+                max_packet_size=1234))
+        self.state = ServerCustomsState.authorised
+        return
     #
     def nc_nearnote(self, s):
         self.orb.nearcast(
             cog_h=self.cog_h,
             message_h='nearnote',
             s=s)
-    def nc_announce_login(self, max_packet_size, max_doc_size):
+    def nc_announce_login(self, max_packet_size, max_fulldoc_size):
         self.orb.nearcast(
             cog_h=self.cog_h,
             message_h='announce_login',
             max_packet_size=max_packet_size,
-            max_doc_size=max_doc_size)
+            max_fulldoc_size=max_fulldoc_size)
     def nc_please_tcp_boot(self):
         self.orb.nearcast(
             cog_h=self.cog_h,
             message_h='please_tcp_boot')
-    def nc_gruel_send(self, d_gruel):
+    def nc_gruel_send(self, payload):
         self.orb.nearcast(
             cog_h=self.cog_h,
             message_h='gruel_send',
-            d_gruel=d_gruel)
+            payload=payload)
     def nc_doc_recv(self, doc):
         self.orb.nearcast(
             cog_h=self.cog_h,

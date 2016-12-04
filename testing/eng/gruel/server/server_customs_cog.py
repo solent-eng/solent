@@ -62,12 +62,11 @@ def should_throw_alg_exception_if_packet_seen_before_password():
         fn=receiver_cog_fake)
     #
     # scenario: gruel_recv happens without a password having been set
-    r.nc_gruel_recv(
-        d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_heartbeat_payload()))
     b_error = False
     try:
-        orb.cycle()
+        r.nc_gruel_recv(
+            d_gruel=gruel_puff.unpack(
+                payload=gruel_press.create_heartbeat_payload()))
     except:
         b_error = True
     if b_error:
@@ -232,6 +231,7 @@ def should_do_basic_login_reject():
     #
     # check effects: we should boot the client
     assert server_customs_cog.state == ServerCustomsState.reject_stage_a
+    assert 0 == r.count_gruel_send()
     #
     return True
 
@@ -273,6 +273,9 @@ def should_do_successful_login_accept():
     # confirm effects
     assert server_customs_cog.state == ServerCustomsState.authorised
     assert 1 == r.count_announce_login()
+    assert 1 == r.count_gruel_send()
+    d_grual = gruel_puff.unpack(r.last_gruel_send())
+    assert d_grual['message_h'] == 'server_greet'
     #
     return True
 
@@ -319,11 +322,12 @@ def should_run_a_rejection_sequence():
     clock.inc(3)
     orb.cycle()
     assert 1 == r.count_gruel_send()
-    assert r.last_gruel_send()['message_h'] == 'server_bye'
+    d_gruel = gruel_puff.unpack(
+        payload=r.last_gruel_send())
+    assert d_gruel['message_h'] == 'server_bye'
     assert 0 == r.count_please_tcp_boot()
     #
     # at four seconds we should see the boot
-    #
     clock.inc(1)
     orb.cycle()
     assert 1 == r.count_please_tcp_boot()
@@ -435,7 +439,6 @@ def should_buffer_a_couple_of_docs():
     #
     return True
 
-"""
 @test
 def should_send_a_couple_of_docs():
     engine = engine_fake()
@@ -474,8 +477,33 @@ def should_send_a_couple_of_docs():
                 heartbeat_interval=3)))
     orb.cycle()
     #
+    # confirm assumptions
+    assert 1 == r.count_gruel_send()
+    #
     # scenario: we send a large outbound document towards customs
-"""
+    doc = '/'.join( ['x', 'y'*2000, 'z'] )
+    r.nc_doc_send(
+        doc=doc)
+    #
+    # confirm effects: expect to see the doc broken up into several pieces
+    assert 2 <= r.count_gruel_send()
+    # examine first doc packet
+    d_gruel = gruel_puff.unpack(r.get_gruel_send()[1])
+    assert d_gruel['message_h'] == 'docdata'
+    assert d_gruel['b_complete'] == 0
+    assert d_gruel['data'][0] == 'x'
+    # examine next-to-last doc packet
+    d_gruel = gruel_puff.unpack(r.get_gruel_send()[-2])
+    assert d_gruel['message_h'] == 'docdata'
+    assert d_gruel['b_complete'] == 0
+    assert d_gruel['data'][-1] == 'y'
+    # examine last doc packet
+    d_gruel = gruel_puff.unpack(r.get_gruel_send()[-1])
+    assert d_gruel['message_h'] == 'docdata'
+    assert d_gruel['b_complete'] == 1
+    assert d_gruel['data'][-1] == 'z'
+    #
+    return True
 
 if __name__ == '__main__':
     run_tests(

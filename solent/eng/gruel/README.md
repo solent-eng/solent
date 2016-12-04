@@ -43,14 +43,14 @@ Some detailed differences:
     client_login:   u1/message_type         0
                     u1/heartbeat_interval   seconds between heartbeats
                     u2/max_packet_size      in bytes
-                    u2/max_doc_size         in bytes
+                    u2/max_fulldoc_size     in bytes
                     vs/protocol_h           identifier for the protocol
                     vs/password
                     vs/notes
 
     server_greet:   u1/message_type         1
                     u2/max_packet_size      in bytes
-                    u2/max_doc_size         in bytes
+                    u2/max_fulldoc_size     in bytes
                     vs/notes
 
     server_bye:     u1/message_type         2

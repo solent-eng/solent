@@ -62,11 +62,9 @@ class TcpServerCog:
     def on_please_tcp_boot(self):
         self._engine_boot_any_client()
         self._engine_raise_server()
-    def on_gruel_send(self, d_gruel):
+    def on_gruel_send(self, payload):
         if not self.client_sid:
             return
-        payload = self.gruel_press.create(
-            **d_gruel)
         self.engine.send(
             sid=self.client_sid,
             data=payload)

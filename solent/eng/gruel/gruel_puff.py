@@ -53,14 +53,6 @@ class GruelPuff:
                 value_tpl = struct.unpack_from('!H', payload, offset)
                 value = value_tpl[0]
                 offset += 2
-            elif field_dt == Datatype.s40:
-                value_tpl = struct.unpack_from('40s', payload, offset)
-                value = str(value_tpl[0].partition(b'\0')[0])
-                offset += 40
-            elif field_dt == Datatype.s100:
-                value_tpl = struct.unpack_from('100s', payload, offset)
-                value = str(value_tpl[0].partition(b'\0')[0], 'utf8')
-                offset += 100
             elif field_dt == Datatype.vs:
                 value_tpl = struct.unpack_from('!H', payload, offset)
                 vs_len = value_tpl[0]

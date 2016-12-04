@@ -86,11 +86,11 @@ class PropGruelClient:
             #
             # message_type(1) + b_complete(1) + overhead for the vs (2) => 4
             docpart_overhead = 4
-            max_doc_size = self.max_outbound_packet_size - docpart_overhead
-            if len(doc) > max_doc_size:
-                ret = doc[max_doc_size:]
+            max_fulldoc_size = self.max_outbound_packet_size - docpart_overhead
+            if len(doc) > max_fulldoc_size:
+                ret = doc[max_fulldoc_size:]
                 self.q_outbound_documents.appendleft(ret)
-                doc = doc[:max_doc_size]
+                doc = doc[:max_fulldoc_size]
                 b_complete = 0
             #
             payload = self.gruel_press.create_docdata_payload(

@@ -398,6 +398,14 @@ def should_boot_client_when_invalid_gruel_is_received():
 
 @test
 def should_ignore_gruel_send_when_no_client():
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
+    #
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     snoop = nearcast_snoop_fake(
@@ -435,15 +443,9 @@ def should_ignore_gruel_send_when_no_client():
     #
     # scenario: tcp_server_cog gets gruel_send but client is not connected
     r.nc_gruel_send(
-        d_gruel={
-            'message_h': 'client_login',
-            'message_type': GruelMessageType.client_login.value,
-            'heartbeat_interval': 4,
-            'max_packet_size': 5,
-            'max_doc_size': 6,
-            'protocol_h': '7_proto',
-            'password': '8_password',
-            'notes': '9_notes'})
+        payload=gruel_press.create_client_login_payload(
+            password='8_password',
+            heartbeat_interval=4))
     orb.cycle()
     #
     # confirm effects: client should still be connected, and we should have
@@ -456,6 +458,14 @@ def should_ignore_gruel_send_when_no_client():
 
 @test
 def should_send_gruel_send_data_to_a_connected_client():
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_schema=gruel_schema,
+        mtu=MTU)
+    #
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     snoop = nearcast_snoop_fake(
@@ -508,15 +518,9 @@ def should_send_gruel_send_data_to_a_connected_client():
     #
     # scenario: tcp_server_cog gets gruel_send but client is not connected
     r.nc_gruel_send(
-        d_gruel={
-            'message_h': 'client_login',
-            'message_type': GruelMessageType.client_login.value,
-            'heartbeat_interval': 4,
-            'max_packet_size': 5,
-            'max_doc_size': 6,
-            'protocol_h': '7_proto',
-            'password': '8_password',
-            'notes': '9_notes'})
+        payload=gruel_press.create_client_login_payload(
+            password='8_password',
+            heartbeat_interval=4))
     orb.cycle()
     #
     # confirm effects: client should still be connected, and we should have

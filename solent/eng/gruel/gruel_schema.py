@@ -60,6 +60,13 @@ def gmt_value_to_name(value):
             value))
     return d[value]
 
+# Capture the amount of room in bytes that the docpart messsage uses for
+# anything other than the payload. This is useful for calculations about how
+# to break up documens for airlift. The reason the field has this overhead:
+# message_type (1), b_complete (1), plus the two-byte overhead for the vs
+# string.
+DOCPART_OVERHEAD = 4
+
 I_MESSAGE_DEF = '''
     i message h
         i u1 field_h
@@ -80,7 +87,7 @@ I_MESSAGE_DEF = '''
         # an infinate amount of doc data. It indicates what the maximum doc
         # size could be (which might span several docdata messages, but must
         # be within a well-defined maximum size).
-        u2 max_doc_size
+        u2 max_fulldoc_size
         vs protocol_h
         vs password
         vs notes
@@ -93,7 +100,7 @@ I_MESSAGE_DEF = '''
         # This is the buffer size that the server makes available to the
         # client. Documents larger than this cannot be handled. If this is
         # zero then there is no limit
-        u2 max_doc_size
+        u2 max_fulldoc_size
         vs notes
 
     message server_bye
