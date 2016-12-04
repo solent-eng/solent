@@ -1,6 +1,8 @@
 #
-# utest
+# libtest
 #
+# // overview
+# Basic bootstrap for a testing system.
 # There's lots wrong with this, but it's effective for the moment.
 #
 # // license
@@ -57,14 +59,19 @@ def hacky_module_name(unders_file):
     care = care[1:]
     return care
 
-def run_tests(unders_file):
+def have_tests():
     global TESTS
-    #
-    name = hacky_module_name(
-        unders_file=unders_file)
-    print('#')
-    print('# %s'%name)
-    print('#')
+    if 0 == len(TESTS):
+        return False
+    return True
+
+def clear_tests():
+    global TESTS
+    while TESTS:
+        TESTS.pop()
+
+def run_tests():
+    global TESTS
     #
     for t in TESTS:
         t()

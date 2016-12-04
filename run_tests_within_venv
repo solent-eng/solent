@@ -1,0 +1,10 @@
+#!/bin/bash
+
+pushd venv
+. bin/activate
+popd
+
+python3 run_tests.py
+
+echo '(fini)'
+

@@ -1,12 +1,12 @@
 #
-# Cell Grid. This is a simple block of memory that holds display information.
-# It has a width, and then a list of cells. Each cell consists of a
-# character and a colour description.
+# cell grid
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
+# // overview
+# This is a simple block of memory that holds display information. It has a
+# width, and then a list of cells. Each cell consists of a character and a
+# colour description.
 #
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -23,9 +23,10 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
 from solent.client.constants import *
+
+import sys
 
 DEFAULT_CPAIR = SOL_CPAIR_WHITE_T
 
@@ -64,7 +65,7 @@ class CellGrid(object):
             spot.c = ' '
             spot.cpair = DEFAULT_CPAIR
     def put(self, drop, rest, s, cpair):
-        offset = (drop*self.width) + rest
+        offset = int((int(drop)*self.width) + int(rest))
         for idx, c in enumerate(s):
             spot = self.spots[offset+idx]
             spot.c = c
@@ -122,172 +123,4 @@ def cgrid_new(width, height):
         width=width,
         height=height)
     return ob
-
-
-# --------------------------------------------------------
-#   :testing
-# --------------------------------------------------------
-def cgrid_console_print(cgrid):
-    for h in range(cgrid.height):
-        nail = (h*cgrid.width)
-        peri = nail + cgrid.width
-        spots = cgrid.spots[nail:peri]
-        line = ''.join( [s.c for s in spots] )
-        print('%2s|%s'%(h, line))
-
-def cgrid_populate(cgrid, c):
-    for drop in range(cgrid.height):
-        cgrid.put(
-            drop=drop,
-            rest=0,
-            s=c*cgrid.height,
-            cpair=DEFAULT_CPAIR)
-
-TESTS = []
-def test(fn):
-    global TESTS
-    def go():
-        print('// --------------------------------------------------------')
-        print('//  %s'%fn.__name__)
-        print('// --------------------------------------------------------')
-        fn()
-        print('')
-    TESTS.append(go)
-    return go
-
-def run_tests():
-    global TESTS
-    for t in TESTS:
-        t()
-
-@test
-def test_a():
-    print('//two simple grids')
-    grid_a = cgrid_new(5, 5)
-    cgrid_populate(grid_a, '-')
-    cgrid_console_print(grid_a)
-    #
-    grid_b = cgrid_new(3, 3)
-    cgrid_populate(grid_b, '|')
-    cgrid_console_print(grid_b)
-
-@test
-def test_b():
-    print('//grid_b onto grid_a')
-    grid_a = cgrid_new(5, 5)
-    cgrid_populate(grid_a, '*')
-    #
-    grid_b = cgrid_new(3, 3)
-    grid_b.put(0, 0, 'a', DEFAULT_CPAIR)
-    grid_b.put(0, 1, 'b', DEFAULT_CPAIR)
-    grid_b.put(0, 2, 'c', DEFAULT_CPAIR)
-    grid_b.put(1, 0, 'd', DEFAULT_CPAIR)
-    grid_b.put(1, 1, 'e', DEFAULT_CPAIR)
-    grid_b.put(1, 2, 'f', DEFAULT_CPAIR)
-    grid_b.put(2, 0, 'g', DEFAULT_CPAIR)
-    grid_b.put(2, 1, 'h', DEFAULT_CPAIR)
-    grid_b.put(2, 2, 'i', DEFAULT_CPAIR)
-    #
-    grid_a.blit(grid_b)
-    cgrid_console_print(grid_a)
-
-@test
-def test_c():
-    print('//truncated copy right')
-    grid_a = cgrid_new(5, 5)
-    zyx = [chr(i+65) for i in range(26)]
-    zyx.reverse()
-    for i in range(25):
-        l = zyx[i]
-        drop = i / 5
-        rest = i % 5
-        grid_a.put(
-            drop=drop,
-            rest=rest,
-            s=l.lower(),
-            cpair=DEFAULT_CPAIR)
-    #
-    grid_b = cgrid_new(3, 3)
-    grid_b.put(0, 0, '0', DEFAULT_CPAIR)
-    grid_b.put(0, 1, '1', DEFAULT_CPAIR)
-    grid_b.put(0, 2, '2', DEFAULT_CPAIR)
-    grid_b.put(1, 0, '3', DEFAULT_CPAIR)
-    grid_b.put(1, 1, '4', DEFAULT_CPAIR)
-    grid_b.put(1, 2, '5', DEFAULT_CPAIR)
-    grid_b.put(2, 0, '6', DEFAULT_CPAIR)
-    grid_b.put(2, 1, '7', DEFAULT_CPAIR)
-    grid_b.put(2, 2, '8', DEFAULT_CPAIR)
-    #
-    grid_a.blit(
-        src_cgrid=grid_b,
-        nail=(1,3))
-    cgrid_console_print(grid_a)
-
-@test
-def test_d():
-    print('//truncated copy bottom')
-    grid_a = cgrid_new(5, 5)
-    zyx = [chr(i+65) for i in range(26)]
-    zyx.reverse()
-    for i in range(25):
-        l = zyx[i]
-        drop = i / 5
-        rest = i % 5
-        grid_a.put(
-            drop=drop,
-            rest=rest,
-            s=l.lower(),
-            cpair=DEFAULT_CPAIR)
-    #
-    grid_b = cgrid_new(3, 3)
-    grid_b.put(0, 0, '0', DEFAULT_CPAIR)
-    grid_b.put(0, 1, '1', DEFAULT_CPAIR)
-    grid_b.put(0, 2, '2', DEFAULT_CPAIR)
-    grid_b.put(1, 0, '3', DEFAULT_CPAIR)
-    grid_b.put(1, 1, '4', DEFAULT_CPAIR)
-    grid_b.put(1, 2, '5', DEFAULT_CPAIR)
-    grid_b.put(2, 0, '6', DEFAULT_CPAIR)
-    grid_b.put(2, 1, '7', DEFAULT_CPAIR)
-    grid_b.put(2, 2, '8', DEFAULT_CPAIR)
-    #
-    grid_a.blit(
-        src_cgrid=grid_b,
-        nail=(3,1))
-    cgrid_console_print(grid_a)
-
-@test
-def test_e():
-    print('//no nail')
-    grid_a = cgrid_new(5, 5)
-    zyx = [chr(i+65) for i in range(26)]
-    zyx.reverse()
-    for i in range(25):
-        l = zyx[i]
-        drop = i / 5
-        rest = i % 5
-        grid_a.put(
-            drop=drop,
-            rest=rest,
-            s=l.lower(),
-            cpair=DEFAULT_CPAIR)
-    #
-    grid_b = cgrid_new(3, 3)
-    grid_b.put(0, 0, '0', DEFAULT_CPAIR)
-    grid_b.put(0, 1, '1', DEFAULT_CPAIR)
-    grid_b.put(0, 2, '2', DEFAULT_CPAIR)
-    grid_b.put(1, 0, '3', DEFAULT_CPAIR)
-    grid_b.put(1, 1, '4', DEFAULT_CPAIR)
-    grid_b.put(1, 2, '5', DEFAULT_CPAIR)
-    grid_b.put(2, 0, '6', DEFAULT_CPAIR)
-    grid_b.put(2, 1, '7', DEFAULT_CPAIR)
-    grid_b.put(2, 2, '8', DEFAULT_CPAIR)
-    #
-    grid_a.blit(
-        src_cgrid=grid_b)
-    cgrid_console_print(grid_a)
-
-if __name__ == '__main__':
-    run_tests()
-
-
 
