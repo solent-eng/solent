@@ -8,7 +8,7 @@ Fork my repo, git clone your repo locally, checkout a new branch, commit changes
 Fork on GitHub
 ```bash
 git clone https://github.com/<your_username>/solent.git
-cd income_calc
+cd solent
 git checkout -b new_feature_branch
 ```
 hack, hack, hack
