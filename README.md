@@ -43,12 +43,14 @@ There's an issue to get this packaging an easy-to-download distribution
 (https://github.com/cratuki/solent/issues/17). It is on major desktops and
 unix tty, without external dependencies.
 
-## Community
+## Community/Contributions
 
 Except where specifically marked, the codebase will be licensed under the
 LGPL, with copyright assigned to the FSF. I'd like to grow a community around
 this code that follows in the spirit of _Social Architecture_ by Pieter
 Hintjens.
+
+Contributions are welcome. See [Contributing guidelines](CONTRIBUTING.md)
 
 ## Status
 
