@@ -1,6 +1,8 @@
 language: python
 python:
   - "3.4"
+install:
+  - pip3 install hg+https://bitbucket.org/pygame/pygame
 script: run_tests
 branches:
     only:
