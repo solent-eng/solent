@@ -19,8 +19,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .gruel_schema import GruelMessageType
-from .gruel_schema import gmt_value_to_name
+from solent.eng.gruel.gruel_schema import GruelMessageType
+from solent.eng.gruel.gruel_schema import gmt_value_to_name
 
 from solent.log import log
 from solent.log import hexdump_bytearray

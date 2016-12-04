@@ -1,6 +1,11 @@
 #
 # server_customs_cog (testing)
 #
+# // further work
+# The logic around max_fulldoc_size is not implemented.
+#
+# Heartbeats are not implemented.
+#
 # // overview
 # This is the main workhorse and clearing-yard for the server side of the
 # gruel protocol. All intent to send a gruel must pass through this. All

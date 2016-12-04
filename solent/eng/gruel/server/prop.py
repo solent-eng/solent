@@ -26,7 +26,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .server.tcp_server_cog import tcp_server_cog_new
+from .gs_nearcast_schema import gs_nearcast_schema_new
+from .tcp_server_cog import tcp_server_cog_new
 
 from solent.log import log
 from solent.log import hexdump_bytearray
@@ -34,7 +35,6 @@ from solent.util import ns
 from solent.util import uniq
 from solent.eng import gruel_press_new
 from solent.eng import nearcast_orb_new
-from solent.eng.gruel.server.gs_nearcast_schema import gs_nearcast_schema_new
 
 from collections import deque
 from collections import OrderedDict as od
