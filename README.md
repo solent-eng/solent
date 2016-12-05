@@ -10,8 +10,8 @@ pushd venv; . bin/activate; popd
 pip install pygame
 # or: pip3 install hg+https://bitbucket.org/pygame/pygame
 
-# Run a demo of what we are building in solent.client.term
-python -m solent.client.games.demo_experience --win
+# Run a demo of what we are building in solent.term
+python -m solent.draft.turn_based_game --win
 
 # Run a demo of the concurrency system we are building in solent.eng
 python -m solent.eng.scenarios
@@ -81,15 +81,14 @@ python3 -m solent.draft.turn_based_game --tty
 
 Import more broadcast systems inspired by the Island model.
 
-## web version of term
+## thin-client term
 
-It's intended that the client should be a generic interface to applications.
-Client could connect to remote (server) applications. Or the apps could run in
-the same process as client, but offering a consistent look and feel based off
-sigils and thin-client interaction. (Think of it solent.client as being a bit
-like a web browser, In a web browser, the building blocks are blocks of
-free-flowing text and images. In solent.client, the building blocks are
-character sigils, and a grid.)
+Create a bundle of term+gruel that can be a generic interface to applications.
+
+## web version of the thin client
+
+Ability to use the thin-client through a web browser, with no code installed
+locally.
 
 ## touch interface version of term
 
