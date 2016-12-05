@@ -1,1 +1,2 @@
-include *.ttf
+include solent/winterm/kongtext-font/kongtext.ttf
+include solent/winterm/kongtext-font/license.txt

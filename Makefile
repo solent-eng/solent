@@ -3,7 +3,7 @@ init:
 	pip install -r requirements.txt
 
 test:
-	py.test tests
+	./run_tests_within_venv
 
 .PHONY: init test
 
