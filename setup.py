@@ -19,16 +19,26 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+if sys.version_info.major < 3:
+    print('''
+        I'm only for python 3. There is a version of the eng networking
+        library maintained for python 2, but it's not offered through pip at
+        the moment. Check it out at github.com/cratuki/eng. If you get into
+        trouble, feel free to contact me using (github username) at (google
+        mail service) dot com.
+    ''')
+    sys.exit(1)
+
 from setuptools import setup
 
 setup(
   name = 'solent',
   packages = ['solent'],
-  version = '0.14',
+  version = '0.15',
   description = 'Event-driven concurrency engine',
-  author = 'Craig Turner',
   url = 'https://github.com/cratuki/solent',
-  download_url = 'https://github.com/cratuki/solent/tarball/0.14',
+  download_url = 'https://github.com/cratuki/solent/tarball/0.15',
   keywords = ['solent', 'eng', 'term', 'networking', 'roguelikes', 'async'],
   classifiers = [],
 )
