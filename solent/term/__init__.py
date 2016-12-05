@@ -1,6 +1,3 @@
-#
-# setup.py
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -19,17 +16,16 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from setuptools import setup
+from .cgrid import cgrid_new
+from .console import console_new
+from .cursor import cursor_new
+from .glyph import glyph_new
+from .keystream import keystream_new
+from .scope import scope_new
 
-setup(
-  name = 'solent',
-  packages = ['solent'],
-  version = '0.14',
-  description = 'Event-driven concurrency engine',
-  author = 'Craig Turner',
-  url = 'https://github.com/cratuki/solent',
-  download_url = 'https://github.com/cratuki/solent/tarball/0.14',
-  keywords = ['solent', 'eng', 'term', 'networking', 'roguelikes', 'async'],
-  classifiers = [],
-)
+from .curses_console import curses_console_start
+from .curses_console import curses_console_end
+
+from .enumerations import e_colpair
+from .enumerations import e_boxtype
 

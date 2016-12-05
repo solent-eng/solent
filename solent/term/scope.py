@@ -30,8 +30,6 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .constants import *
-
 class Scope(object):
     def __init__(self, cursor, margin_h, margin_w):
         self.cursor = cursor

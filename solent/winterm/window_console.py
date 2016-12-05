@@ -22,10 +22,10 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .cgrid import cgrid_new
-from .console import console_new
-from .constants import *
-from .keystream import keystream_new
+from solent.term import cgrid_new
+from solent.term import console_new
+from solent.term import e_colpair
+from solent.term  import keystream_new
 
 from solent.exceptions import SolentQuitException
 
@@ -48,20 +48,20 @@ PROFILE_WHITE_PURPLE = ((255, 255, 255), (255, 0, 255))
 PROFILE_BLACK_CYAN = ((0, 0, 0), (0, 255, 255))
 PROFILE_T_WHITE = ((0, 0, 0), (255, 255, 255))
 
-MAP_CONST_COLOURS_TO_CPAIR = { SOL_CPAIR_RED_T: PROFILE_RED_T
-                             , SOL_CPAIR_GREEN_T: PROFILE_GREEN_T
-                             , SOL_CPAIR_YELLOW_T: PROFILE_YELLOW_T
-                             , SOL_CPAIR_BLUE_T: PROFILE_BLUE_T
-                             , SOL_CPAIR_PURPLE_T: PROFILE_PURPLE_T
-                             , SOL_CPAIR_CYAN_T: PROFILE_CYAN_T
-                             , SOL_CPAIR_WHITE_T: PROFILE_WHITE_T
-                             , SOL_CPAIR_T_RED: PROFILE_RED_T
-                             , SOL_CPAIR_T_GREEN: PROFILE_T_GREEN
-                             , SOL_CPAIR_T_YELLOW: PROFILE_T_YELLOW
-                             , SOL_CPAIR_WHITE_BLUE: PROFILE_WHITE_BLUE
-                             , SOL_CPAIR_WHITE_PURPLE: PROFILE_WHITE_PURPLE
-                             , SOL_CPAIR_BLACK_CYAN: PROFILE_BLACK_CYAN
-                             , SOL_CPAIR_T_WHITE: PROFILE_T_WHITE
+MAP_CONST_COLOURS_TO_CPAIR = { e_colpair.red_t: PROFILE_RED_T
+                             , e_colpair.green_t: PROFILE_GREEN_T
+                             , e_colpair.yellow_t: PROFILE_YELLOW_T
+                             , e_colpair.blue_t: PROFILE_BLUE_T
+                             , e_colpair.purple_t: PROFILE_PURPLE_T
+                             , e_colpair.cyan_t: PROFILE_CYAN_T
+                             , e_colpair.white_t: PROFILE_WHITE_T
+                             , e_colpair.t_red: PROFILE_RED_T
+                             , e_colpair.t_green: PROFILE_T_GREEN
+                             , e_colpair.t_yellow: PROFILE_T_YELLOW
+                             , e_colpair.white_blue: PROFILE_WHITE_BLUE
+                             , e_colpair.white_purple: PROFILE_WHITE_PURPLE
+                             , e_colpair.black_cyan: PROFILE_BLACK_CYAN
+                             , e_colpair.t_white: PROFILE_T_WHITE
                              }
 
 Q_ASYNC_GETC = deque()
@@ -131,11 +131,7 @@ class GridDisplay(object):
 #   :interface
 # --------------------------------------------------------
 DIR_CODE = os.path.realpath(os.path.dirname(__file__))
-DIR_FONT = os.sep.join( [DIR_CODE, 'fonts'] )
-
-#PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'Hack-Bold.ttf'] )
-#PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'weird_science_nbp.ttf'] )
-#PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'terminus-bold.ttf'] )
+DIR_FONT = os.sep.join( [DIR_CODE, 'kongtext-font'] )
 PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'kongtext.ttf'] )
 
 CONSOLE = None

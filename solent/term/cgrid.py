@@ -24,11 +24,11 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .constants import *
+from .enumerations import e_colpair
 
 import sys
 
-DEFAULT_CPAIR = SOL_CPAIR_WHITE_T
+DEFAULT_CPAIR = e_colpair.white_t
 
 class Cell(object):
     def __init__(self):

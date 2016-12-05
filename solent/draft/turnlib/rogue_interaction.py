@@ -24,16 +24,16 @@
 
 from .logbook import logbook_new
 
-from solent.term.constants import *
-from solent.term.cgrid import cgrid_new
-from solent.term.glyph import glyph_new
-from solent.term.scope import scope_new
+from solent.term import e_colpair
+from solent.term import cgrid_new
+from solent.term import glyph_new
+from solent.term import scope_new
 from solent.exceptions import SolentQuitException
 
 from collections import deque
 
-STATUS_NEW_CPAIR = SOL_CPAIR_YELLOW_T
-STATUS_OLD_CPAIR = SOL_CPAIR_WHITE_T
+STATUS_NEW_CPAIR = e_colpair.yellow_t
+STATUS_OLD_CPAIR = e_colpair.white_t
 
 class StatusEntry(object):
     def __init__(self, s):

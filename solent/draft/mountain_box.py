@@ -34,12 +34,13 @@ from solent.draft.turnlib.rogue_interaction import rogue_interaction_new
 from solent.draft.turnlib.rogue_plane import rogue_plane_new
 from solent.draft.turnlib.initiative import initiative_new
 from solent.exceptions import SolentQuitException
-from solent.term.constants import *
-from solent.term.cgrid import cgrid_new
-from solent.term.cursor import cursor_new
-from solent.term.window_console import window_console_end
-from solent.term.window_console import window_console_start
+from solent.term import e_colpair
+from solent.term import e_boxtype
+from solent.term import cgrid_new
+from solent.term import cursor_new
 from solent.util import uniq
+from solent.winterm import window_console_end
+from solent.winterm import window_console_start
 
 from collections import deque
 import os
@@ -58,14 +59,14 @@ TITLE = sys.argv[0].split(os.sep)[-1]
 # --------------------------------------------------------
 #   :game
 # --------------------------------------------------------
-def make_box(rogue_plane, se_nail, width, height, cpair=SOL_CPAIR_WHITE_T, box_type=BOX_LINE):
+def make_box(rogue_plane, se_nail, width, height, cpair=e_colpair.white_t, box_type=e_boxtype.line):
     '''
     Box type indicates the kind of corners the box should have.
     '''
     (s_nail, e_nail) = se_nail
     hori = width+2
     for i in range(hori):
-        if (i, box_type) in [(0, BOX_EDGE), (hori-1, BOX_VOID)]:
+        if (i, box_type) in [(0, e_boxtype.edge), (hori-1, e_boxtype.void)]:
             rogue_plane.create_terrain(
                 s=s_nail,
                 e=e_nail+i,
@@ -76,7 +77,7 @@ def make_box(rogue_plane, se_nail, width, height, cpair=SOL_CPAIR_WHITE_T, box_t
                 e=e_nail+i,
                 c='\\',
                 cpair=cpair)
-        elif (i, box_type) in [(hori-1, BOX_EDGE), (0, BOX_VOID)]:
+        elif (i, box_type) in [(hori-1, e_boxtype.edge), (0, e_boxtype.void)]:
             rogue_plane.create_terrain(
                 s=s_nail,
                 e=e_nail+i,
@@ -88,9 +89,9 @@ def make_box(rogue_plane, se_nail, width, height, cpair=SOL_CPAIR_WHITE_T, box_t
                 c='/',
                 cpair=cpair)
         else:
-            if box_type == BOX_HASH:
+            if box_type == e_boxtype.hash:
                 c = '#'
-            elif box_type == BOX_STOP:
+            elif box_type == e_boxtype.stop:
                 c = '.'
             else:
                 c = '-'
@@ -105,9 +106,9 @@ def make_box(rogue_plane, se_nail, width, height, cpair=SOL_CPAIR_WHITE_T, box_t
                 c=c,
                 cpair=cpair)
     for i in range(height):
-        if box_type == BOX_HASH:
+        if box_type == e_boxtype.hash:
             c = '#'
-        elif box_type == BOX_STOP:
+        elif box_type == e_boxtype.stop:
             c = '.'
         else:
             c = '|'
@@ -134,39 +135,39 @@ def create_origin_plane():
         se_nail=(-11, -11),
         width=22,
         height=22,
-        box_type=BOX_STOP)
+        box_type=e_boxtype.stop)
     #
     # // scrap
     rogue_plane.create_meep(
         s=2,
         e=-5,
         c='o',
-        cpair=SOL_CPAIR_GREEN_T)
+        cpair=e_colpair.green_t)
     rogue_plane.create_meep(
         s=3,
         e=-4,
         c='o',
-        cpair=SOL_CPAIR_GREEN_T)
+        cpair=e_colpair.green_t)
     rogue_plane.create_meep(
         s=3,
         e=-5,
         c='o',
-        cpair=SOL_CPAIR_GREEN_T)
+        cpair=e_colpair.green_t)
     rogue_plane.create_meep(
         s=4,
         e=-6,
         c='o',
-        cpair=SOL_CPAIR_GREEN_T)
+        cpair=e_colpair.green_t)
     rogue_plane.create_meep(
         s=4,
         e=-4,
         c='o',
-        cpair=SOL_CPAIR_GREEN_T)
+        cpair=e_colpair.green_t)
     rogue_plane.create_meep(
         s=4,
         e=-5,
         c='o',
-        cpair=SOL_CPAIR_GREEN_T)
+        cpair=e_colpair.green_t)
     return rogue_plane
 
 class Game(object):
@@ -179,7 +180,7 @@ class Game(object):
             s=0,
             e=0,
             c='@',
-            cpair=SOL_CPAIR_RED_T)
+            cpair=e_colpair.red_t)
         #
         self.rogue_interaction = rogue_interaction_new(
             console=console,
@@ -196,7 +197,7 @@ class Game(object):
             s=3,
             e=3,
             c='"',
-            cpair=SOL_CPAIR_WHITE_T)
+            cpair=e_colpair.white_t)
         self.initiative.add_meep(
             meep=self.algobunny_meep)
         #
@@ -244,9 +245,9 @@ def game_new(console):
 # The husk is the thing that contains the game. The husk exposes new game and
 # load game and save game.
 #
-CPAIR_MENU_BORDER = SOL_CPAIR_BLACK_CYAN
-CPAIR_MENU_TEXT = SOL_CPAIR_T_WHITE
-CPAIR_TITLE = SOL_CPAIR_T_WHITE
+CPAIR_MENU_BORDER = e_colpair.black_cyan
+CPAIR_MENU_TEXT = e_colpair.t_white
+CPAIR_TITLE = e_colpair.t_white
 
 class Husk(object):
     def __init__(self, console, cgrid, title):

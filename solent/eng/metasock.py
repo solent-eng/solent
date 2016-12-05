@@ -1,6 +1,7 @@
 #
-# Metasock.
+# metasock
 #
+# // overview
 # Unless you are working on the engine, you should never need to look at
 # this class. (And nor would you want to.)
 #
@@ -38,12 +39,8 @@
 #   through sections regularly, and the comments are what allow me to
 #   understand what's going on.
 #   ========================================================
-# 
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -60,11 +57,7 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
-# --------------------------------------------------------
-#   :head
-# --------------------------------------------------------
 from .cs import CsMsClose, CsTcpConnect, CsTcpCondrop, CsTcpRecv, CsSubRecv
 
 from solent.log import log
@@ -82,10 +75,6 @@ class MetasockCloseCondition(Exception):
     def __init__(self, message):
         self.message = message
 
-
-# --------------------------------------------------------
-#   :metasock
-# --------------------------------------------------------
 class Metasock(object):
     """This is a mechanism for creating a socket with intent.
     

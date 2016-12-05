@@ -1,5 +1,5 @@
 #
-# term constants
+# enumerations for terminal package
 #
 # // overview
 # constants for the term package
@@ -22,26 +22,29 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-# colour pairs
-SOL_CPAIR_RED_T         = 1000
-SOL_CPAIR_GREEN_T       = 1001
-SOL_CPAIR_YELLOW_T      = 1002
-SOL_CPAIR_BLUE_T        = 1003
-SOL_CPAIR_PURPLE_T      = 1004
-SOL_CPAIR_CYAN_T        = 1005
-SOL_CPAIR_WHITE_T       = 1006
-SOL_CPAIR_T_RED         = 1007
-SOL_CPAIR_T_GREEN       = 1008
-SOL_CPAIR_T_YELLOW      = 1009
-SOL_CPAIR_WHITE_BLUE    = 1010
-SOL_CPAIR_WHITE_PURPLE  = 1011
-SOL_CPAIR_BLACK_CYAN    = 1012
-SOL_CPAIR_T_WHITE       = 1013
+import enum
 
-# box types
-BOX_LINE                = 2000
-BOX_EDGE                = 2001
-BOX_VOID                = 2002
-BOX_HASH                = 2003
-BOX_STOP                = 2004
+class e_colpair(enum.Enum):
+    "colour pairs"
+    red_t         = 1000
+    green_t       = 1001
+    yellow_t      = 1002
+    blue_t        = 1003
+    purple_t      = 1004
+    cyan_t        = 1005
+    white_t       = 1006
+    t_red         = 1007
+    t_green       = 1008
+    t_yellow      = 1009
+    white_blue    = 1010
+    white_purple  = 1011
+    black_cyan    = 1012
+    t_white       = 1013
+
+class e_boxtype(enum.Enum):
+    line          = 2000
+    edge          = 2001
+    void          = 2002
+    hash          = 2003
+    stop          = 2004
 

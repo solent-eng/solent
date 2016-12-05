@@ -1,14 +1,13 @@
 #
-# liblog. Simple wrapper for logging. motive of this is that sometimes you
+# liblog
+#
+# // overview
+# Simple wrapper for logging. motive of this is that sometimes you
 # want to be able to broadcast logs to the network rather than write to file.
 # (yes, udp broadcast is unreliable, but for many applications it's damn
 # useful). This library includes functionality that makes that easy.
 #
-#
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -25,7 +24,6 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
 import logging
 import socket

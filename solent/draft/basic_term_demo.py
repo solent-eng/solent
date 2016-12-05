@@ -22,10 +22,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.term.constants import *
-from solent.term.cgrid import cgrid_new
-from solent.term.curses_console import curses_console_start, curses_console_end
-from solent.term.window_console import window_console_start, window_console_end
+from solent.term import e_colpair
+from solent.term import cgrid_new
+from solent.term import curses_console_start
+from solent.term import curses_console_end
+from solent.winterm import window_console_start
+from solent.winterm import window_console_end
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
 
@@ -46,7 +48,7 @@ def event_loop(console):
         drop=console.height-3,
         rest=1,
         s='(Escape to quit)',
-        cpair=SOL_CPAIR_WHITE_T)
+        cpair=e_colpair.white_t)
     console.screen_update(
         cgrid=cgrid)
     #
@@ -63,14 +65,14 @@ def event_loop(console):
                     drop=3+idx,
                     rest=1,
                     s='key %s (%s)  '%(str(k), ord(k)),
-                    cpair=SOL_CPAIR_RED_T)
+                    cpair=e_colpair.red_t)
         else:
             time.sleep(0.05)
         cgrid.put(
             drop=1,
             rest=1,
             s='loop counter: %s'%(t),
-            cpair=SOL_CPAIR_GREEN_T)
+            cpair=e_colpair.green_t)
         console.screen_update(
             cgrid=cgrid)
         t += 1

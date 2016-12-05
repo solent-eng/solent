@@ -1,4 +1,5 @@
 app
+release_to_pypi
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

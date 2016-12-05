@@ -19,8 +19,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.term.cgrid import cgrid_new
-from solent.term.constants import *
+from solent.term import cgrid_new
+from solent.term import e_colpair
 
 from testing import run_tests
 from testing import test
@@ -31,7 +31,7 @@ from solent.eng import ip_validator_new
 
 import sys
 
-DEFAULT_CPAIR = SOL_CPAIR_WHITE_T
+DEFAULT_CPAIR = e_colpair.white_t
 
 def cgrid_console_print(cgrid):
     for h in range(cgrid.height):
