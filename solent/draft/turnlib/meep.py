@@ -1,7 +1,10 @@
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
 #
+# meep
+#
+# // overview
+# Think or it as an entity in Entity-Component model speak
+#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -20,7 +23,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 # .
 
-from solent.client.constants import SOL_CPAIR_T_RED
+from solent.term.constants import SOL_CPAIR_T_RED
 
 DEFAULT_CPAIR = SOL_CPAIR_T_RED
 

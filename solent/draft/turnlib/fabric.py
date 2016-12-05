@@ -1,11 +1,11 @@
 #
-# fabric: fabric is the surface/texture that entities sit on. you could think
-# of it as being a bit like the concept of a level in other roguelikes.
+# fabric
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
+# // overview
+# fabric is the surface/texture that entities sit on. you could think of it as
+# being a bit like the concept of a level in other roguelikes.
 #
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -22,9 +22,8 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
-from solent.client.constants import *
+from solent.term.constants import *
 
 class GridFabric(object):
     def __init__(self):

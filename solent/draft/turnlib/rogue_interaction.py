@@ -1,10 +1,10 @@
 #
+# rogue_interaction
+#
+# // overview
 # This translates a player's keystrokes into interactions with a rogue_plane.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -21,14 +21,13 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
 from .logbook import logbook_new
 
-from solent.client.constants import *
-from solent.client.term.cgrid import cgrid_new
-from solent.client.term.glyph import glyph_new
-from solent.client.term.scope import scope_new
+from solent.term.constants import *
+from solent.term.cgrid import cgrid_new
+from solent.term.glyph import glyph_new
+from solent.term.scope import scope_new
 from solent.exceptions import SolentQuitException
 
 from collections import deque

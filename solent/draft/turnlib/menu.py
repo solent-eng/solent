@@ -1,10 +1,10 @@
 #
-# menu: stores a unique trigger character against some text and a callback.
+# menu
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
+# // overview
+# stores a unique trigger character against some text and a callback.
 #
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -21,7 +21,6 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
 from collections import OrderedDict as od
 

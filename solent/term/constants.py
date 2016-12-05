@@ -1,10 +1,10 @@
 #
-# constants for the solent platform
+# term constants
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
+# // overview
+# constants for the term package
 #
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -21,13 +21,8 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
-
-#
 # colour pairs
-# ------------
-#
 SOL_CPAIR_RED_T         = 1000
 SOL_CPAIR_GREEN_T       = 1001
 SOL_CPAIR_YELLOW_T      = 1002
@@ -43,14 +38,10 @@ SOL_CPAIR_WHITE_PURPLE  = 1011
 SOL_CPAIR_BLACK_CYAN    = 1012
 SOL_CPAIR_T_WHITE       = 1013
 
-#
 # box types
-# ---------
-#
 BOX_LINE                = 2000
 BOX_EDGE                = 2001
 BOX_VOID                = 2002
 BOX_HASH                = 2003
 BOX_STOP                = 2004
-
 

@@ -1,10 +1,10 @@
 #
+# window_console
+#
+# // overview
 # Pygame wrapper. Provides devices for keystroke and rogue display
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -21,13 +21,12 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
 from .cgrid import cgrid_new
 from .console import console_new
+from .constants import *
 from .keystream import keystream_new
 
-from solent.client.constants import *
 from solent.exceptions import SolentQuitException
 
 from collections import deque

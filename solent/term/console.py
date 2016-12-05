@@ -1,12 +1,12 @@
 #
+# console
+#
+# // overview
 # Bundle of stuff you need to put a terminal together. Typically, an
 # application developer won't create these directly. Rather you'll call
 # curses_term or window_term, and that will give you back an instance of this.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -23,8 +23,7 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
-#
+
 class Console(object):
     def __init__(self, keystream, grid_display, width, height):
         self.keystream = keystream

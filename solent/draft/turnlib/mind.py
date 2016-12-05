@@ -1,11 +1,10 @@
 #
-# Glyph: Something that can live in a cell on a grid. It has south and east
-# dimensions, a character and a colour pair.
+# mind interface
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
+# // overview
+# Builds objects that correspond to the mind interface
 #
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -22,20 +21,15 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
-class Glyph(object):
-    def __init__(self, s, e, c, cpair):
-        self.s = s
-        self.e = e
-        self.c = c # character
-        self.cpair = cpair
+import types
 
-def glyph_new(s, e, c, cpair):
-    ob = Glyph(
-        s=s,
-        e=e,
-        c=c,
-        cpair=cpair)
+def mind_interface(cb_add_key, cb_ready, cb_blocking_memo, cb_is_blocking, cb_turn):
+    ob = types.ModuleType('mind')
+    ob.add_key = cb_add_key
+    ob.ready = cb_ready
+    ob.blocking_memo = cb_blocking_memo
+    ob.is_blocking = cb_is_blocking
+    ob.turn = cb_turn
     return ob
 

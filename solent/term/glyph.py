@@ -1,7 +1,11 @@
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
 #
+# glyph
+#
+# // overview
+# Something that can live in a cell on a grid. It has south and east
+# dimensions, a character and a colour pair.
+#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -18,13 +22,19 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
-import types
+class Glyph(object):
+    def __init__(self, s, e, c, cpair):
+        self.s = s
+        self.e = e
+        self.c = c # character
+        self.cpair = cpair
 
-def keystream_new(cb_async_getc, cb_block_getc):
-    ob = types.ModuleType('keystream')
-    ob.async_getc = cb_async_getc
-    ob.block_getc = cb_block_getc
+def glyph_new(s, e, c, cpair):
+    ob = Glyph(
+        s=s,
+        e=e,
+        c=c,
+        cpair=cpair)
     return ob
 

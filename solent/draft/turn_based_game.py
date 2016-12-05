@@ -30,11 +30,11 @@ from .turnlib.rogue_interaction import rogue_interaction_new
 from .turnlib.rogue_plane import rogue_plane_new
 from .turnlib.initiative import initiative_new
 
-from solent.client.constants import *
-from solent.client.term.cgrid import cgrid_new
-from solent.client.term.cursor import cursor_new
-from solent.client.term.curses_console import curses_console_start, curses_console_end
-from solent.client.term.window_console import window_console_start, window_console_end
+from solent.term.constants import *
+from solent.term.cgrid import cgrid_new
+from solent.term.cursor import cursor_new
+from solent.term.curses_console import curses_console_start, curses_console_end
+from solent.term.window_console import window_console_start, window_console_end
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
 

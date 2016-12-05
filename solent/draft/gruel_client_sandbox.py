@@ -283,7 +283,8 @@ class CogEventSource:
 
 def main():
     init_logging()
-    engine = engine_new()
+    engine = engine_new(
+        mtu=1500)
     try:
         nearcast_schema = nearcast_schema_new(
             i_nearcast=I_NEARCAST_SCHEMA)

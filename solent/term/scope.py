@@ -1,4 +1,7 @@
 #
+# scope
+#
+# // overview
 # scope: used to plot a grid around a glyph. The scope follows a glyph. It has
 # some neat margin functionality in it. Rather than the glyph always being at
 # the centre of the screen, the scope has margins. The scope only repoints
@@ -9,10 +12,7 @@
 # mechanisms such as ncurses, because it means there's less to update most of
 # the time.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -29,9 +29,8 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
-from solent.client.constants import *
+from .constants import *
 
 class Scope(object):
     def __init__(self, cursor, margin_h, margin_w):

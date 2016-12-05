@@ -19,8 +19,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.client.constants import *
-from solent.client.term.cgrid import cgrid_new
+from solent.term.cgrid import cgrid_new
+from solent.term.constants import *
 
 from testing import run_tests
 from testing import test

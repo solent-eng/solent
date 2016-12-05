@@ -1,10 +1,10 @@
 #
+# basic_term_demo
+#
+# // overview
 # created to demonstrate async functionality
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -21,12 +21,11 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
-from solent.client.constants import *
-from solent.client.term.cgrid import cgrid_new
-from solent.client.term.curses_console import curses_console_start, curses_console_end
-from solent.client.term.window_console import window_console_start, window_console_end
+from solent.term.constants import *
+from solent.term.cgrid import cgrid_new
+from solent.term.curses_console import curses_console_start, curses_console_end
+from solent.term.window_console import window_console_start, window_console_end
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
 

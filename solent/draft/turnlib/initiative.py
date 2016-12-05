@@ -1,4 +1,7 @@
 #
+# initiative
+#
+# // overview
 # Scheduling mechanism that allows for different things to happen at different
 # times. Everything in here orients around meeps. If you want to do things
 # that involve time and which don't inherently have meeps, then create a
@@ -19,10 +22,7 @@
 # before python 3.5. And I don't want to spend energy writing a more efficient
 # implementation unless there's a need for it.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -39,7 +39,6 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-# .
 
 from .meep import meep_new
 from .mind import mind_interface

@@ -138,7 +138,8 @@ def create_orb(engine):
 
 def main():
     init_logging()
-    engine = engine_new()
+    engine = engine_new(
+        mtu=1500)
     try:
         engine.add_orb(
             orb=create_orb(

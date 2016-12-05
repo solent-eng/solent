@@ -1,14 +1,14 @@
 #
+# player_mind
+#
+# // overview
 # Mind is a standard concept in this system. Unlike most minds, the player
 # mind doesn't serve as an AI. Rather, it's a mechanism through which the real
 # player can interact with the system as though they are a mind. In this way,
 # the player has no special treatment by the core game, they are just another
 # participant.
 #
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
-#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.

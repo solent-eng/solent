@@ -1,7 +1,10 @@
-# --------------------------------------------------------
-#   :license
-# --------------------------------------------------------
 #
+# keystream interface
+#
+# // overview
+# Builds objects to meet a keystream interface
+#
+# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -22,12 +25,9 @@
 
 import types
 
-def mind_interface(cb_add_key, cb_ready, cb_blocking_memo, cb_is_blocking, cb_turn):
-    ob = types.ModuleType('mind')
-    ob.add_key = cb_add_key
-    ob.ready = cb_ready
-    ob.blocking_memo = cb_blocking_memo
-    ob.is_blocking = cb_is_blocking
-    ob.turn = cb_turn
+def keystream_new(cb_async_getc, cb_block_getc):
+    ob = types.ModuleType('keystream')
+    ob.async_getc = cb_async_getc
+    ob.block_getc = cb_block_getc
     return ob
 

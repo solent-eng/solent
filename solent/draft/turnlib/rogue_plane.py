@@ -33,7 +33,7 @@
 
 from .meep import meep_new
 
-from solent.client.constants import *
+from solent.term.constants import *
 
 import types
 

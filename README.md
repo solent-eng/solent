@@ -157,7 +157,6 @@ simple matter of implementation.
 Some high-end laptops now come with an OLED screen. In this screen, black
 background is achieved by unpowered pixels.
 
-See draft/000.layout.optimised.for.oled for a demonstration of a frame
-layout system
+Run python -m solent.draft.oled_ui_demo to see a mock frame layout system.
 
 
