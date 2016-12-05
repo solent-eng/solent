@@ -1,4 +1,33 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+#
+# oled user interface demo
+#
+# // overview
+# Some new laptops ship with 'OLED' screens. They differ from the screens of
+# the previous generation in that they only send power to pixels that need
+# them. This gives incentive to create a user interface based on a minimal
+# display of pixels. This demo plays with that idea.
+#
+# To use this demonstration, run app. This shows the window perimeters. Press
+# enter, and it shows the same screen without the window perimeters.
+#
+# // license
+# Copyright 2016, Free Software Foundation.
+#
+# This file is part of Solent.
+#
+# Solent is free software: you can redistribute it and/or modify it under the
+# terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Solent is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Solent. If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import sys
@@ -28,38 +57,39 @@ class bcol:
     BG_DEFAULT = '\033[49m'
 
 def pause(b_show_paused_message=True):
-    if b_show_paused_message: print '[paused]'
-    raw_input()
+    if b_show_paused_message:
+        print('[paused]')
+    input()
 
 def colour_test():
-    print "%s%s%s"%(bcol.BLACK, 'bcol.BLACK', bcol.RESET)
-    print "%s%s%s%s"%(bcol.BOLD, bcol.BLACK, 'bcol.BLACK bold', bcol.RESET)
-    print "%s%s%s%s"%(bcol.DIM, bcol.BLACK, 'bcol.BLACK dim', bcol.RESET)
-    print "%s%s%s%s"%(bcol.UNDER, bcol.BLACK, 'bcol.BLACK UNDER', bcol.RESET)
-    print "%s%s%s%s"%(bcol.REV, bcol.BLACK, 'bcol.BLACK REV', bcol.RESET)
-    print "%s%s%s%s"%(bcol.INVIS, bcol.BLACK, 'bcol.BLACK INVIS', bcol.RESET)
+    print("%s%s%s"%(bcol.BLACK, 'bcol.BLACK', bcol.RESET))
+    print("%s%s%s%s"%(bcol.BOLD, bcol.BLACK, 'bcol.BLACK bold', bcol.RESET))
+    print("%s%s%s%s"%(bcol.DIM, bcol.BLACK, 'bcol.BLACK dim', bcol.RESET))
+    print("%s%s%s%s"%(bcol.UNDER, bcol.BLACK, 'bcol.BLACK UNDER', bcol.RESET))
+    print("%s%s%s%s"%(bcol.REV, bcol.BLACK, 'bcol.BLACK REV', bcol.RESET))
+    print("%s%s%s%s"%(bcol.INVIS, bcol.BLACK, 'bcol.BLACK INVIS', bcol.RESET))
     #
-    print "%s%s%s"%(bcol.RED, 'bcol.RED', bcol.RESET)
-    print "%s%s%s%s"%(bcol.BOLD, bcol.RED, 'bcol.RED bold', bcol.RESET)
-    print "%s%s%s%s"%(bcol.DIM, bcol.RED, 'bcol.RED dim', bcol.RESET)
-    print "%s%s%s%s"%(bcol.UNDER, bcol.RED, 'bcol.RED UNDER', bcol.RESET)
-    print "%s%s%s%s"%(bcol.REV, bcol.RED, 'bcol.RED REV', bcol.RESET)
-    print "%s%s%s%s"%(bcol.INVIS, bcol.RED, 'bcol.RED INVIS', bcol.RESET)
+    print("%s%s%s"%(bcol.RED, 'bcol.RED', bcol.RESET))
+    print("%s%s%s%s"%(bcol.BOLD, bcol.RED, 'bcol.RED bold', bcol.RESET))
+    print("%s%s%s%s"%(bcol.DIM, bcol.RED, 'bcol.RED dim', bcol.RESET))
+    print("%s%s%s%s"%(bcol.UNDER, bcol.RED, 'bcol.RED UNDER', bcol.RESET))
+    print("%s%s%s%s"%(bcol.REV, bcol.RED, 'bcol.RED REV', bcol.RESET))
+    print("%s%s%s%s"%(bcol.INVIS, bcol.RED, 'bcol.RED INVIS', bcol.RESET))
     #
-    print ''.join([bcol.BG_DEFAULT, bcol.RED, 'bg def bcol.RED', bcol.RESET])
-    print ''.join([bcol.BG_BLACK, bcol.RED, 'bg black bcol.RED', bcol.RESET])
+    print(''.join([bcol.BG_DEFAULT, bcol.RED, 'bg def bcol.RED', bcol.RESET]))
+    print(''.join([bcol.BG_BLACK, bcol.RED, 'bg black bcol.RED', bcol.RESET]))
     #
-    print "%s%s%s"%(bcol.GREEN, 'bcol.GREEN', bcol.RESET)
-    print "%s%s%s%s"%(bcol.BOLD, bcol.GREEN, 'bcol.GREEN bold', bcol.RESET)
-    print "%s%s%s"%(bcol.YELLOW, 'bcol.YELLOW', bcol.RESET)
-    print "%s%s%s%s"%(bcol.BOLD, bcol.YELLOW, 'bcol.YELLOW bold', bcol.RESET)
-    print "%s%s%s"%(bcol.BLUE, 'bcol.BLUE', bcol.RESET)
-    print "%s%s%s%s"%(bcol.BOLD, bcol.BLUE, 'bcol.BLUE bold', bcol.RESET)
-    print "%s%s%s"%(bcol.PURPLE, 'bcol.PURPLE', bcol.RESET)
-    print "%s%s%s%s"%(bcol.BOLD, bcol.PURPLE, 'bcol.PURPLE bold', bcol.RESET)
-    print "%s%s%s"%(bcol.WHITE, 'bcol.WHITE', bcol.RESET)
-    print "%s%s%s%s"%(bcol.BOLD, bcol.WHITE, 'bcol.WHITE bold', bcol.RESET)
-    print "%s%s%s"%(bcol.UNDERLINE, 'bcol.UNDERLINE', bcol.RESET)
+    print("%s%s%s"%(bcol.GREEN, 'bcol.GREEN', bcol.RESET))
+    print("%s%s%s%s"%(bcol.BOLD, bcol.GREEN, 'bcol.GREEN bold', bcol.RESET))
+    print("%s%s%s"%(bcol.YELLOW, 'bcol.YELLOW', bcol.RESET))
+    print("%s%s%s%s"%(bcol.BOLD, bcol.YELLOW, 'bcol.YELLOW bold', bcol.RESET))
+    print("%s%s%s"%(bcol.BLUE, 'bcol.BLUE', bcol.RESET))
+    print("%s%s%s%s"%(bcol.BOLD, bcol.BLUE, 'bcol.BLUE bold', bcol.RESET))
+    print("%s%s%s"%(bcol.PURPLE, 'bcol.PURPLE', bcol.RESET))
+    print("%s%s%s%s"%(bcol.BOLD, bcol.PURPLE, 'bcol.PURPLE bold', bcol.RESET))
+    print("%s%s%s"%(bcol.WHITE, 'bcol.WHITE', bcol.RESET))
+    print("%s%s%s%s"%(bcol.BOLD, bcol.WHITE, 'bcol.WHITE bold', bcol.RESET))
+    print("%s%s%s"%(bcol.UNDERLINE, 'bcol.UNDERLINE', bcol.RESET))
 
 
 # --------------------------------------------------------
@@ -205,7 +235,7 @@ class Screen(object):
         #
         # output
         for r in buf:
-            print ''.join(r)
+            print(''.join(r))
 
 
 # --------------------------------------------------------
