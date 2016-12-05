@@ -30,9 +30,7 @@ import traceback
 TESTS = []
 def test(fn):
     def go():
-        print('// --------------------------------------------------------')
-        print('//   %s'%(fn.__name__))
-        print('// --------------------------------------------------------')
+        print('// %s'%(fn.__name__))
         b_exit_condition = False
         try:
             res = fn()

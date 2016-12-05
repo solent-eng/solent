@@ -14,9 +14,8 @@ def test_package(package):
     clear_tests()
     m = __import__(package)
     if have_tests():
-        print('#')
-        print('# %s'%package)
-        print('#')
+        print('%s'%package)
+        print('-'*(len(package)))
         run_tests()
 
 def main():
