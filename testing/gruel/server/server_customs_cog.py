@@ -19,23 +19,23 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import activity_new
-from solent.eng import gruel_schema_new
-from solent.eng import gruel_press_new
-from solent.eng import gruel_puff_new
-from solent.eng import nearcast_orb_new
-from solent.eng.cs import *
-from solent.eng.gruel.server.gs_nearcast_schema import gs_nearcast_schema_new
-from solent.eng.gruel.server.server_customs_cog import server_customs_cog_new
-from solent.eng.gruel.server.server_customs_cog import ServerCustomsState
-from solent.log import log
-from solent.util import uniq
-
 from testing import run_tests
 from testing import test
 from testing.eng import engine_fake
 from testing.eng import nearcast_snoop_fake
-from testing.eng.gruel.receiver_cog import receiver_cog_fake
+from testing.gruel.receiver_cog import receiver_cog_fake
+
+from solent.eng import activity_new
+from solent.eng import nearcast_orb_new
+from solent.eng.cs import *
+from solent.gruel import gruel_schema_new
+from solent.gruel import gruel_press_new
+from solent.gruel import gruel_puff_new
+from solent.gruel.server.gs_nearcast_schema import gs_nearcast_schema_new
+from solent.gruel.server.server_customs_cog import server_customs_cog_new
+from solent.gruel.server.server_customs_cog import ServerCustomsState
+from solent.log import log
+from solent.util import uniq
 
 from enum import Enum
 import sys

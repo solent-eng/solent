@@ -19,7 +19,7 @@
 from testing import run_tests
 from testing import test
 
-from solent.eng import gruel_schema_new
+from solent.gruel import gruel_schema_new
 
 import sys
 

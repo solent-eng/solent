@@ -26,10 +26,10 @@ from testing.util import clock_fake
 
 from solent.eng import activity_new
 from solent.eng import cs
-from solent.eng import gruel_puff_new
-from solent.eng import gruel_press_new
-from solent.eng import gruel_schema_new
-from solent.eng import prop_gruel_client_new
+from solent.gruel import gruel_puff_new
+from solent.gruel import gruel_press_new
+from solent.gruel import gruel_schema_new
+from solent.gruel import prop_gruel_client_new
 from solent.log import hexdump_bytearray
 from solent.log import log
 from solent.util import uniq

@@ -19,14 +19,13 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng.gruel.gruel_schema import GruelMessageType
-from solent.eng.gruel.gruel_schema import gmt_value_to_name
-
+from solent.gruel import gruel_press_new
+from solent.gruel.gruel_schema import GruelMessageType
+from solent.gruel.gruel_schema import gmt_value_to_name
 from solent.log import log
 from solent.log import hexdump_bytearray
 from solent.util import ns
 from solent.util import uniq
-from solent.eng import gruel_press_new
 
 from collections import deque
 from collections import OrderedDict as od

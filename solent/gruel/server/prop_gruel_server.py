@@ -29,12 +29,12 @@
 from .gs_nearcast_schema import gs_nearcast_schema_new
 from .tcp_server_cog import tcp_server_cog_new
 
-from solent.log import log
+from solent.eng import nearcast_orb_new
+from solent.gruel import gruel_press_new
 from solent.log import hexdump_bytearray
+from solent.log import log
 from solent.util import ns
 from solent.util import uniq
-from solent.eng import gruel_press_new
-from solent.eng import nearcast_orb_new
 
 from collections import deque
 from collections import OrderedDict as od

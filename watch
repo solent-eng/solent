@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# Under linux, this will watch all the files under ./solent and ./testing.
+# When it detects a save, it will run the test suite. It's useful to run this
+# in a window alongside your editor. This runs the test suite on each save.
+#
 
 NOW=$(date +%Y%m%d)
 WATCHFILE=/tmp/$NOW

@@ -19,9 +19,9 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng.gruel.gruel_schema import gruel_schema_new
-from solent.eng.gruel.gruel_press import gruel_press_new
-from solent.eng.gruel.gruel_puff import gruel_puff_new
+from solent.gruel.gruel_schema import gruel_schema_new
+from solent.gruel.gruel_press import gruel_press_new
+from solent.gruel.gruel_puff import gruel_puff_new
 from solent.log import log
 
 import traceback

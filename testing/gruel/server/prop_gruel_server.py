@@ -23,14 +23,14 @@ from testing import run_tests
 from testing import test
 from testing.eng import engine_fake
 from testing.util import clock_fake
-from testing.eng.gruel.receiver_cog import receiver_cog_fake
+from testing.gruel.receiver_cog import receiver_cog_fake
 
 from solent.eng import activity_new
 from solent.eng import cs
-from solent.eng import gruel_puff_new
-from solent.eng import gruel_press_new
-from solent.eng import gruel_schema_new
-from solent.eng import prop_gruel_server_new
+from solent.gruel import gruel_puff_new
+from solent.gruel import gruel_press_new
+from solent.gruel import gruel_schema_new
+from solent.gruel import prop_gruel_server_new
 from solent.log import log
 from solent.log import hexdump_bytearray
 from solent.util import uniq

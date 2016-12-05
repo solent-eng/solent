@@ -12,7 +12,13 @@ TESTING = os.sep.join( [BASE_DIR, 'testing'] )
 
 def test_package(package):
     clear_tests()
-    m = __import__(package)
+    try:
+        m = __import__(package)
+    except:
+        print('%s'%package)
+        print('-'*(len(package)))
+        print('** Could not import')
+        raise
     if have_tests():
         print('%s'%package)
         print('-'*(len(package)))
