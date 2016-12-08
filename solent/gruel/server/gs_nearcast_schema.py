@@ -2,7 +2,7 @@
 # gs_nearcast_schema
 #
 # // overview
-# Gruel server's nearcast schema
+# Gruel server's nearcast schema.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -23,6 +23,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.eng import nearcast_schema_new
+from solent.log import log
 
 I_NEARCAST_GRUEL_SERVER = '''
     i message h

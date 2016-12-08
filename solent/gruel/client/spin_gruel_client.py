@@ -1,5 +1,5 @@
 #
-# prop_gruel_client
+# spin_gruel_client
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -38,7 +38,7 @@ class ClientStatus(Enum):
     login_message_in_flight = uniq()
     streaming = uniq()
 
-class PropGruelClient:
+class SpinGruelClient:
     def __init__(self, engine, gruel_press, gruel_puff):
         self.engine = engine
         self.gruel_press = gruel_press
@@ -192,8 +192,8 @@ class PropGruelClient:
             sid=self.client_sid,
             data=heartbeat_payload)
 
-def prop_gruel_client_new(engine, gruel_press, gruel_puff):
-    ob = PropGruelClient(
+def spin_gruel_client_new(engine, gruel_press, gruel_puff):
+    ob = SpinGruelClient(
         engine=engine,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)

@@ -1,5 +1,5 @@
 #
-# prop_gruel_server
+# spin_gruel_server
 #
 # // overview
 # At the obvious level, this provides an abstraction that you can use to
@@ -29,7 +29,8 @@
 from .gs_nearcast_schema import gs_nearcast_schema_new
 from .tcp_server_cog import tcp_server_cog_new
 
-from solent.eng import nearcast_orb_new
+from solent.eng import orb_new
+from solent.eng import log_snoop_new
 from solent.gruel import gruel_press_new
 from solent.log import hexdump_bytearray
 from solent.log import log
@@ -63,16 +64,20 @@ class UplinkCog:
             cog_h=self.cog_h,
             message_h='stop_service')
 
-class PropGruelServer:
+class SpinGruelServer:
     def __init__(self, engine, cb_doc_recv):
         self.engine = engine
         self.cb_doc_recv = cb_doc_recv
         #
         self.b_active = False
         #
-        self.gruel_server_nearcast = nearcast_orb_new(
+        self.nearcast_schema = gs_nearcast_schema_new()
+        snoop = log_snoop_new(
+            nearcast_schema=self.nearcast_schema)
+        self.gruel_server_nearcast = orb_new(
             engine=self.engine,
-            nearcast_schema=gs_nearcast_schema_new())
+            nearcast_schema=self.nearcast_schema,
+            snoop=snoop)
         #
         self.tcp_server_cog = tcp_server_cog_new(
             cog_h='tcp_server_cog',
@@ -89,7 +94,7 @@ class PropGruelServer:
             cog=self.uplink)
         #
         self.uplink.send_nearnote(
-            s='prop_gruel_server: nearcast_started')
+            s='spin_gruel_server: nearcast_started')
     def at_turn(self, activity):
         self.gruel_server_nearcast.at_turn(
             activity=activity)
@@ -98,7 +103,8 @@ class PropGruelServer:
         return self.b_active
     def start(self, addr, port, password):
         if self.b_active:
-            raise Exception('server is already started')
+            log('ERROR: server is already started')
+            return
         #
         self.uplink.send_start_service(
             addr=addr,
@@ -107,7 +113,7 @@ class PropGruelServer:
         self.b_active = True
     def stop(self):
         if not self.b_active:
-            raise Exception('server is already stopped')
+            log('ERROR: server is already stopped')
             return
         #
         self.uplink.send_stop_service()
@@ -117,8 +123,8 @@ class PropGruelServer:
         self.cb_doc_recv(
             doc=doc)
 
-def prop_gruel_server_new(engine, cb_doc_recv):
-    ob = PropGruelServer(
+def spin_gruel_server_new(engine, cb_doc_recv):
+    ob = SpinGruelServer(
         engine=engine,
         cb_doc_recv=cb_doc_recv)
     return ob

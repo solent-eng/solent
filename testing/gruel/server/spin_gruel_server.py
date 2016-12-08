@@ -1,5 +1,5 @@
 #
-# prop_gruel_server (testing)
+# spin_gruel_server (testing)
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -23,14 +23,14 @@ from testing import run_tests
 from testing import test
 from testing.eng import engine_fake
 from testing.util import clock_fake
-from testing.gruel.receiver_cog import receiver_cog_fake
+from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent.eng import activity_new
 from solent.eng import cs
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_schema_new
-from solent.gruel import prop_gruel_server_new
+from solent.gruel import spin_gruel_server_new
 from solent.log import log
 from solent.log import hexdump_bytearray
 from solent.util import uniq
@@ -39,14 +39,14 @@ import sys
 
 MTU = 1492
 
-def start_server(engine, prop_gruel_server, addr, port, password):
-    prop_gruel_server.start(
+def start_server(engine, spin_gruel_server, addr, port, password):
+    spin_gruel_server.start(
         addr=addr,
         port=port,
         password=password)
 
-def stop_server(prop_gruel_server):
-    prop_gruel_server.stop()
+def stop_server(spin_gruel_server):
+    spin_gruel_server.stop()
 
 @test
 def should_construct_and_start_and_stop():
@@ -70,19 +70,19 @@ def should_construct_and_start_and_stop():
     gruel_puff = gruel_puff_new(
         gruel_schema=gruel_schema,
         mtu=MTU)
-    prop_gruel_server = prop_gruel_server_new(
+    spin_gruel_server = spin_gruel_server_new(
         engine=engine,
         cb_doc_recv=r.on_doc_recv)
     #
     # scenario: start and stop without crashing
     start_server(
         engine=engine,
-        prop_gruel_server=prop_gruel_server,
+        spin_gruel_server=spin_gruel_server,
         addr=addr,
         port=port,
         password=password)
     stop_server(
-        prop_gruel_server=prop_gruel_server)
+        spin_gruel_server=spin_gruel_server)
     #
     return True
 

@@ -1,10 +1,8 @@
 #
-# server_customs_cog (testing)
+# server_customs_cog
 #
 # // further work
 # The logic around max_fulldoc_size is not implemented.
-#
-# Heartbeats are not implemented.
 #
 # // overview
 # This is the main workhorse and clearing-yard for the server side of the
@@ -204,6 +202,9 @@ class ServerCustomsCog:
                 # doc size so we know. Not sure.
                 raise Exception('xxx')
         self.send_doc_q.append(doc)
+    def on_heartbeat_send(self):
+        self.nc_gruel_send(
+            payload=self.gruel_press.create_heartbeat_payload())
     #
     def _to_rejection(self, s):
         self.state = ServerCustomsState.reject_stage_a

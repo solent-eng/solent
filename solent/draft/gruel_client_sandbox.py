@@ -27,9 +27,9 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.eng import engine_new
-from solent.eng import nearcast_orb_new
 from solent.eng import nearcast_schema_new
-from solent.eng import nearcast_snoop_new
+from solent.eng import nc_snoop_new
+from solent.eng import orb_new
 from solent.log import init_logging
 from solent.log import log
 from solent.util import line_finder_new
@@ -39,9 +39,8 @@ from collections import OrderedDict as od
 import time
 import traceback
 
-# xxx
-CONSOLE_ADDR = '127.0.0.1'
-CONSOLE_PORT = 4099
+LCONSOLE_ADDR = '127.0.0.1'
+LCONSOLE_PORT = 4091
 
 TERM_LINK_ADDR = '127.0.0.1'
 TERM_LINK_PORT = 4100
@@ -70,9 +69,9 @@ I_NEARCAST_SCHEMA = '''
 #   :cog_gruel_client
 # --------------------------------------------------------
 class CogGruelClient:
-    def __init__(self, cog_h, nearcast_orb, engine, addr, port):
+    def __init__(self, cog_h, orb, engine, addr, port):
         self.cog_h = cog_h
-        self.nearcast_orb = nearcast_orb
+        self.orb = orb
         self.engine = engine
         self.addr = addr
         self.port = port
@@ -121,10 +120,10 @@ class CogGruelClient:
             sid=client_sid,
             data='q_received %s\n'%len(data))
 
-def cog_gruel_client_new(cog_h, nearcast_orb, engine, addr, port):
+def cog_gruel_client_new(cog_h, orb, engine, addr, port):
     ob = CogGruelClient(
         cog_h=cog_h,
-        nearcast_orb=nearcast_orb,
+        orb=orb,
         engine=engine,
         addr=addr,
         port=port)
@@ -168,9 +167,9 @@ def moderst_interpreter_new(cog_console):
     return ob
 
 class CogConsole:
-    def __init__(self, cog_h, nearcast_orb, engine, addr, port):
+    def __init__(self, cog_h, orb, engine, addr, port):
         self.cog_h = cog_h
-        self.nearcast_orb = nearcast_orb
+        self.orb = orb
         self.engine = engine
         self.addr = addr
         self.port = port
@@ -238,7 +237,7 @@ class CogConsole:
     #
     def mi_nearcast_connect(self):
         # xxx fix up configurables
-        self.nearcast_orb.nearcast(
+        self.orb.nearcast(
             cog_h=self.cog_h,
             message_h='connect',
             username='uname',
@@ -251,10 +250,10 @@ class CogConsole:
             sid=self.client_sid,
             data='%s\n'%m)
 
-def cog_console_new(cog_h, nearcast_orb, engine, addr, port):
+def cog_console_new(cog_h, orb, engine, addr, port):
     ob = CogConsole(
         cog_h=cog_h,
-        nearcast_orb=nearcast_orb,
+        orb=orb,
         engine=engine,
         addr=addr,
         port=port)
@@ -265,9 +264,9 @@ def cog_console_new(cog_h, nearcast_orb, engine, addr, port):
 #   :rest
 # --------------------------------------------------------
 class CogEventSource:
-    def __init__(self, cog_h, nearcast_orb, engine):
+    def __init__(self, cog_h, orb, engine):
         self.cog_h = cog_h
-        self.nearcast_orb = nearcast_orb
+        self.orb = orb
         self.engine = engine
         #
         self.t_something = time.time()
@@ -275,7 +274,7 @@ class CogEventSource:
         "Returns a boolean which is True only if there was activity."
         t_something = time.time()
         if t_something - self.t_something > 1:
-            self.nearcast_orb.nearcast(
+            self.orb.nearcast(
                 cog_h=self.cog_h,
                 message_h='something',
                 text='here it is!')
@@ -288,37 +287,37 @@ def main():
     try:
         nearcast_schema = nearcast_schema_new(
             i_nearcast=I_NEARCAST_SCHEMA)
-        nearcast_snoop = nearcast_snoop_new(
+        snoop = nc_snoop_new(
             engine=engine,
             nearcast_schema=nearcast_schema,
             addr=TAP_ADDR,
             port=TAP_PORT)
         #
-        nearcast_orb = nearcast_orb_new(
+        orb = orb_new(
             engine=engine,
             nearcast_schema=nearcast_schema,
-            nearcast_snoop=nearcast_snoop)
-        nearcast_orb.add_cog(
+            snoop=snoop)
+        orb.add_cog(
             cog=cog_console_new(
                 cog_h='console01',
-                nearcast_orb=nearcast_orb,
+                orb=orb,
                 engine=engine,
                 addr=CONSOLE_ADDR,
                 port=CONSOLE_PORT))
-        nearcast_orb.add_cog(
+        orb.add_cog(
             cog=CogEventSource(
                 cog_h='esource01',
-                nearcast_orb=nearcast_orb,
+                orb=orb,
                 engine=engine))
-        nearcast_orb.add_cog(
+        orb.add_cog(
             cog=cog_gruel_client_new(
                 cog_h='client01',
-                nearcast_orb=nearcast_orb,
+                orb=orb,
                 engine=engine,
                 addr=TERM_LINK_ADDR,
                 port=TERM_LINK_PORT))
         engine.add_orb(
-            orb=nearcast_orb)
+            orb=orb)
         engine.event_loop()
     except KeyboardInterrupt:
         pass

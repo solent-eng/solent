@@ -55,9 +55,38 @@ pip install hg+http://bitbucket.org/pygame/pygame
 Things to try,
 
 ```bash
-python3 -m solent.draft.turn_based_game --win
+1) Network stuff
 
-python3 -m solent.draft.turn_based_game --tty
+Have a look at the main function of solent.eng.scenarios, then try running one
+like this:
+
+    python -m solent.eng.scenarios
+
+2) Nearcasting technique (aka aggressive use of the observer pattern)
+
+If you want to have an example of an application that has been developed
+through nearcasting, solent.gruel.server.spin_gruel_server. You can launch an
+app that uses this as follows:
+
+    python -m solent.draft.gruel_server_sandbox
+
+Telnet to the line console in another window:
+
+    nc localhost 
+
+The corresponding client demo (not quite working yet at time of writing):
+
+    python -m solent.draft.gruel_client_sandbox
+
+3) Terminal stuff
+
+Expect to break this term stuff out into a separate package, but for the
+moment it's
+
+    python3 -m solent.draft.turn_based_game --win
+
+    python3 -m solent.draft.turn_based_game --tty
+
 ```
 (escape and then q to enter)
 

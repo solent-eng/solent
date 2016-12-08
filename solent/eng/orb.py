@@ -1,16 +1,32 @@
 #
-# nearcast orb
+# orb
 #
-# // brief
-# Short: Nearcasting is an in-process equivalent of broadcasting.
+# // overview
+# The orb is a mechanism that supplies an answer to two questions.
+# 1) Business logic lives in cogs. But you don't want them registered directly
+# with the engine. If they were, how would they communicate with one another?
+# Imagine if you got some data in from the network, and then wanted to send it
+# to a file-writer cog - what then?
+# 2) The engine contains an event loop. But how to harness this power? How
+# does an application get access to it?
 #
-# Long: nearcasting is a mechanism for cogs to pass messages between one
-# another. programming is typically made up of lots of point-to-point
-# messaging. You can imagine cog_a saying cog_b.message_name(kv_pairs). This
-# works differently: cog_a would say orb.nearcast(message_name, kv_pairs).
-# Later in the event loop, the orb would be told to distribute the messages.
-# It would look at each of its cogs to see if they have a method
-# on_message_name. Each cog which has that form gets a copy of the message.
+# An orb satisfies these needs:
+# 1) It provides a nearcast. That is, a mechanism by which cogs can talk to
+# one another without requiring knowlede of each other's internal state.
+# 2) It bridges power from the engine to groups of cogs. On each pass of its
+# event loop, an engine will run through its list of registered orbs and call
+# orb.at_turn. The orb will then call the at_turn method for any cog that
+# offers it.
+#
+# If you've made it this far, you might appreciate this feature of an orb:
+# It's possible for multiple logical applications to run in a single process
+# and under a single engine. Once we have this model in place, it becomes
+# trivial to scale applications by moving them off nearcasts (single system)
+# and onto broadcasts (multiple pieces of hardware) with zero changes to
+# business logic.
+#
+# There's a bit going on here. It could be more explained with a short video
+# and some lego. To be done.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -32,6 +48,7 @@
 #
 
 from .activity import activity_new
+from .test_receiver_cog import test_receiver_cog_new
 
 from solent.log import log
 from solent.util import uniq
@@ -42,11 +59,11 @@ import inspect
 from pprint import pprint
 import types
 
-class NearcastOrb:
-    def __init__(self, engine, nearcast_schema, nearcast_snoop):
+class Orb:
+    def __init__(self, engine, nearcast_schema, snoop):
         self.engine = engine
         self.nearcast_schema = nearcast_schema
-        self.nearcast_snoop = nearcast_snoop
+        self.snoop = snoop
         #
         self.cogs = []
         self.pending = deque()
@@ -54,8 +71,8 @@ class NearcastOrb:
         #
         self.distribute()
         #
-        if self.nearcast_snoop:
-            self.nearcast_snoop.at_turn(
+        if self.snoop:
+            self.snoop.at_turn(
                 activity=activity)
         for cog in self.cogs:
             if 'at_turn' in dir(cog):
@@ -80,7 +97,7 @@ class NearcastOrb:
             else:
                 break
             if max_turns != None and turn_counter >= max_turns:
-                log('breaking nearcast_orb.cycle (reached maxturns %s)'%(
+                log('breaking orb.cycle (reached maxturns %s)'%(
                     max_turns))
                 break
             turn_counter += 1
@@ -92,11 +109,18 @@ class NearcastOrb:
                 name = 'unknown, has no cog_h'
             raise Exception("Cog %s is already added."%(name))
         self.cogs.append(cog)
-    def init_cog(self, fn):
-        if type(fn) != types.FunctionType:
-            raise Exception("install_cog takes a function only.")
-        cog = fn(
-            cog_h='cog_%s_%s'%(uniq(), fn.__name__),
+    def init_cog(self, construct):
+        cog = construct(
+            cog_h='cog_%s_%s'%(uniq(), construct.__name__),
+            orb=self,
+            engine=self.engine)
+        self.add_cog(
+            cog=cog)
+        return cog
+    def init_test_receiver_cog(self):
+        cog = test_receiver_cog_new(
+            nearcast_schema=self.nearcast_schema,
+            cog_h='test_receiver',
             orb=self,
             engine=self.engine)
         self.add_cog(
@@ -124,8 +148,8 @@ class NearcastOrb:
         while self.pending:
             (cog_h, message_h, d_fields) = self.pending.popleft()
             rname = 'on_%s'%(message_h)
-            if self.nearcast_snoop:
-                self.nearcast_snoop.on_nearcast_message(
+            if self.snoop:
+                self.snoop.on_nearcast_message(
                     cog_h=cog_h,
                     message_h=message_h,
                     d_fields=d_fields)
@@ -138,17 +162,10 @@ class NearcastOrb:
                         log('problem is %s:%s'%(cog.cog_h, rname))
                         raise
 
-def nearcast_orb_new(engine, nearcast_schema, nearcast_snoop=None):
-    '''
-    This returns an instance of an object that behaves like an orb, but which
-    also has nearcast functionality in. Nearcasting is essentially an
-    in-process mechanism that otherwise behaves a lot like broadcasting:
-    a cog can nearcast, and then any other cogs attached to the same nearcast
-    will get a copy of the message.
-    '''
-    ob = NearcastOrb(
+def orb_new(engine, nearcast_schema, snoop=None):
+    ob = Orb(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=nearcast_snoop)
+        snoop=snoop)
     return ob
 

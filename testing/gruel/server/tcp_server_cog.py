@@ -22,12 +22,12 @@
 from testing import run_tests
 from testing import test
 from testing.eng import engine_fake
-from testing.eng import nearcast_snoop_fake
-from testing.gruel.receiver_cog import receiver_cog_fake
+from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent.eng import activity_new
-from solent.eng import nearcast_orb_new
 from solent.eng import nearcast_schema_new
+from solent.eng import log_snoop_new
+from solent.eng import orb_new
 from solent.eng.cs import *
 from solent.gruel import gruel_schema_new
 from solent.gruel import gruel_press_new
@@ -111,17 +111,17 @@ def simulate_client_send_login(engine, orb, tcp_server_cog, pw, hbint):
 def should_start_and_stop():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    snoop = nearcast_snoop_fake(
+    snoop = log_snoop_new(
         nearcast_schema=nearcast_schema)
     snoop.disable()
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=snoop)
+        snoop=snoop)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(
-        fn=tcp_server_cog_new)
+        construct=tcp_server_cog_new)
     #
     addr = '127.0.0.1'
     port = 5000
@@ -156,17 +156,17 @@ def should_start_and_stop():
 def should_handle_client_connect_and_then_boot_client():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    snoop = nearcast_snoop_fake(
+    snoop = log_snoop_new(
         nearcast_schema=nearcast_schema)
     snoop.disable()
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=snoop)
+        snoop=snoop)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(
-        fn=tcp_server_cog_new)
+        construct=tcp_server_cog_new)
     #
     addr = '127.0.0.1'
     port = 5000
@@ -218,18 +218,18 @@ def should_handle_client_connect_and_then_boot_client():
 def should_broadcast_incoming_message_as_gruel_in():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    snoop = nearcast_snoop_fake(
+    snoop = log_snoop_new(
         nearcast_schema=nearcast_schema)
     snoop.disable()
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=snoop)
+        snoop=snoop)
     #
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(
-        fn=tcp_server_cog_new)
+        construct=tcp_server_cog_new)
     #
     addr = '127.0.0.1'
     port = 5000
@@ -294,18 +294,18 @@ def should_broadcast_incoming_message_as_gruel_in():
 def should_boot_client_when_told_to():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    snoop = nearcast_snoop_fake(
+    snoop = log_snoop_new(
         nearcast_schema=nearcast_schema)
     snoop.disable()
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=snoop)
+        snoop=snoop)
     #
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(
-        fn=tcp_server_cog_new)
+        construct=tcp_server_cog_new)
     #
     addr = '127.0.0.1'
     port = 5000
@@ -344,18 +344,18 @@ def should_boot_client_when_invalid_gruel_is_received():
     activity = activity_new()
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    snoop = nearcast_snoop_fake(
+    snoop = log_snoop_new(
         nearcast_schema=nearcast_schema)
     snoop.disable()
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=snoop)
+        snoop=snoop)
     #
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(
-        fn=tcp_server_cog_new)
+        construct=tcp_server_cog_new)
     #
     addr = '127.0.0.1'
     port = 5000
@@ -408,17 +408,17 @@ def should_ignore_gruel_send_when_no_client():
     #
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    snoop = nearcast_snoop_fake(
+    snoop = log_snoop_new(
         nearcast_schema=nearcast_schema)
     snoop.disable()
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=snoop)
+        snoop=snoop)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(
-        fn=tcp_server_cog_new)
+        construct=tcp_server_cog_new)
     #
     addr = '127.0.0.1'
     port = 5000
@@ -468,17 +468,17 @@ def should_send_gruel_send_data_to_a_connected_client():
     #
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    snoop = nearcast_snoop_fake(
+    snoop = log_snoop_new(
         nearcast_schema=nearcast_schema)
     snoop.disable()
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=snoop)
+        snoop=snoop)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(
-        fn=tcp_server_cog_new)
+        construct=tcp_server_cog_new)
     #
     addr = '127.0.0.1'
     port = 5000

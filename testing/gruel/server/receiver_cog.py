@@ -1,11 +1,27 @@
 #
 # receiver cog
 #
-# with a bit of work work it should be possible to generate these from the
-# schema.
+# // overview
+# Cog that sits on the nearcast with methods that make it useful for testing
+# scenarios.
 #
-
-from solent.log import log
+# // license
+# Copyright 2016, Free Software Foundation.
+#
+# This file is part of Solent.
+#
+# Solent is free software: you can redistribute it and/or modify it under the
+# terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Solent is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Solent. If not, see <http://www.gnu.org/licenses/>.
 
 class ReceiverCog:
     def __init__(self, cog_h, orb, engine):
@@ -181,19 +197,29 @@ class ReceiverCog:
             doc=doc)
         self.orb.cycle()
     #
-    def on_heartbeat_recv(self):
-        self.acc_heartbeat_recv.append(None)
     def count_heartbeat_recv(self):
         return len(self.acc_heartbeat_recv)
     def last_heartbeat_recv(self):
         return self.acc_heartbeat_recv[-1]
+    def on_heartbeat_recv(self):
+        self.acc_heartbeat_recv.append(None)
+    def nc_heartbeat_recv(self):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='heartbeat_recv')
+        self.orb.cycle()
     #
-    def on_heartbeat_send(self):
-        self.acc_heartbeat_send.append(None)
     def count_heartbeat_send(self):
         return len(self.acc_heartbeat_send)
     def last_heartbeat_send(self):
         return self.acc_heartbeat_send[-1]
+    def on_heartbeat_send(self):
+        self.acc_heartbeat_send.append(None)
+    def nc_heartbeat_send(self):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='heartbeat_send')
+        self.orb.cycle()
 
 def receiver_cog_fake(cog_h, orb, engine):
     ob = ReceiverCog(

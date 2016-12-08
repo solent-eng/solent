@@ -1,5 +1,5 @@
 #
-# prop_gruel_client (testing)
+# spin_gruel_client (testing)
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -29,7 +29,7 @@ from solent.eng import cs
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_schema_new
-from solent.gruel import prop_gruel_client_new
+from solent.gruel import spin_gruel_client_new
 from solent.log import hexdump_bytearray
 from solent.log import log
 from solent.util import uniq
@@ -64,13 +64,13 @@ def should_start_at_dormant_status():
     gruel_puff = gruel_puff_new(
         gruel_schema=gruel_schema,
         mtu=MTU)
-    prop_gruel_client = prop_gruel_client_new(
+    spin_gruel_client = spin_gruel_client_new(
         engine=engine,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)
     #
     # confirm status
-    assert prop_gruel_client.get_status() == 'dormant'
+    assert spin_gruel_client.get_status() == 'dormant'
     #
     return True
 
@@ -87,7 +87,7 @@ def should_attempt_connection():
     gruel_puff = gruel_puff_new(
         gruel_schema=gruel_schema,
         mtu=MTU)
-    prop_gruel_client = prop_gruel_client_new(
+    spin_gruel_client = spin_gruel_client_new(
         engine=engine,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)
@@ -97,7 +97,7 @@ def should_attempt_connection():
     #
     # connection attempt
     assert 0 == len(engine.events)
-    prop_gruel_client.attempt_connection(
+    spin_gruel_client.attempt_connection(
         addr=addr,
         port=port,
         password='pword',
@@ -110,7 +110,7 @@ def should_attempt_connection():
     assert 0 == connection_info.calls_to_on_connect
     assert 1 == len(engine.events)
     assert engine.events[-1] == ('open_tcp_client', addr, port)
-    assert prop_gruel_client.get_status() == 'attempting_tcp_connection'
+    assert spin_gruel_client.get_status() == 'attempting_tcp_connection'
     #
     return True
 
@@ -127,7 +127,7 @@ def should_return_to_dormant_on_failed_connection():
     gruel_puff = gruel_puff_new(
         gruel_schema=gruel_schema,
         mtu=MTU)
-    prop_gruel_client = prop_gruel_client_new(
+    spin_gruel_client = spin_gruel_client_new(
         engine=engine,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)
@@ -137,7 +137,7 @@ def should_return_to_dormant_on_failed_connection():
     #
     # connection attempt
     assert 0 == len(engine.events)
-    prop_gruel_client.attempt_connection(
+    spin_gruel_client.attempt_connection(
         addr=addr,
         port=port,
         password='pword',
@@ -146,20 +146,20 @@ def should_return_to_dormant_on_failed_connection():
         cb_doc=doc_receiver.on_doc)
     #
     # confirm effects
-    assert prop_gruel_client.get_status() == 'attempting_tcp_connection'
+    assert spin_gruel_client.get_status() == 'attempting_tcp_connection'
     #
     # simulate the engine rejecting the connection
     cs_tcp_condrop = cs.CsTcpCondrop()
     cs_tcp_condrop.engine = engine
     cs_tcp_condrop.sid = uniq()
     cs_tcp_condrop.message = 'test123'
-    prop_gruel_client._engine_on_tcp_condrop(
+    spin_gruel_client._engine_on_tcp_condrop(
         cs_tcp_condrop=cs_tcp_condrop)
     #
     # confirm effects
     assert 0 == connection_info.calls_to_on_connect
     assert 1 == connection_info.calls_to_on_condrop
-    assert prop_gruel_client.get_status() == 'dormant'
+    assert spin_gruel_client.get_status() == 'dormant'
     #
     return True
 
@@ -176,7 +176,7 @@ def should_handle_successful_tcp_connection():
     gruel_puff = gruel_puff_new(
         gruel_schema=gruel_schema,
         mtu=MTU)
-    prop_gruel_client = prop_gruel_client_new(
+    spin_gruel_client = spin_gruel_client_new(
         engine=engine,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)
@@ -186,7 +186,7 @@ def should_handle_successful_tcp_connection():
     #
     # connection attempt
     assert 0 == len(engine.events)
-    prop_gruel_client.attempt_connection(
+    spin_gruel_client.attempt_connection(
         addr=addr,
         port=port,
         password='pword',
@@ -199,13 +199,13 @@ def should_handle_successful_tcp_connection():
     cs_tcp_connect.engine = engine
     cs_tcp_connect.sid = uniq()
     cs_tcp_connect.message = 'test123'
-    prop_gruel_client._engine_on_tcp_connect(
+    spin_gruel_client._engine_on_tcp_connect(
         cs_tcp_connect=cs_tcp_connect)
     #
     # confirm effects
     assert 1 == connection_info.calls_to_on_connect
     assert 0 == connection_info.calls_to_on_condrop
-    assert prop_gruel_client.get_status() == 'ready_to_attempt_login'
+    assert spin_gruel_client.get_status() == 'ready_to_attempt_login'
     #
     return True
 
@@ -224,11 +224,11 @@ def should_simulate_common_behaviour():
     gruel_puff = gruel_puff_new(
         gruel_schema=gruel_schema,
         mtu=MTU)
-    prop_gruel_client = prop_gruel_client_new(
+    spin_gruel_client = spin_gruel_client_new(
         engine=engine,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)
-    assert prop_gruel_client.heartbeat_interval == 1
+    assert spin_gruel_client.heartbeat_interval == 1
     #
     # other bits we'll need
     activity = activity_new()
@@ -240,7 +240,7 @@ def should_simulate_common_behaviour():
     addr = '127.0.0.1'
     port = 4098
     password = 'pword'
-    prop_gruel_client.attempt_connection(
+    spin_gruel_client.attempt_connection(
         addr=addr,
         port=port,
         password=password,
@@ -256,21 +256,21 @@ def should_simulate_common_behaviour():
     cs_tcp_connect.engine = engine
     cs_tcp_connect.sid = uniq()
     cs_tcp_connect.message = 'test123'
-    prop_gruel_client._engine_on_tcp_connect(
+    spin_gruel_client._engine_on_tcp_connect(
         cs_tcp_connect=cs_tcp_connect)
     #
     # confirm effects
-    assert prop_gruel_client.get_status() == 'ready_to_attempt_login'
-    assert prop_gruel_client.last_heartbeat_recv == 5
-    assert prop_gruel_client.last_heartbeat_sent == 5
+    assert spin_gruel_client.get_status() == 'ready_to_attempt_login'
+    assert spin_gruel_client.last_heartbeat_recv == 5
+    assert spin_gruel_client.last_heartbeat_sent == 5
     #
     # give the client a turn so it can move to logging in.
-    prop_gruel_client.at_turn(
+    spin_gruel_client.at_turn(
         activity=activity)
     #
     # confirm effects
-    assert activity.get()[-1] == 'PropGruelClient/sending login'
-    assert prop_gruel_client.get_status() == 'login_message_in_flight'
+    assert activity.get()[-1] == 'SpinGruelClient/sending login'
+    assert spin_gruel_client.get_status() == 'login_message_in_flight'
     #
     # do we see the login message in-flight?
     assert 1 == len(engine.sent_data)
@@ -292,12 +292,12 @@ def should_simulate_common_behaviour():
         cs_tcp_recv.engine = engine
         cs_tcp_recv.client_sid = 'fake_sid'
         cs_tcp_recv.data = server_greet_payload
-        prop_gruel_client._engine_on_tcp_recv(
+        spin_gruel_client._engine_on_tcp_recv(
             cs_tcp_recv=cs_tcp_recv)
     server_sends_greet_payload()
     #
     # confirm effects
-    assert prop_gruel_client.get_status() == 'streaming'
+    assert spin_gruel_client.get_status() == 'streaming'
     #
     # scenario: server sends a heartbeat
     clock.set(10)
@@ -307,17 +307,17 @@ def should_simulate_common_behaviour():
         cs_tcp_recv.engine = engine
         cs_tcp_recv.client_sid = 'fake_sid'
         cs_tcp_recv.data = server_heartbeat
-        prop_gruel_client._engine_on_tcp_recv(
+        spin_gruel_client._engine_on_tcp_recv(
             cs_tcp_recv=cs_tcp_recv)
     server_sends_heartbeat()
     #
     # confirm effects
-    assert prop_gruel_client.get_status() == 'streaming'
-    assert prop_gruel_client.last_heartbeat_recv == 10
+    assert spin_gruel_client.get_status() == 'streaming'
+    assert spin_gruel_client.last_heartbeat_recv == 10
     #
     # scenario: client should send a heartbeat
     clock.set(11)
-    prop_gruel_client.at_turn(
+    spin_gruel_client.at_turn(
         activity=activity)
     #
     # confirm effects
@@ -328,7 +328,7 @@ def should_simulate_common_behaviour():
     assert d_payload['message_h'] == 'heartbeat'
     #
     # confirm that it now does not send another one
-    prop_gruel_client.at_turn(
+    spin_gruel_client.at_turn(
         activity=activity)
     assert 2 == len(engine.sent_data)
     #
@@ -338,9 +338,9 @@ def should_simulate_common_behaviour():
         greet "hello, world!"
     '''
     mcount_before = len(engine.sent_data)
-    prop_gruel_client.send_document(
+    spin_gruel_client.send_document(
         doc=small_doc)
-    prop_gruel_client.at_turn(
+    spin_gruel_client.at_turn(
         activity=activity)
     #
     # confirm effects
@@ -356,12 +356,12 @@ def should_simulate_common_behaviour():
     # packets
     large_doc = 'w/%s/y'%('x'*(2*MAX_PACKET_LEN))
     mcount_before = len(engine.sent_data)
-    prop_gruel_client.send_document(
+    spin_gruel_client.send_document(
         doc=large_doc)
     # give it several turns to allow doc to be dispatched
-    prop_gruel_client.at_turn(activity)
-    prop_gruel_client.at_turn(activity)
-    prop_gruel_client.at_turn(activity)
+    spin_gruel_client.at_turn(activity)
+    spin_gruel_client.at_turn(activity)
+    spin_gruel_client.at_turn(activity)
     #
     # confirm effects
     assert len(engine.sent_data) > mcount_before
@@ -398,7 +398,7 @@ def should_simulate_common_behaviour():
         cs_tcp_recv.engine = engine
         cs_tcp_recv.client_sid = 'fake_sid'
         cs_tcp_recv.data = payload
-        prop_gruel_client._engine_on_tcp_recv(
+        spin_gruel_client._engine_on_tcp_recv(
             cs_tcp_recv=cs_tcp_recv)
     server_sends_small_payload()
     #
@@ -432,7 +432,7 @@ def should_simulate_common_behaviour():
             cs_tcp_recv.engine = engine
             cs_tcp_recv.client_sid = 'fake_sid'
             cs_tcp_recv.data = payload
-            prop_gruel_client._engine_on_tcp_recv(
+            spin_gruel_client._engine_on_tcp_recv(
                 cs_tcp_recv=cs_tcp_recv)
     server_sends_large_doc()
     #

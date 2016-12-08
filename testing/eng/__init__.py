@@ -17,5 +17,4 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from .engine import engine_fake
-from .nearcast_snoop import nearcast_snoop_fake
 

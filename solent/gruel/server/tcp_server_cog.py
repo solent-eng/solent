@@ -61,7 +61,7 @@ class TcpServerCog:
         self._engine_boot_any_client()
     def on_please_tcp_boot(self):
         self._engine_boot_any_client()
-        self._engine_raise_server()
+        # condrop will take care of bringing the server back
     def on_gruel_send(self, payload):
         if not self.client_sid:
             return

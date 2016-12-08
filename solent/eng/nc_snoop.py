@@ -1,5 +1,12 @@
 #
-# nearcast snoop
+# nc snoop
+#
+# // overview
+# Hosts a network service that allows a developer to see each of the messages
+# on a nearcast as they happen.
+#
+# The nc is meant to imply netcat rather than nearcast. There's also a valid
+# nearcast snoop called log_snoop.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -23,7 +30,7 @@ from solent.log import log
 
 from collections import deque
 
-class NearcastSnoop:
+class NetSnoop:
     '''
     This gives you a network service that allows you to use netcat or similar
     to see all the messages that are passing through the nearcast. Useful
@@ -117,8 +124,8 @@ class NearcastSnoop:
         nice = format_message()
         self.q_outbound.append(nice)
 
-def nearcast_snoop_new(engine, nearcast_schema, addr, port):
-    ob = NearcastSnoop(
+def nc_snoop_new(engine, nearcast_schema, addr, port):
+    ob = NetSnoop(
         engine=engine,
         nearcast_schema=nearcast_schema,
         addr=addr,

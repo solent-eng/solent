@@ -1,4 +1,9 @@
 #
+# lc_nearcast_schema (testing)
+#
+# // overview
+# The nearcast schema for the line console server functionality.
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -17,10 +22,27 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .gruel_press import gruel_press_new
-from .gruel_puff import gruel_puff_new
-from .gruel_schema import gruel_schema_new
+from testing import run_tests
+from testing import test
+from testing.eng import engine_fake
+from testing.util import clock_fake
 
-from .client.spin_gruel_client import spin_gruel_client_new
-from .server.spin_gruel_server import spin_gruel_server_new
+from solent.eng import activity_new
+from solent.eng import cs
+from solent.lc import lc_nearcast_schema_new
+from solent.log import log
+from solent.log import hexdump_bytearray
+from solent.util import uniq
+
+import sys
+
+@test
+def should_not_crash():
+    nearcast_schema = lc_nearcast_schema_new()
+    #
+    return True
+
+if __name__ == '__main__':
+    run_tests(
+        unders_file=sys.modules['__main__'].__file__)
 

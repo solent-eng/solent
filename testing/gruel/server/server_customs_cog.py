@@ -22,11 +22,11 @@
 from testing import run_tests
 from testing import test
 from testing.eng import engine_fake
-from testing.eng import nearcast_snoop_fake
-from testing.gruel.receiver_cog import receiver_cog_fake
+from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent.eng import activity_new
-from solent.eng import nearcast_orb_new
+from solent.eng import log_snoop_new
+from solent.eng import orb_new
 from solent.eng.cs import *
 from solent.gruel import gruel_schema_new
 from solent.gruel import gruel_press_new
@@ -53,13 +53,13 @@ def should_throw_alg_exception_if_packet_seen_before_password():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
-        fn=server_customs_cog_new)
+        construct=server_customs_cog_new)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     #
     # scenario: gruel_recv happens without a password having been set
     b_error = False
@@ -86,13 +86,13 @@ def should_store_password_values():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
-        fn=server_customs_cog_new)
+        construct=server_customs_cog_new)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     #
     # scenario: password message
     our_password = 'qweqwe'
@@ -118,13 +118,13 @@ def should_boot_client_if_first_message_is_not_client_login():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
-        fn=server_customs_cog_new)
+        construct=server_customs_cog_new)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     #
     # start the service
     our_password = 'qweqwe'
@@ -159,13 +159,13 @@ def should_boot_user_on_receipt_of_login_message_when_already_logged_in():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
-        fn=server_customs_cog_new)
+        construct=server_customs_cog_new)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     #
     # start the service
     our_password = 'qweqwe'
@@ -202,13 +202,13 @@ def should_do_basic_login_reject():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
-        fn=server_customs_cog_new)
+        construct=server_customs_cog_new)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     #
     # start the service
     our_password = 'qweqwe'
@@ -247,13 +247,13 @@ def should_do_successful_login_accept():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
-        fn=server_customs_cog_new)
+        construct=server_customs_cog_new)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     #
     # start the service
     our_password = 'qweqwe'
@@ -291,13 +291,13 @@ def should_run_a_rejection_sequence():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
-        fn=server_customs_cog_new)
+        construct=server_customs_cog_new)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     #
     # start the service
     our_password = 'qweqwe'
@@ -346,13 +346,13 @@ def should_clear_state_in_announce_connect():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
-        fn=server_customs_cog_new)
+        construct=server_customs_cog_new)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     #
     r.nc_announce_tcp_connect(
         ip='does not matter',
@@ -376,13 +376,13 @@ def should_buffer_a_couple_of_docs():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
-        fn=server_customs_cog_new)
+        construct=server_customs_cog_new)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     #
     # start the service
     our_password = 'qweqwe'
@@ -451,13 +451,13 @@ def should_send_a_couple_of_docs():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = nearcast_orb_new(
+    orb = orb_new(
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
-        fn=server_customs_cog_new)
+        construct=server_customs_cog_new)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     #
     # start the service
     our_password = 'qweqwe'
@@ -502,6 +502,57 @@ def should_send_a_couple_of_docs():
     assert d_gruel['message_h'] == 'docdata'
     assert d_gruel['b_complete'] == 1
     assert d_gruel['data'][-1] == 'z'
+    #
+    return True
+
+@test
+def should_convert_heartbeat_requests_to_gruel():
+    engine = engine_fake()
+    clock = engine.get_clock()
+    gruel_schema = gruel_schema_new()
+    gruel_press = gruel_press_new(
+        gruel_schema=gruel_schema,
+        mtu=engine.mtu)
+    gruel_puff = gruel_puff_new(
+        gruel_schema=gruel_schema,
+        mtu=engine.mtu)
+    #
+    orb = orb_new(
+        engine=engine,
+        nearcast_schema=gs_nearcast_schema_new())
+    server_customs_cog = orb.init_cog(
+        construct=server_customs_cog_new)
+    r = orb.init_cog(
+        construct=receiver_cog_fake)
+    #
+    # start the service
+    our_password = 'qweqwe'
+    r.nc_start_service(
+        ip='does not matter',
+        port=1234,
+        password=our_password)
+    #
+    # preparation: user logs in
+    r.nc_announce_tcp_connect(
+        ip='also not important',
+        port=456)
+    r.nc_gruel_recv(
+        d_gruel=gruel_puff.unpack(
+            payload=gruel_press.create_client_login_payload(
+                password=our_password,
+                heartbeat_interval=3)))
+    orb.cycle()
+    #
+    # starting asumptions
+    assert 1 == r.count_gruel_send()
+    #
+    # scenario: we get a request to heartbeat
+    r.nc_heartbeat_send()
+    #
+    # confirm effects
+    assert 2 == r.count_gruel_send()
+    d_gruel = gruel_puff.unpack(r.get_gruel_send()[-1])
+    assert d_gruel['message_h'] == 'heartbeat'
     #
     return True
 

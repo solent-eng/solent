@@ -8,6 +8,16 @@
 NOW=$(date +%Y%m%d)
 WATCHFILE=/tmp/$NOW
 
+run_tests_within_venv() {
+    pushd venv
+    . bin/activate
+    popd
+
+    python3 run_tests.py
+
+    echo '(fini)'
+}
+
 clear
 echo "[watch]"
 
@@ -42,7 +52,7 @@ else:
     if [[ "$WORTH_RUNNING" == "1" ]]; then
         clear
         date
-        ./run_tests_within_venv
+        run_tests_within_venv
     fi
 done
 

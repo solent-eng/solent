@@ -27,123 +27,175 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.eng import engine_new
-from solent.eng import nearcast_orb_new
 from solent.eng import nearcast_schema_new
-from solent.eng import nearcast_snoop_new
+from solent.eng import log_snoop_new
+from solent.eng import orb_new
+from solent.gruel import spin_gruel_server_new
+from solent.lc import spin_line_console_new
+from solent.log import cformat
 from solent.log import init_logging
 from solent.log import log
 
 from collections import deque
 import traceback
 
+SERVER_ADDR = '127.0.0.1'
+SERVER_PORT = 4100
+SERVER_PASS = 'qweasd'
 
-# --------------------------------------------------------
-#   :cog_gruel_server
-# --------------------------------------------------------
-#
-# xxx this will all need to get refactored. I have been trying to do too many
-# things in this cog class. But I'm developing the new approach on the client
-# side. Will revisit that once I understand the ideas.
-#
-class CogGruelServer(object):
-    def __init__(self, name, engine, addr, port):
-        self.name = name
-        self.engine = engine
-        self.addr = addr
-        self.port = port
-        # form: (addr, port) : deque containing data
-        self.received = {}
-        self.server_sid = engine.open_tcp_server(
-            addr=addr,
-            port=port,
-            cb_tcp_connect=self.engine_on_tcp_connect,
-            cb_tcp_condrop=self.engine_on_tcp_condrop,
-            cb_tcp_recv=self.engine_on_tcp_recv)
-    def close(self):
-        self.engine.close_tcp_server(self.server_sid)
-    def engine_on_tcp_connect(self, cs_tcp_connect):
-        engine = cs_tcp_connect.engine
-        client_sid = cs_tcp_connect.client_sid
-        addr = cs_tcp_connect.addr
-        port = cs_tcp_connect.port
-        #
-        log("connect/%s/%s/%s/%s"%(
-            self.name,
-            client_sid,
-            addr,
-            port))
-        key = (engine, client_sid)
-        self.received[key] = deque()
-        engine.send(
-            sid=client_sid,
-            data='')
-    def engine_on_tcp_condrop(self, cs_tcp_condrop):
-        engine = cs_tcp_condrop.engine
-        client_sid = cs_tcp_condrop.client_sid
-        message = cs_tcp_condrop.message
-        #
-        log("condrop/%s/%s/%s"%(self.name, client_sid, message))
-        key = (engine, client_sid)
-        del self.received[key]
-    def engine_on_tcp_recv(self, cs_tcp_recv):
-        engine = cs_tcp_recv.engine
-        client_sid = cs_tcp_recv.client_sid
-        data = cs_tcp_recv.data
-        #
-        print('recv! %s'%data) # xxx
-        key = (engine, client_sid)
-        self.received[key].append(data)
-        engine.send(
-            sid=client_sid,
-            data='received %s\n'%len(data))
-    def at_turn(self, activity):
-        pass
+SNOOP_ADDR = '127.0.0.1'
+SNOOP_PORT = 4090
 
-def cog_gruel_server_new(name, engine, addr, port):
-    ob = CogGruelServer(
-        name=name,
-        engine=engine,
-        addr=addr,
-        port=port)
-    return ob
-
-
-# --------------------------------------------------------
-#   :rest
-# --------------------------------------------------------
-# xxx
-TERM_LINK_ADDR = '127.0.0.1'
-TERM_LINK_PORT = 4100
+LC_ADDR = '127.0.0.1'
+LC_PORT = 4091
 
 I_NEARCAST_SCHEMA = '''
     i message h
     i field h
+
+    message lc_input
+        field line
     
-    message send_something
-        field text
+    message lc_output
+        field s
+
+    message start_gruel_server
+        field addr
+        field port
+        field password
+
+    message stop_gruel_server
+
+    message doc_recv
+        field doc
+
+    message doc_send
+        field doc
 '''
 
-def create_orb(engine):
-    orb = nearcast_orb_new(
-        engine=engine,
-        nearcast_schema=nearcast_schema_new(
-            i_nearcast=I_NEARCAST_SCHEMA))
-    orb.add_cog(
-        cog=cog_gruel_server_new(
-            name='server01',
+class CogLcServer(object):
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+        #
+        self.spin_line_console = spin_line_console_new(
             engine=engine,
-            addr=TERM_LINK_ADDR,
-            port=TERM_LINK_PORT))
+            cb_line=self.lc_on_line)
+        self.spin_line_console.start(
+            ip=LC_ADDR,
+            port=LC_PORT)
+    #
+    def lc_on_line(self, line):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='lc_input',
+            line=line)
+    #
+    def on_lc_output(self, s):
+        col = cformat(
+            string=s,
+            fg='yellow',
+            bg='trans')
+        log(col)
+        self.spin_line_console.write_to_client(
+            s='%s\n'%(col))
+
+class CogInterpretLineConsole(object):
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+        #
+        self.commands = {
+            'start': self.cmd_start,
+            'stop': self.cmd_stop,
+            '?': self.cmd_help,
+            'help': self.cmd_help}
+    #
+    def on_lc_input(self, line):
+        # This is really primitive not even going to parse it. :)
+        line = line.strip()
+        if line not in self.commands:
+            self.orb.nearcast(
+                cog_h=self.cog_h,
+                message_h='lc_output',
+                s='syntax error')
+            return
+        cmd = self.commands[line]
+        cmd()
+    #
+    def cmd_start(self):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='start_gruel_server',
+            addr=SERVER_ADDR,
+            port=SERVER_PORT,
+            password=SERVER_PASS)
+    def cmd_stop(self):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='stop_gruel_server')
+    def cmd_help(self):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='lc_output',
+            s='\n'.join(sorted(self.commands.keys())))
+
+class CogGruelServer(object):
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+        #
+        self.spin_gruel_server = spin_gruel_server_new(
+            engine=engine,
+            cb_doc_recv=self._gruel_on_doc)
+    def at_turn(self, activity):
+        self.spin_gruel_server.at_turn(
+            activity=activity)
+    #
+    def on_start_gruel_server(self, addr, port, password):
+        self.spin_gruel_server.start(
+            addr=addr,
+            port=port,
+            password=password)
+    def on_stop_gruel_server(self):
+        self.spin_gruel_server.stop()
+    #
+    def _gruel_on_doc(self, doc):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='doc_recv',
+            doc=doc)
+
+def create_orb(engine):
+    nearcast_schema = nearcast_schema_new(
+        i_nearcast=I_NEARCAST_SCHEMA)
+    snoop = log_snoop_new(
+        nearcast_schema=nearcast_schema)
+    orb = orb_new(
+        engine=engine,
+        nearcast_schema=nearcast_schema,
+        snoop=snoop)
     return orb
+
+def on_line(line):
+    log('lc received line|%s'%line)
 
 def main():
     init_logging()
     engine = engine_new(
         mtu=1500)
     try:
-        engine.add_orb(
-            orb=create_orb(
-                engine=engine))
+        orb = create_orb(
+            engine=engine)
+        engine.add_orb(orb)
+        #
+        orb.init_cog(CogLcServer)
+        orb.init_cog(CogInterpretLineConsole)
+        orb.init_cog(CogGruelServer)
+        #
         engine.event_loop()
     except KeyboardInterrupt:
         pass

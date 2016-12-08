@@ -19,9 +19,15 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from testing import run_tests
+from testing import test
+from testing.eng import engine_fake
+from testing.gruel.server.receiver_cog import receiver_cog_fake
+
 from solent.eng import activity_new
-from solent.eng import nearcast_orb_new
 from solent.eng import nearcast_schema_new
+from solent.eng import log_snoop_new
+from solent.eng import orb_new
 from solent.eng.cs import *
 from solent.gruel import gruel_schema_new
 from solent.gruel import gruel_press_new
@@ -32,29 +38,23 @@ from solent.gruel.server.ipval_cog import ipval_cog_new
 from solent.log import log
 from solent.util import uniq
 
-from testing import run_tests
-from testing import test
-from testing.eng import engine_fake
-from testing.eng import nearcast_snoop_fake
-from testing.gruel.receiver_cog import receiver_cog_fake
-
 import sys
 
 @test
 def should_reject_unauthorised_ip():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    nearcast_snoop = nearcast_snoop_fake(
+    snoop = log_snoop_new(
         nearcast_schema=nearcast_schema)
-    nearcast_snoop.disable()
-    orb = nearcast_orb_new(
+    snoop.disable()
+    orb = orb_new(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=nearcast_snoop)
+        snoop=snoop)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     ipval_cog = orb.init_cog(
-        fn=ipval_cog_new)
+        construct=ipval_cog_new)
     #
     # scenario: unauth ip connects
     ip = '127.0.0.1'
@@ -72,17 +72,17 @@ def should_reject_unauthorised_ip():
 def should_allow_authorised_ip():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    nearcast_snoop = nearcast_snoop_fake(
+    snoop = log_snoop_new(
         nearcast_schema=nearcast_schema)
-    nearcast_snoop.disable()
-    orb = nearcast_orb_new(
+    snoop.disable()
+    orb = orb_new(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=nearcast_snoop)
+        snoop=snoop)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     ipval_cog = orb.init_cog(
-        fn=ipval_cog_new)
+        construct=ipval_cog_new)
     #
     ip = '127.0.0.1'
     port = 5000
@@ -117,17 +117,17 @@ def should_allow_authorised_ip():
 def should_allow_any_ip():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    nearcast_snoop = nearcast_snoop_fake(
+    snoop = log_snoop_new(
         nearcast_schema=nearcast_schema)
-    nearcast_snoop.disable()
-    orb = nearcast_orb_new(
+    snoop.disable()
+    orb = orb_new(
         engine=engine,
         nearcast_schema=nearcast_schema,
-        nearcast_snoop=nearcast_snoop)
+        snoop=snoop)
     r = orb.init_cog(
-        fn=receiver_cog_fake)
+        construct=receiver_cog_fake)
     ipval_cog = orb.init_cog(
-        fn=ipval_cog_new)
+        construct=ipval_cog_new)
     #
     ip = '127.0.0.1'
     port = 5000

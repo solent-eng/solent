@@ -1,5 +1,5 @@
 #
-# nearcast snoop (testing)
+# log snoop
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -23,10 +23,9 @@ from solent.log import log
 
 from collections import deque
 
-class NearcastSnoop:
+class LogSnoop:
     '''
-    Logs any message seen on the associated nearcast. Useful for debugging
-    whilst you're developing tests.
+    Logs any message seen on the associated nearcast.
     '''
     def __init__(self, nearcast_schema):
         self.b_enabled = True
@@ -47,8 +46,8 @@ class NearcastSnoop:
         nice = format_message()
         log(nice)
 
-def nearcast_snoop_fake(nearcast_schema):
-    ob = NearcastSnoop(
+def log_snoop_new(nearcast_schema):
+    ob = LogSnoop(
         nearcast_schema=nearcast_schema)
     return ob
 
