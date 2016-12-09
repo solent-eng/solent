@@ -46,7 +46,7 @@ Gather some ubuntu dependencies,
 sudo apt-get install libportmidi-dev
 ```
 
-Set up a virtual environment,
+Create a virtual env,
 
 ```bash
 virtualenv -p python3 venv
@@ -68,32 +68,37 @@ Things to try,
 Have a look at the main function of solent.eng.scenarios, then try running one
 like this:
 
-    python -m solent.eng.scenarios
+    python3 -m solent.eng.scenarios
 
 2) Nearcasting technique (aka aggressive use of the observer pattern)
 
-If you want to have an example of an application that has been developed
-through nearcasting, solent.gruel.server.spin_gruel_server. You can launch an
-app that uses this as follows:
+Read through solent/gruel/server/spin_gruel_server.py. This is a simple app
+that is built with nearcasting. You can launch an app that uses this as
+follows:
 
-    python -m solent.draft.gruel_server_sandbox
+    python3 -m solent.draft.gruel_server_sandbox
 
 Telnet to the line console in another window:
 
     nc localhost 
 
-The corresponding client demo (not quite working yet at time of writing):
+Type some stuff (e.g. 'help')
 
-    python -m solent.draft.gruel_client_sandbox
+The corresponding client demo (not quite working at time of writing):
+
+    python3 -m solent.draft.gruel_client_sandbox
 
 3) Terminal stuff
 
-Expect to break this term stuff out into a separate package, but for the
-moment it's
+Some of this term stuff will be broken out into a separate package. But for
+the moment it's here. Try:
 
     python3 -m solent.draft.turn_based_game --win
 
     python3 -m solent.draft.turn_based_game --tty
+
+(Use qweadzxc to move the red thing around. This is less game than stripped
+tech demo at the moment.)
 
 ```
 (escape and then q to enter)
