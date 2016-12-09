@@ -3,6 +3,11 @@
 Event-driven networking library. Focused on providing tools for creating
 sequencer-architecture systems. https://github.com/cratuki/solent/wiki
 
+Parts of this system currently requires pygame. This is helpful for building
+up terminal functionality while we are in development, but will be spun out
+into a separate module at a later time. Solent-core will evolve into a
+zero-dependency system.
+
 # Quickstart
 
 ```bash
@@ -29,6 +34,9 @@ python -m solent.draft.turn_based_game --tty
 Except where specifically marked, the codebase will be licensed under the
 LGPL, with copyright assigned to the FSF. Contributions are welcome. See
 [Contributing guidelines](CONTRIBUTING.md)
+
+We aim for this system to be multi-platform with no dependencies on other
+libraries.
 
 # Getting Started
 
