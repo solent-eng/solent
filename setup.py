@@ -47,10 +47,10 @@ def main():
     setup(
         name='solent',
         packages=solent_packages,
-        version='0.18',
+        version='0.19',
         description='Event-driven concurrency engine',
         url='https://github.com/cratuki/solent',
-        download_url='https://github.com/cratuki/solent/tarball/0.18',
+        download_url='https://github.com/cratuki/solent/tarball/0.19',
         keywords=[
             'solent',
             'eng',
