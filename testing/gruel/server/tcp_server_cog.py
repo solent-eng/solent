@@ -68,14 +68,11 @@ def send_announce_tcp_connect(orb, ip, port):
         port=port)
     orb.cycle()
 
-def simulate_client_connect(engine, orb, tcp_server_cog, ip, port):
-    cs_tcp_connect = CsTcpConnect()
-    cs_tcp_connect.engine = engine
-    cs_tcp_connect.client_sid = create_sid()
-    cs_tcp_connect.addr = ip
-    cs_tcp_connect.port = port
-    tcp_server_cog._engine_on_tcp_connect(
-        cs_tcp_connect=cs_tcp_connect)
+def simulate_client_connect(engine, orb, server_sid, ip, port):
+    engine.simulate_tcp_client_connect(
+        server_sid=server_sid,
+        client_ip=ip,
+        client_port=port)
     orb.cycle()
 
 def simulate_client_condrop(engine, orb, tcp_server_cog):
@@ -195,7 +192,7 @@ def should_handle_client_connect_and_then_boot_client():
     simulate_client_connect(
         engine=engine,
         orb=orb,
-        tcp_server_cog=tcp_server_cog,
+        server_sid=tcp_server_cog.server_sid,
         ip=client_addr,
         port=client_port)
     #
@@ -244,9 +241,9 @@ def should_broadcast_incoming_message_as_gruel_in():
     simulate_client_connect(
         engine=engine,
         orb=orb,
-        tcp_server_cog=tcp_server_cog,
-        ip=addr,
-        port=port)
+        server_sid=tcp_server_cog.server_sid,
+        ip='123.216.321.5',
+        port=123)
     #
     # confirm starting position
     assert 1 == r.count_announce_tcp_connect()
@@ -275,6 +272,7 @@ def should_broadcast_incoming_message_as_gruel_in():
         engine=engine,
         orb=orb,
         tcp_server_cog=tcp_server_cog)
+    orb.cycle()
     #
     # confirm effects
     assert tcp_server_cog.server_sid != None
@@ -320,9 +318,9 @@ def should_boot_client_when_told_to():
     simulate_client_connect(
         engine=engine,
         orb=orb,
-        tcp_server_cog=tcp_server_cog,
-        ip=addr,
-        port=port)
+        server_sid=tcp_server_cog.server_sid,
+        ip='205.231.231.123',
+        port=2000)
     #
     # confirm starting position
     assert 1 == r.count_announce_tcp_connect()
@@ -370,9 +368,9 @@ def should_boot_client_when_invalid_gruel_is_received():
     simulate_client_connect(
         engine=engine,
         orb=orb,
-        tcp_server_cog=tcp_server_cog,
-        ip=addr,
-        port=port)
+        server_sid=tcp_server_cog.server_sid,
+        ip='205.231.231.123',
+        port=2000)
     #
     # confirm starting position
     assert 1 == r.count_announce_tcp_connect()
@@ -507,9 +505,9 @@ def should_send_gruel_send_data_to_a_connected_client():
     simulate_client_connect(
         engine=engine,
         orb=orb,
-        tcp_server_cog=tcp_server_cog,
-        ip=client_addr,
-        port=client_port)
+        server_sid=tcp_server_cog.server_sid,
+        ip='205.231.231.123',
+        port=2000)
     #
     # confirm baseline
     assert 1 == r.count_announce_tcp_connect()

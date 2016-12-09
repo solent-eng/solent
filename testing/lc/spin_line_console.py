@@ -41,6 +41,12 @@ class LineAcc:
     def on_line(self, line):
         self.lines.append(line)
 
+def simulate_client_connect(engine, server_sid, ip, port):
+    engine.simulate_tcp_client_connect(
+        server_sid=server_sid,
+        client_ip=ip,
+        client_port=port)
+
 @test
 def should_start_with_no_services_active():
     engine = engine_fake()
@@ -88,13 +94,13 @@ def should_accept_client_and_boot_client_on_stop():
         port=4080)
     #
     # scenario: client connects
-    cs_tcp_connect = cs.CsTcpConnect()
-    cs_tcp_connect.engine = engine
-    cs_tcp_connect.client_sid = 'fake_sid_%s'%(uniq())
-    cs_tcp_connect.addr = '203.15.93.2'
-    cs_tcp_connect.port = 1234
-    spin_line_console._engine_on_tcp_connect(
-        cs_tcp_connect=cs_tcp_connect)
+    client_ip = '203.15.93.2'
+    client_port = 1234
+    simulate_client_connect(
+        engine=engine,
+        server_sid=spin_line_console.server_sid,
+        ip=client_ip,
+        port=client_port)
     #
     # confirm effects
     assert None == spin_line_console.server_sid

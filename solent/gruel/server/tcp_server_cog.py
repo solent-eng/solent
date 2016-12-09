@@ -40,6 +40,7 @@ class TcpServerCog:
             gruel_schema=self.gruel_schema,
             mtu=engine.mtu)
         #
+        self.b_active = False
         self.server_sid = None
         self.client_sid = None
         #
@@ -56,18 +57,27 @@ class TcpServerCog:
         self.server_addr = ip
         self.server_port = port
         self._engine_raise_server()
+        self.b_active = True
     def on_stop_service(self):
         self._engine_lower_any_server()
         self._engine_boot_any_client()
+        self.b_active = False
     def on_please_tcp_boot(self):
         self._engine_boot_any_client()
-        # condrop will take care of bringing the server back
+        # at_turn will take care of bringing the server back
     def on_gruel_send(self, payload):
         if not self.client_sid:
             return
         self.engine.send(
             sid=self.client_sid,
             data=payload)
+    def at_turn(self, activity):
+        if self.b_active:
+            if self.server_sid == None and self.client_sid == None:
+                activity.mark(
+                    l=self,
+                    s='restarting server (probably after disconnect)')
+                self._engine_raise_server()
     #
     def nc_announce_tcp_connect(self, ip, port):
         self.orb.nearcast(
@@ -126,7 +136,6 @@ class TcpServerCog:
         #
         self.nc_announce_tcp_condrop()
         self.client_sid = None
-        self._engine_raise_server()
     def _engine_on_tcp_recv(self, cs_tcp_recv):
         engine = cs_tcp_recv.engine
         client_sid = cs_tcp_recv.client_sid
