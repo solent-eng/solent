@@ -42,6 +42,7 @@ from .metasock import metasock_create_broadcast_listener
 from .metasock import metasock_create_broadcast_sender
 from .metasock import metasock_create_tcp_client
 from .metasock import metasock_create_tcp_server
+from .orb import orb_new
 
 from solent.log import log
 from solent.util.clock import clock_new
@@ -98,7 +99,17 @@ class Engine(object):
             except:
                 pass
     def add_orb(self, orb):
+        if orb in self.lst_orbs:
+            raise Exception("Orb is already in engine. Don't double-add.")
         self.lst_orbs.append(orb)
+    def init_orb(self, nearcast_schema='', snoop=None):
+        orb = orb_new(
+            engine=self,
+            nearcast_schema=nearcast_schema,
+            snoop=snoop)
+        self.add_orb(
+            orb=orb)
+        return orb
     def del_orb(self, orb):
         self.lst_orbs.remove(orb)
     def turn(self, timeout=0):

@@ -4,7 +4,8 @@
 #
 # // overview
 # Quick-and-dirty udp-broadcast listener. This tool is used for testing
-# some of the scenarios.
+# some of the scenarios. This tool predates nearcasting, and is not
+# currently a good example of the style.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -27,7 +28,7 @@
 from solent.eng import engine_new
 from solent.log import init_logging
 from solent.log import log
-from solent.log import hexdump_string
+from solent.log import hexdump_bytearray
 
 import sys
 import traceback
@@ -56,45 +57,50 @@ def usage():
     print('  %s broadcast_addr port'%sys.argv[0])
     sys.exit(1)
 
+class SpinUdpListener:
+    def __init__(self, engine, cb_data):
+        self.engine = engine
+        self.cb_data = cb_data
+        #
+        self.sub_sid = None
+        self.accumulate = []
+    def start(self, ip, port):
+        self.sub_sid = self.engine.open_broadcast_listener(
+            addr=ip,
+            port=port,
+            cb_sub_recv=self.engine_on_sub_recv)
+    def stop(self):
+        self.close_broadcast_listener(
+            sid=self.sub_sid)
+    def engine_on_sub_recv(self, cs_sub_recv):
+        engine = cs_sub_recv.engine
+        sub_sid = cs_sub_recv.sub_sid
+        data = cs_sub_recv.data
+        #
+        self.cb_data(
+            data=data)
+
 def operate_a_udp_broadcast_listener(engine, net_addr, net_port):
     #
     # We'll gather data to here
     class Cog(object):
-        def __init__(self):
-            self.sid = engine.open_broadcast_listener(
-                addr=net_addr,
-                port=net_port,
-                cb_sub_recv=self.engine_on_sub_recv)
-            self.accumulate = []
-        def engine_on_sub_recv(self, cs_sub_recv):
-            engine = cs_sub_recv.engine
-            sub_sid = cs_sub_recv.sub_sid
-            data = cs_sub_recv.data
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
             #
-            self.accumulate.append(data)
-        def pull(self):
-            s = ''.join([str(b) for b in self.accumulate])
-            self.accumulate = []
-            return s
-    #
-    # By this point we have a nice reactor-like thing all set
-    # up and ready-to-go held within engine_api. All we need to
-    # do is to run our while loop, with most of the work to
-    # be done for select having been exported to that module.
-    class Orb(object):
-        def __init__(self):
-            self.cog = Cog()
-        def at_turn(self, activity):
-            data = self.cog.pull()
-            if data:
-                activity.mark(
-                    l='qd_listen orb',
-                    s='received data')
-                hexdump_string(
-                    s=data,
-                    title='Received')
-    orb = Orb()
-    engine.add_orb(orb)
+            self.spin_udp_listener = SpinUdpListener(
+                engine=engine,
+                cb_data=self.spin_on_data)
+            self.spin_udp_listener.start(
+                ip=net_addr,
+                port=net_port)
+        def spin_on_data(self, data):
+            hexdump_bytearray(
+                arr=data,
+                title='Received')
+    orb = engine.init_orb()
+    orb.init_cog(Cog)
     engine.event_loop()
 
 def main():

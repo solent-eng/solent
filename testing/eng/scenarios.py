@@ -1,6 +1,3 @@
-#
-# See scenarios.py for guidance about this module.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -19,15 +16,24 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .activity import activity_new
-from .engine import engine_new as engine_new
-from .engine import engine_new as QuitEvent
-from .ip_validator import ip_validator_new
-from .log_snoop import log_snoop_new
-from .nc_snoop import nc_snoop_new
-from .nearcast_schema import nearcast_schema_new
-from .orb import orb_new
-from .scenarios import scenarios_empty
-from .test_receiver_cog import test_receiver_cog_new
+from testing import run_tests
+from testing import test
 
+from solent.eng import scenarios_empty
+
+# /just want a basic test to see that scenarios doesn't crash outright.
+# /next step: get one scenario running from a test
+# /later: this file should evolve to become testing/eng/engine.
+
+@test
+def should_not_crash():
+    # If we can do this, we can at least be confident that there are no
+    # fundamental syntax errors in the scenarios class.
+    scenarios_empty()
+    #
+    return True
+
+if __name__ == '__main__':
+    run_tests(
+        unders_file=sys.modules['__main__'].__file__)
 

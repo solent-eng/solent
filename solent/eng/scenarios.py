@@ -2,18 +2,20 @@
 #
 # Scenarios.
 #
-# [Welcome. This class intends to be the easy-to-use path for users who want
-# to use eng.]
+# Welcome. This class intends to be the easy-to-use path for users who want
+# to use eng.
+#
+# xxx todo: migrate to https://github.com/cratuki/solent/wiki
 #
 #
 # --------------------------------------------------------
-#   :faq
+#   faq
 # --------------------------------------------------------
 #
-# // What is the purpose of eng?
+# // What is the purpose of solent.eng?
 #
 # To wrap the Berkeley sockets API with a much friendlier interface that makes
-# it fairly easy to create applications with sophisticated network needs.
+# it straightforward to create an event loop around managed sockets.
 #
 #
 # // How do I use eng?
@@ -40,8 +42,8 @@
 #
 # // What is an orb?
 #
-# Thing of the engine a bit like the engine of a car. It powers a crankshaft.
-# Anything in the car that needs to be powered by the engine hangs of the
+# Think of the engine a bit like the engine of a car. It powers a crankshaft.
+# Anything in the car that needs to be powered by the engine hangs off the
 # crankshaft. You can think of an orb (short for orbit) as being a ring of
 # teeth on the crankshaft. This provides a means by which the power of the
 # engine can be distributed to things that want to consume that power.
@@ -61,60 +63,24 @@
 # relationship being managed by a dedicated cog.
 #
 #
-# // What is the deal with the activity variable in at_turn?
-#
-# Short answer: it's a mechanism we use to stop your application from running
-# the CPU at capacity.
-#
-# One of the challenges of building an asynchronous application stack is
-# handling this problem: how do you stop the event loop from constantly
-# cycling through calls to select? If the event loop just cycles continuously,
-# it uses up all of that CPU, and then the computer fan comes on. If it's a
-# laptop it goes flat rapidly. Users hate that stuff.
-#
-# The way this system deals with that problem is to track whether there is
-# activity on each pass of the event loop. Consider a situation where you're
-# downloading something. You want to consume as much data from the network as
-# quickly as you can. At these times you want the event look spinning as hard
-# as it can. But during the gaps between activity, we want it to hold back.
-#
-# For each pass of the event loop, if engine thinks there has been activity,
-# then it will let the next run of the event loop happen immediately. If there
-# hasn't been activity, it gives the event loop a short sleep.
-#
-# If you're still confused as to what all this is about, please write to me.
-# Swapping notes between us might help me to come up with a stronger answer to
-# this.
-#
-#
 # // I have several cogs in the same orb. I want them to send messages to one
 # // another. I can reference them via the orb, but this does seem a bit
 # // hacky. Is there a more elegant approach to do this?
 #
-# Yes. There's a technique called nearcasting. But at the time of writing it
-# hasn't been incorporated to this codebase.
+# Yes. Use nearcasting for this.
 #
 # In nearcasting, a cog can update all the other cogs who care with
-# purpose-built messages. If you're familiar with Josh Levine's Island
-# architecture or the communication systems that modern vehicles run on, you
-# may have just lit up and said, "I've always wanted something like this, and
-# that sounds awesome." But if you're not, this probably sounded cryptic. I'll
-# need to create a demo to give people a chance of groking it.
+# message broadcasts. This nearcasting idea is really the essence of this
+# system.
 #
-# (If you come to this comment and find that nearcasting still hasn't been
-# added, and find you want it, feel free to contact me. I'll be more likely to
-# prioritise it over the other integration work I'm doing if I discover that
-# there are people who need it. I've been holding off on releasing it so far
-# because APIs are hard to change, and I'd like to get the model solid before
-# making it public.
+# There's an example scenario below. One actor nearcasts, all the others get
+# the message.
 #
-# Nearcasting enables a powerful development technique for developing
-# concurrent systems. The author thinks this technique will be as significant
-# for software as the diesel engine was for vehicles. It's coming.
+# solent.gruel.server shows a larger example.
 #
 #
 # --------------------------------------------------------
-#   :license
+#   license
 # --------------------------------------------------------
 #
 # Copyright 2016, Free Software Foundation.
@@ -134,10 +100,15 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent import SolentQuitException
 from solent.eng import engine_new
+from solent.eng import log_snoop_new
+from solent.eng import nearcast_schema_new
+from solent.eng import orb_new
 from solent.eng import QuitEvent
 from solent.log import init_logging
 from solent.log import log
+from solent.util import line_finder_new
 
 from collections import deque
 import logging
@@ -146,113 +117,189 @@ import time
 import traceback
 import unittest
 
+def scenario_basic_nearcast_example(engine):
+    '''
+    // What's happening here?
+
+    We define a nearcast schema. The cogs can use this to communicate between
+    one another. In this schema, there is a single type of message defined,
+    the nearcast_note. It has two fields.
+
+    CogSender will be instantiated. It will count turns of the event
+    loop. On turn #3 it nearcasts.
+
+    CogPrint will be instantiated. It has a method that watches for messages
+    of type nearcast_note, and then prints them out.
+
+    CogQuitter will be instantiated. It counts turns, and quits a while
+    longer than the other activity.
+
+    '''
+    # this is a dsl for defining nearcasts
+    i_nearcast = '''
+        i message h
+        i field h
+
+        message nearcast_note
+            field field_a
+            field field_b
+    '''
+    #
+    class CogSender:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+            #
+            self.turn_counter = 0
+        def at_turn(self, activity):
+            self.turn_counter += 1
+            if self.turn_counter == 3:
+                activity.mark(
+                    l=self,
+                    s="reached the important turn")
+                self.orb.nearcast(
+                    cog_h=self.cog_h,
+                    message_h='nearcast_note',
+                    field_a='text in a',
+                    field_b='text in b')
+    class CogPrinter:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+        def on_nearcast_note(self, field_a, field_b):
+            log('received nearcast_note [%s] [%s]'%(
+                field_a, field_b))
+    class CogQuitter:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+            #
+            self.turn_counter = 0
+        def at_turn(self, activity):
+            self.turn_counter += 1
+            if self.turn_counter == 8:
+                activity.mark(
+                    l=self,
+                    s='last turn, quitting')
+                log('quitting')
+                raise SolentQuitException()
+    #
+    nearcast_schema = nearcast_schema_new(
+        i_nearcast=i_nearcast)
+    orb = engine.init_orb(
+        nearcast_schema=nearcast_schema)
+    orb.init_cog(CogSender)
+    orb.init_cog(CogPrinter)
+    orb.init_cog(CogQuitter)
+    engine.event_loop()
+
 def scenario_broadcast_listen(engine):
     net_addr = '127.255.255.255'
     net_port = 50000
-    #
     print('''test this with
         echo "Hello" | socat - UDP-DATAGRAM:%s:%s,broadcast
     '''%(net_addr, net_port))
     #
-    # We'll gather data to here
-    class Cog(object):
-        def __init__(self):
-            self.sid = engine.open_broadcast_listener(
-                addr=net_addr,
-                port=net_port,
-                cb_sub_recv=self.engine_on_sub_recv)
-            self.accumulate = []
-        def engine_on_sub_recv(self, cs_sub_recv):
-            engine = cs_sub_recv.engine
-            sub_sid = cs_sub_recv.sub_sid
-            data = cs_sub_recv.data
-            #
-            self.accumulate.append(data)
-        def pull(self):
-            s = ''.join( [str(b) for b in self.accumulate] )
-            self.accumulate = []
-            return s
-    #
-    # By this point we have a nice reactor-like thing all set
-    # up and ready-to-go held within engine_api. All we need to
-    # do is to run our while loop, with most of the work to
-    # be done for select having been exported to that module.
-    class Orb(object):
-        def __init__(self):
-            self.cog = Cog()
-        def at_turn(self, activity):
-            data = self.cog.pull()
-            if data:
-                activity.mark(
-                    l='scenario_broadcast_listen',
-                    s='found data in cog')
-                log('! received [%s] :)'%data)
-    orb = Orb()
-    engine.add_orb(orb)
-    engine.event_loop()
+    i_nearcast = '''
+        i message h
+        i field h
 
-def scenario_broadcast_listen_and_unlisten(engine):
-    net_addr = '127.255.255.255'
-    net_port = 50000
+        message start_listener
+            field ip
+            field port
+
+        message stop_listener
+
+        message received_from_network
+            field data
+    '''
     #
-    print('''
-        Testing: you just want it to not crash. (This test doesn't
-        process any data it gets from the network while it's connected.)
-    ''')
-    #
-    # We'll gather data to here
-    class Cog(object):
-        def __init__(self, engine):
+    # This class provides broadcast listen functionality. It's not tied
+    # the the nearcast schema. It just exposes a standard application
+    # interface.
+    class SpinBroadcastListener:
+        def __init__(self, engine, cb_on_line):
             self.engine = engine
+            self.cb_on_line = cb_on_line
             #
+            self.sid = None
+            self.line_finder = line_finder_new(
+                cb_line=self.cb_on_line)
+        def start(self, ip, port):
             self.sid = engine.open_broadcast_listener(
                 addr=net_addr,
                 port=net_port,
-                cb_sub_recv=self.engine_on_sub_recv)
-            self.acc = []
-        def close(self):
-            self.engine.close_broadcast_listener(self.sid)
-        def engine_on_sub_recv(self, cs_sub_recv):
+                cb_sub_recv=self._net_on_line)
+        def stop(self):
+            self.line_finder.clear()
+        def _net_on_line(self, cs_sub_recv):
             engine = cs_sub_recv.engine
             sub_sid = cs_sub_recv.sub_sid
             data = cs_sub_recv.data
             #
-            self.acc.append(data)
-        def pull(self):
-            s = ''.join(self.acc)
-            self.lst = []
-            return s
-    class Orb(object):
-        def __init__(self, engine):
+            self.line_finder.accept_bytes(
+                barr=data)
+    #
+    # We'll gather data to here
+    class CogContainsSpin:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
             self.engine = engine
             #
-            self.cogs = [Cog(engine)]
-            self.turn_count = 0
+            self.spin_broadcast_listener = SpinBroadcastListener(
+                engine=engine,
+                cb_on_line=self._broadcast_on_line)
+        def _broadcast_on_line(self, line):
+            self.orb.nearcast(
+                cog_h=self.cog_h,
+                message_h='received_from_network',
+                data=line)
+        def on_start_listener(self, ip, port):
+            self.spin_broadcast_listener.start(
+                ip=ip,
+                port=port)
+        def on_stop_listener(self):
+            self.spin_broadcast_listener.stop()
+    #
+    #
+    class CogPrinter:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+        def on_received_from_network(self, data):
+            log('! received [%s] :)'%(data))
+    #
+    # This manages scheduling.
+    class CogEvents:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+            #
+            self.turn_counter = 0
         def at_turn(self, activity):
-            self.turn_count += 1
-            #
-            if self.turn_count < 10:
-                log('turn %s (cogs active: %s)'%(
-                    self.turn_count, len(self.cogs)))
-            elif self.turn_count == 10:
-                log('test has succeeded or dropped by here.')
-            #
-            for cog in self.cogs:
-                data = cog.pull()
-                if data:
-                    activity.mark(
-                        l='scenario_broadcast_listen_and_unlisten',
-                        s='found data in cog')
-                    log('received [%s] :)'%data.strip())
-                elif self.turn_count >= 6:
-                    activity.mark(
-                        l='scenario_broadcast_listen_and_unlisten',
-                        s='special rule at turn 6.')
-                    log('poke note: exit criteria reached [%s]'%(cog.sid))
-                    cog.close()
-                    self.cogs.remove(cog)
-    orb = Orb(engine)
-    engine.add_orb(orb)
+            self.turn_counter += 1
+            if self.turn_counter == 2:
+                activity.mark(
+                    l=self,
+                    s='starting listener')
+                self.orb.nearcast(
+                    cog_h=self.cog_h,
+                    message_h='start_listener',
+                    ip=net_addr,
+                    port=net_port)
+    #
+    orb = engine.init_orb(
+        nearcast_schema=nearcast_schema_new(
+            i_nearcast=i_nearcast))
+    orb.init_cog(CogContainsSpin)
+    orb.init_cog(CogPrinter)
+    orb.init_cog(CogEvents)
     #
     # You can use this to print more info about the event loop. This would be
     # useful if you had a flailing event loop and could not work out what was
@@ -260,81 +307,273 @@ def scenario_broadcast_listen_and_unlisten(engine):
     engine.debug_eloop_on()
     engine.event_loop()
 
+def scenario_broadcast_listen_and_unlisten(engine):
+    net_addr = '127.255.255.255'
+    net_port = 50000
+    print('''test this with
+        echo "Hello" | socat - UDP-DATAGRAM:%s:%s,broadcast
+    '''%(net_addr, net_port))
+    #
+    i_nearcast = '''
+        i message h
+        i field h
+
+        message start_listener
+            field ip
+            field port
+
+        message stop_listener
+
+        message received_from_network
+            field data
+    '''
+    #
+    # This class provides broadcast listen functionality. It's not tied
+    # the the nearcast schema. It just exposes a standard application
+    # interface.
+    class SpinBroadcastListener:
+        def __init__(self, engine, cb_on_line):
+            self.engine = engine
+            self.cb_on_line = cb_on_line
+            #
+            self.sid = None
+            self.line_finder = line_finder_new(
+                cb_line=self.cb_on_line)
+        def start(self, ip, port):
+            self.sid = engine.open_broadcast_listener(
+                addr=net_addr,
+                port=net_port,
+                cb_sub_recv=self._net_on_line)
+        def stop(self):
+            self.line_finder.clear()
+            self.engine.close_broadcast_listener(
+                sid=self.sid)
+        def _net_on_line(self, cs_sub_recv):
+            engine = cs_sub_recv.engine
+            sub_sid = cs_sub_recv.sub_sid
+            data = cs_sub_recv.data
+            #
+            self.line_finder.accept_bytes(
+                barr=data)
+    #
+    # We'll gather data to here
+    class CogContainsSpin:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+            #
+            self.spin_broadcast_listener = SpinBroadcastListener(
+                engine=engine,
+                cb_on_line=self._broadcast_on_line)
+        def _broadcast_on_line(self, line):
+            self.orb.nearcast(
+                cog_h=self.cog_h,
+                message_h='received_from_network',
+                data=line)
+        def on_start_listener(self, ip, port):
+            self.spin_broadcast_listener.start(
+                ip=ip,
+                port=port)
+        def on_stop_listener(self):
+            self.spin_broadcast_listener.stop()
+    #
+    #
+    class CogPrinter:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+        def on_received_from_network(self, data):
+            log('! received [%s] :)'%(data))
+    #
+    # This manages scheduling.
+    class CogEvents:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+            #
+            self.turn_counter = 0
+        def at_turn(self, activity):
+            self.turn_counter += 1
+            if self.turn_counter == 2:
+                activity.mark(
+                    l=self,
+                    s='starting listener')
+                self.orb.nearcast(
+                    cog_h=self.cog_h,
+                    message_h='start_listener',
+                    ip=net_addr,
+                    port=net_port)
+            elif self.turn_counter == 20:
+                activity.mark(
+                    l=self,
+                    s='stopping listener')
+                self.orb.nearcast(
+                    cog_h=self.cog_h,
+                    message_h='stop_listener')
+    #
+    # We are going to create a snoop here. This one logs nearcast messages as
+    # they happen.
+    nearcast_schema = nearcast_schema_new(
+        i_nearcast=i_nearcast)
+    snoop = log_snoop_new(
+        nearcast_schema=nearcast_schema)
+    orb = engine.init_orb(
+        nearcast_schema=nearcast_schema,
+        snoop=snoop)
+    orb.init_cog(CogContainsSpin)
+    orb.init_cog(CogPrinter)
+    orb.init_cog(CogEvents)
+    #
+    # You can use this to print more info about the event loop. This would be
+    # useful if you had a flailing event loop and could not work out what was
+    # causing the activity.
+    engine.debug_eloop_on()
+    engine.event_loop()
+
+class SpinTcpEchoServer:
+    def __init__(self, spin_h, engine):
+        self.spin_h = spin_h
+        self.engine = engine
+        #
+        self.b_active = False
+        self.server_ip = None
+        self.server_port = None
+        self.server_sid = None
+        self.client_sid = None
+    def start(self, spin_h, ip, port):
+        self.b_active = True
+        self.server_ip = ip
+        self.server_port = port
+        self._start_server()
+        log('** started %s %s:%s'%(self.spin_h, ip, port))
+    def stop(self):
+        self._boot_any_client()
+        self._close_any_server()
+        self.b_active = False
+        log('** stopped %s'%(self.spin_h))
+    def at_turn(self, activity):
+        if self.b_active:
+            # restart the server after a client disconnect
+            if self.server_sid == None and self.client_sid == None:
+                activity.mark(
+                    l=self,
+                    s='starting server')
+                self._start_server()
+    def _start_server(self):
+        self.server_sid = self.engine.open_tcp_server(
+            addr=self.server_ip,
+            port=self.server_port,
+            cb_tcp_connect=self.engine_on_tcp_connect,
+            cb_tcp_condrop=self.engine_on_tcp_condrop,
+            cb_tcp_recv=self.engine_on_tcp_recv)
+    def _close_any_server(self):
+        if self.server_sid == None:
+            return
+        self.engine.close_tcp_client(
+            sid=self.server_sid)
+        self.server_sid = None
+    def _boot_any_client(self):
+        if self.client_sid == None:
+            return
+        self.engine.close_tcp_client(
+            sid=self.client_sid)
+        self.client_sid = None
+    def engine_on_tcp_connect(self, cs_tcp_connect):
+        engine = cs_tcp_connect.engine
+        client_sid = cs_tcp_connect.client_sid
+        addr = cs_tcp_connect.addr
+        port = cs_tcp_connect.port
+        #
+        self.client_sid = client_sid
+        self._close_any_server()
+    def engine_on_tcp_condrop(self, cs_tcp_condrop):
+        engine = cs_tcp_condrop.engine
+        client_sid = cs_tcp_condrop.client_sid
+        message = cs_tcp_condrop.message
+        #
+        self.client_sid = None
+    def engine_on_tcp_recv(self, cs_tcp_recv):
+        engine = cs_tcp_recv.engine
+        client_sid = cs_tcp_recv.client_sid
+        data = cs_tcp_recv.data
+        #
+        engine.send(
+            sid=client_sid,
+            data='(echo from %s) [%s]\n'%(self.spin_h, data))
+
 def scenario_multiple_tcp_servers(engine):
     print('''
         Testing: netcat to one or more of the ports.
     ''')
+    i_nearcast = '''
+        i message h
+        i field h
+
+        message start_echo_server
+            field spin_h
+            field ip
+            field port
+
+        message stop_echo_server
+            field spin_h
+    '''
     #
-    class Cog(object):
-        def __init__(self, name, engine, addr, port):
-            self.name = name
+    class CogServerContainer:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
             self.engine = engine
-            self.addr = addr
-            self.port = port
-            # form: (addr, port) : deque containing data
-            self.received = {}
-            self.server_sid = engine.open_tcp_server(
-                addr=addr,
-                port=port,
-                cb_tcp_connect=self.engine_on_tcp_connect,
-                cb_tcp_condrop=self.engine_on_tcp_condrop,
-                cb_tcp_recv=self.engine_on_tcp_recv)
-        def close(self):
-            self.engine.close_tcp_server(self.server_sid)
-        def engine_on_tcp_connect(self, cs_tcp_connect):
-            engine = cs_tcp_connect.engine
-            client_sid = cs_tcp_connect.client_sid
-            addr = cs_tcp_connect.addr
-            port = cs_tcp_connect.port
             #
-            log("connect/%s/%s/%s/%s"%(
-                self.name,
-                client_sid,
-                addr,
-                port))
-            key = (engine, client_sid)
-            self.received[key] = deque()
-            engine.send(
-                sid=client_sid,
-                data='hello, %s:%s!\n'%(addr, port))
-        def engine_on_tcp_condrop(self, cs_tcp_condrop):
-            engine = cs_tcp_condrop.engine
-            client_sid = cs_tcp_condrop.client_sid
-            message = cs_tcp_condrop.message
-            #
-            log("condrop/%s/%s/%s"%(self.name, client_sid, message))
-            key = (engine, client_sid)
-            del self.received[key]
-        def engine_on_tcp_recv(self, cs_tcp_recv):
-            engine = cs_tcp_recv.engine
-            client_sid = cs_tcp_recv.client_sid
-            data = cs_tcp_recv.data
-            #
-            key = (engine, client_sid)
-            self.received[key].append(data)
-            engine.send(
-                sid=client_sid,
-                data='received %s\n'%len(data))
+            self.servers = {}
+        def on_start_echo_server(self, spin_h, ip, port):
+            spin_tcp_echo_server = SpinTcpEchoServer(
+                spin_h=spin_h,
+                engine=engine)
+            self.servers[spin_h] = spin_tcp_echo_server
+            spin_tcp_echo_server.start(
+                spin_h=spin_h,
+                ip=ip,
+                port=port)
+        def on_stop_echo_server(self, spin_h):
+            self.servers[spin_h].stop()
+            del self.servers[spin_h]
         def at_turn(self, activity):
-            pass
-    class Orb(object):
-        def __init__(self):
-            self.cogs = []
-        def at_turn(self, activity):
-            for cog in self.cogs:
-                cog.at_turn(
+            for server in self.servers.values():
+                server.at_turn(
                     activity=activity)
+    class CogEvents:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+            self.turn_counter = 0
+        def at_turn(self, activity):
+            schedule = { 3: ('x', '127.0.0.1', 4120)
+                       , 5: ('y', '127.0.0.1', 4121)
+                       , 8: ('z', '127.0.0.1', 4122)
+                       }
+            self.turn_counter += 1
+            if self.turn_counter in schedule:
+                (spin_h, ip, port) = schedule[self.turn_counter]
+                activity.mark(
+                    l=self,
+                    s='starting server %s'%spin_h)
+                self.orb.nearcast(
+                    cog_h=self.cog_h,
+                    message_h='start_echo_server',
+                    spin_h=spin_h,
+                    ip=ip,
+                    port=port)
     #
-    details = [ ('x', '127.0.0.1', 4120)
-              , ('y', '127.0.0.1', 4121)
-              , ('z', '127.0.0.1', 4122)
-              ]
-    orb = Orb()
-    for (name, addr, port) in details:
-        cog = Cog(name, engine, addr, port)
-        orb.cogs.append(cog)
-    engine.add_orb(orb)
-    engine.debug_eloop_on()
+    nearcast_schema = nearcast_schema_new(
+        i_nearcast=i_nearcast)
+    orb = engine.init_orb(
+        nearcast_schema=nearcast_schema)
+    orb.init_cog(CogEvents)
+    orb.init_cog(CogServerContainer)
     engine.event_loop()
 
 def scenario_close_tcp_servers(engine):
@@ -342,99 +581,105 @@ def scenario_close_tcp_servers(engine):
         Testing: you just want it to not crash.
     ''')
     #
-    class Cog(object):
-        def __init__(self, name, engine, orb, addr, port, exit_turn):
-            self.name = name
-            self.engine = engine
-            self.orb = orb
-            self.addr = addr
-            self.port = port
-            self.exit_turn = exit_turn
-            # form: (addr, port) : deque containing data
-            self.received = {}
-            self.sid = engine.open_tcp_server(
-                addr=addr,
-                port=port,
-                cb_tcp_connect=self.engine_on_tcp_connect,
-                cb_tcp_condrop=self.engine_on_tcp_condrop,
-                cb_tcp_recv=self.engine_on_tcp_recv)
-        def engine_on_tcp_connect(self, cs_tcp_connect):
-            addr = cs_tcp_connect.addr
-            port = cs_tcp_connect.port
-            engine = cs_tcp_connect.engine
-            sid = cs_tcp_connect.client_sid
-            #
-            log("%s: connect from %s:%s"%(
-                self.name,
-                addr,
-                port))
-            key = (engine, sid)
-            self.received[key] = deque()
-            engine.send(
-                sid=sid,
-                data='hello, %s:%s!\n'%(addr, port))
-        def engine_on_tcp_condrop(self, cs_tcp_condrop):
-            engine = cs_tcp_condrop.engine
-            client_sid = cs_tcp_condrop.client_sid
-            message = cs_tcp_condrop.message
-            #
-            log("%s: condrop, sid %s"%(
-                self.name,
-                client_sid))
-            key = (engine, client_sid)
-            del self.received[key]
-        def engine_on_tcp_recv(self, cs_tcp_recv):
-            engine = cs_tcp_recv.engine
-            client_sid = cs_tcp_recv.client_sid
-            data = cs_tcp_recv.data
-            #
-            key = (engine, client_sid)
-            self.received[key].append(data)
-            engine.send(
-                sid=client_sid,
-                data='received %s\n'%len(data))
-        def at_turn(self, activity):
-            if self.orb.turn_count >= self.exit_turn:
-                activity.mark(
-                    l='scenario_close_tcp_servers',
-                    s='reached turn count')
-                log('ordering remove for %s'%self.sid)
-                engine.close_tcp_server(self.sid)
-                self.orb.cogs.remove(self)
-    class Orb(object):
-        def __init__(self, engine):
-            self.engine = engine
-            #
-            self.cogs = []
-            self.turn_count = 0
-        def at_turn(self, activity):
-            if self.turn_count <= 30:
-                log('turn %s'%self.turn_count)
-            elif self.turn_count == 30:
-                log('test should have succeeded or dropped by here.')
-            #
-            for cog in self.cogs:
-                cog.at_turn(
-                    activity=activity)
-            self.turn_count += 1
-    orb = Orb(engine)
-    details = [ ('x', '127.0.0.1', 4120, 25)
-              , ('y', '127.0.0.1', 4121, 10)
-              , ('z', '127.0.0.1', 4122, 17)
-              ]
-    for (name, addr, port, turn_count) in details:
-        cog = Cog(name, engine, orb, addr, port, turn_count)
-        orb.cogs.append(cog)
-    engine.add_orb(orb)
+    i_nearcast = '''
+        i message h
+        i field h
+
+        message start_echo_server
+            field spin_h
+            field ip
+            field port
+
+        message stop_echo_server
+            field spin_h
+    '''
     #
-    engine.event_loop()
+    class CogServerContainer:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+            #
+            self.servers = {}
+        def on_start_echo_server(self, spin_h, ip, port):
+            spin_tcp_echo_server = SpinTcpEchoServer(
+                spin_h=spin_h,
+                engine=engine)
+            self.servers[spin_h] = spin_tcp_echo_server
+            spin_tcp_echo_server.start(
+                spin_h=spin_h,
+                ip=ip,
+                port=port)
+        def on_stop_echo_server(self, spin_h):
+            self.servers[spin_h].stop()
+            del self.servers[spin_h]
+        def at_turn(self, activity):
+            for server in self.servers.values():
+                server.at_turn(
+                    activity=activity)
+    class CogEvents:
+        def __init__(self, cog_h, orb, engine):
+            self.cog_h = cog_h
+            self.orb = orb
+            self.engine = engine
+            self.turn_counter = 0
+        def at_turn(self, activity):
+            open_schedule = {
+                3: ('x', '127.0.0.1', 4120),
+                5: ('y', '127.0.0.1', 4121),
+                8: ('z', '127.0.0.1', 4122)}
+            close_schedule = {
+                8: 'y',
+                10: 'x',
+                20: 'z'}
+            self.turn_counter += 1
+            if self.turn_counter in open_schedule:
+                (spin_h, ip, port) = open_schedule[self.turn_counter]
+                activity.mark(
+                    l=self,
+                    s='starting server %s'%spin_h)
+                self.orb.nearcast(
+                    cog_h=self.cog_h,
+                    message_h='start_echo_server',
+                    spin_h=spin_h,
+                    ip=ip,
+                    port=port)
+            if self.turn_counter in close_schedule:
+                spin_h = close_schedule[self.turn_counter]
+                activity.mark(
+                    l=self,
+                    s='stopping server %s'%spin_h)
+                self.orb.nearcast(
+                    cog_h=self.cog_h,
+                    message_h='stop_echo_server',
+                    spin_h=spin_h)
+            if self.turn_counter == 25:
+                raise SolentQuitException()
+    #
+    nearcast_schema = nearcast_schema_new(
+        i_nearcast=i_nearcast)
+    orb = engine.init_orb(
+        nearcast_schema=nearcast_schema)
+    orb.init_cog(CogEvents)
+    orb.init_cog(CogServerContainer)
+    try:
+        engine.event_loop()
+    except SolentQuitException:
+        pass
 
 def scenario_tcp_client_cannot_connect(engine):
+    #
+    # This scenario is still using an old code style where (1) we have a
+    # custom orb; (2) there is network functionality in the cog, rather than
+    # in a separate spin class and (3) it predates nearcasting. This needs to
+    # be updated. It's useful for testing, and does show how to open a client
+    # connection, but is not a good style example
+    #
     print('''
         test: look for the condrop callback
     ''')
     #
-    class Cog(object):
+    class Cog:
         def __init__(self, name, addr, port):
             self.name = name
             self.addr = addr
@@ -471,7 +716,7 @@ def scenario_tcp_client_cannot_connect(engine):
         def at_turn(self, activity):
             while self.received:
                 log('client|%s'%(self.received.popleft().strip()))
-    class Orb(object):
+    class Orb:
         def __init__(self):
             self.cogs = []
         def at_turn(self, activity):
@@ -498,6 +743,10 @@ def scenario_tcp_client_mixed_scenarios(engine):
     # The print statement below shows hos the user can run up a netcat server
     # on localhost if they want to try that.
     #
+    # This scenario is still using an old code style where we put network
+    # logic in cogs (rather than spins), and it predates nearcasting. It's
+    # useful for testing but not a good style example.
+    #
     print('''
         If you want to run a netcat server on localhost :1234, you can do this:
           nc -l -p 1234
@@ -505,7 +754,7 @@ def scenario_tcp_client_mixed_scenarios(engine):
         when the disconnect is initiated from this side.)
     ''')
     #
-    class Cog(object):
+    class Cog:
         def __init__(self, name, engine, orb, addr, port, close_turn):
             self.name = name
             self.engine = engine
@@ -562,7 +811,7 @@ def scenario_tcp_client_mixed_scenarios(engine):
                     s='reached turn count')
                 engine.close_tcp_client(self.sid)
                 self.orb.cogs.remove(self)
-    class Orb(object):
+    class Orb:
         def __init__(self):
             self.cogs = []
             self.turn_count = 0
@@ -592,12 +841,15 @@ def scenario_tcp_client_mixed_scenarios(engine):
     engine.event_loop()
 
 def scenario_broadcast_post(engine):
+    #
+    # This is not a good style example. Predates nearcasting.
+    #
     addr = '127.255.255.255'
     port = 50000
     log('''You can watch this data with the qd_listen tool:
         python3 -m solent.tools.qd_listen %s %s'''%(addr, port))
     #
-    class Cog(object):
+    class Cog:
         def __init__(self, engine, orb, addr, port):
             self.engine = engine
             self.orb = orb
@@ -616,7 +868,7 @@ def scenario_broadcast_post(engine):
                 self.engine.send(
                     sid=self.sid,
                     data='from poke [%s]'%t)
-    class Orb(object):
+    class Orb:
         def __init__(self, engine):
             self.engine = engine
             #
@@ -631,11 +883,14 @@ def scenario_broadcast_post(engine):
     engine.event_loop()
 
 def scenario_broadcast_post_with_del(engine):
+    #
+    # This is not a good style example. Predates nearcasting.
+    #
     addr = '127.255.255.255'
     port = 50000
     log('to test this, qd %s %s'%(addr, port))
     #
-    class Cog(object):
+    class Cog:
         def __init__(self, engine, orb, addr, port):
             self.engine = engine
             self.orb = orb
@@ -666,7 +921,7 @@ def scenario_broadcast_post_with_del(engine):
                 log('cog is self-closing')
                 engine.close_broadcast_sender(self.sid)
                 self.orb.cogs.remove(self)
-    class Orb(object):
+    class Orb:
         def __init__(self, engine):
             self.engine = engine
             #
@@ -690,7 +945,8 @@ def main():
         #
         # Comment these in or out as you want to test scenarios.
         #
-        scenario_broadcast_listen(engine)
+        scenario_basic_nearcast_example(engine)
+        #scenario_broadcast_listen(engine)
         #scenario_broadcast_listen_and_unlisten(engine)
         #scenario_multiple_tcp_servers(engine)
         #scenario_close_tcp_servers(engine)
@@ -701,10 +957,16 @@ def main():
         pass
     except KeyboardInterrupt:
         pass
+    except SolentQuitException:
+        pass
     except:
         traceback.print_exc()
     finally:
         engine.close()
+
+def scenarios_empty():
+    # use this in testing
+    pass
 
 if __name__ == '__main__':
     main()
