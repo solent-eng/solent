@@ -77,6 +77,8 @@ def pygame_async_getc():
             raise SolentQuitException()
         if not ev.type == pygame.KEYDOWN:
             continue
+        if ev.unicode == u'\r':
+            return '\n'
         return ev.unicode
 
 def pygame_block_getc():
