@@ -25,7 +25,8 @@
 from solent.term import cgrid_new
 from solent.term import console_new
 from solent.term import e_colpair
-from solent.term  import keystream_new
+from solent.term import e_keycode
+from solent.term import keystream_new
 
 from solent.exceptions import SolentQuitException
 
@@ -64,6 +65,15 @@ MAP_CONST_COLOURS_TO_CPAIR = { e_colpair.red_t: PROFILE_RED_T
                              , e_colpair.t_white: PROFILE_T_WHITE
                              }
 
+def _window_console_translate_key(u):
+    if 0 == len(u):
+        return None
+    if u == u'\r':
+        return e_keycode.newline.value
+    if ord(u) == 0x8:
+        return e_keycode.backspace.value
+    return u
+
 Q_ASYNC_GETC = deque()
 def pygame_async_getc():
     global Q_ASYNC_GETC
@@ -77,9 +87,9 @@ def pygame_async_getc():
             raise SolentQuitException()
         if not ev.type == pygame.KEYDOWN:
             continue
-        if ev.unicode == u'\r':
-            return '\n'
-        return ev.unicode
+        c = _window_console_translate_key(
+            u=ev.unicode)
+        return c
 
 def pygame_block_getc():
     while True:
@@ -90,7 +100,9 @@ def pygame_block_getc():
         if not ev.type == pygame.KEYDOWN:
             continue
         #
-        return ev.unicode
+        c = _window_console_translate_key(
+            u=ev.unicode)
+        return c
 
 class GridDisplay(object):
     def __init__(self, internal_cgrid, font):

@@ -22,6 +22,7 @@
 from .cgrid import cgrid_new
 from .console import console_new
 from .enumerations import e_colpair
+from .enumerations import e_keycode
 from .keystream import keystream_new
 
 from collections import deque
@@ -82,6 +83,12 @@ def screen_curses_exit():
     curses.nocbreak()
     curses.endwin()
 
+def _curses_translate_key(k):
+    if k in (127, curses.KEY_BACKSPACE, curses.KEY_DC):
+        return e_keycode.backspace.value
+    c = chr(k)
+    return c
+
 Q_ASYNC_GETC = deque()
 def curses_async_getc():
     '''
@@ -101,7 +108,8 @@ def curses_async_getc():
         STDSCR.nodelay(0)
     #
     if Q_ASYNC_GETC:
-        return chr(Q_ASYNC_GETC.popleft())
+        return _curses_translate_key(
+            k=Q_ASYNC_GETC.popleft())
 
 def curses_block_getc():
     global STDSCR
@@ -110,8 +118,8 @@ def curses_block_getc():
         return None
     if k < 0 or k >= 256:
         return None
-    c = chr(k)
-    return c
+    return _curses_translate_key(
+        k=k)
 
 #
 # These are not the names of colours. Rather, they are the names of colour

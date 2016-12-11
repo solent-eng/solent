@@ -26,6 +26,7 @@ from .scope import scope_new
 from .curses_console import curses_console_start
 from .curses_console import curses_console_end
 
-from .enumerations import e_colpair
 from .enumerations import e_boxtype
+from .enumerations import e_colpair
+from .enumerations import e_keycode
 

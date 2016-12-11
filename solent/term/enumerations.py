@@ -48,3 +48,7 @@ class e_boxtype(enum.Enum):
     hash          = 2003
     stop          = 2004
 
+class e_keycode(enum.Enum):
+    backspace     = chr(0x8)
+    newline       = chr(0xa)
+
