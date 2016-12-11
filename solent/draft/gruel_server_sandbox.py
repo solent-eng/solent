@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 #
-# Sandbox
+# Gruel server sandbox
 #
 # // brief
-# This is being used for developing new functionality.
-#
-# // deprecated
-# This will disappear in time. Don't use it as a dependency.
+# Demonstrates an application that incorporated a gruel server.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -154,43 +151,29 @@ class CogGruelServer(object):
     def at_turn(self, activity):
         self.spin_gruel_server.at_turn(
             activity=activity)
-    #
     def on_start_gruel_server(self, addr, port, password):
         self.spin_gruel_server.start(
             addr=addr,
             port=port,
             password=password)
-    def on_stop_gruel_server(self):
-        self.spin_gruel_server.stop()
-    #
     def _gruel_on_doc(self, doc):
         self.orb.nearcast(
             cog_h=self.cog_h,
             message_h='doc_recv',
             doc=doc)
 
-def create_orb(engine):
-    nearcast_schema = nearcast_schema_new(
-        i_nearcast=I_NEARCAST_SCHEMA)
-    snoop = log_snoop_new(
-        nearcast_schema=nearcast_schema)
-    orb = orb_new(
-        engine=engine,
-        nearcast_schema=nearcast_schema,
-        snoop=snoop)
-    return orb
-
-def on_line(line):
-    log('lc received line|%s'%line)
-
 def main():
     init_logging()
     engine = engine_new(
         mtu=1500)
     try:
-        orb = create_orb(
-            engine=engine)
-        engine.add_orb(orb)
+        nearcast_schema = nearcast_schema_new(
+            i_nearcast=I_NEARCAST_SCHEMA)
+        snoop = log_snoop_new(
+            nearcast_schema=nearcast_schema)
+        orb = engine.init_orb(
+            nearcast_schema=nearcast_schema,
+            snoop=snoop)
         #
         orb.init_cog(CogLcServer)
         orb.init_cog(CogInterpretLineConsole)
