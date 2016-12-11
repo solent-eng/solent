@@ -70,6 +70,7 @@ class Engine(object):
         self.activity = activity_new()
         self.b_debug_eloop = False
         self.sid_counter = 0
+        self.default_timeout = 0.2
     def debug_eloop_on(self):
         self.b_debug_eloop = True
     def debug_eloop_off(self):
@@ -141,7 +142,7 @@ class Engine(object):
             timeout = 0
         else:
             # i.e. something
-            timeout = 0.2
+            timeout = self.default_timeout
         return timeout
     def cycle(self):
         '''
