@@ -59,19 +59,20 @@ class SpinGruelClient:
         self.cb_doc = None
         self.doc_accumulator = None
         self.client_sid = None
-    def close(self):
-        self.engine.close_tcp_server(self.server_sid)
     def at_turn(self, activity):
-        #
-        # Login
+        if self.status == ClientStatus.dormant:
+            return
+
         if self.status == ClientStatus.ready_to_attempt_login:
             self._attempt_login()
             activity.mark(
                 l=self.__class__.__name__,
                 s='sending login')
             return
-        #
-        # Heartbeats
+
+        if self.status == ClientStatus.attempting_tcp_connection:
+            return
+
         next_heartbeat_due = self.last_heartbeat_sent + self.heartbeat_interval
         now = self.engine.get_clock().now()
         if now >= next_heartbeat_due:
@@ -127,6 +128,7 @@ class SpinGruelClient:
             cb_tcp_condrop=self._engine_on_tcp_condrop,
             cb_tcp_recv=self._engine_on_tcp_recv)
         self.status = ClientStatus.attempting_tcp_connection
+        log('end of attempt_connection') # xxx
     #
     def _engine_on_tcp_connect(self, cs_tcp_connect):
         engine = cs_tcp_connect.engine
@@ -134,23 +136,26 @@ class SpinGruelClient:
         addr = cs_tcp_connect.addr
         port = cs_tcp_connect.port
         #
-        self.cb_connect(
-            cs_tcp_connect=cs_tcp_connect)
+        self.client_sid = client_sid
+        self.cb_connect()
         self.status = ClientStatus.ready_to_attempt_login
         self.last_heartbeat_recv = engine.get_clock().now()
         self.last_heartbeat_sent = engine.get_clock().now()
+        log('end of _engine_on_tcp_connect') # xxx
     def _engine_on_tcp_condrop(self, cs_tcp_condrop):
         engine = cs_tcp_condrop.engine
         client_sid = cs_tcp_condrop.client_sid
         message = cs_tcp_condrop.message
         #
-        self.cb_condrop(cs_tcp_condrop)
+        self.cb_condrop(message)
         self.status = ClientStatus.dormant
+        log('end of _engine_on_tcp_condrop') # xxx
     def _engine_on_tcp_recv(self, cs_tcp_recv):
         engine = cs_tcp_recv.engine
         client_sid = cs_tcp_recv.client_sid
         data = cs_tcp_recv.data
         #
+        log('start of _engine_on_tcp_recv') # xxx
         d_message = self.gruel_puff.unpack(
             payload=data)
         gmt = gmt_value_to_name(d_message['message_type'])
@@ -179,18 +184,23 @@ class SpinGruelClient:
     def _set_login_credentials(self, password):
         self.login_credentials.password = password
     def _attempt_login(self):
+        log('start of _attempt_login') # xxx
         arr = self.gruel_press.create_client_login_payload(
             password=self.login_credentials.password,
             heartbeat_interval=self.heartbeat_interval)
+        hexdump_bytearray(arr)
         self.engine.send(
             sid=self.client_sid,
             data=arr)
         self.status = ClientStatus.login_message_in_flight
+        log('end of _attempt_login') # xxx
     def _send_heartbeat(self):
+        log('start of _send_heartbeat') # xxx
         heartbeat_payload = self.gruel_press.create_heartbeat_payload()
         self.engine.send(
             sid=self.client_sid,
             data=heartbeat_payload)
+        log('end of _send_heartbeat') # xxx
 
 def spin_gruel_client_new(engine, gruel_press, gruel_puff):
     ob = SpinGruelClient(

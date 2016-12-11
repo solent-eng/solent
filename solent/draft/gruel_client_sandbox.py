@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 #
-# Draft term
+# gruel_client_sandbox
 #
 # // brief
-# Being used to develop a standard terminal using eng.
-#
-# // deprecated
-# This will disappear in time. Don't use it as a dependency.
+# Draft terminal that can speak to a solent server. This is interesting
+# because it shows use of the terminal in a nearcast context, as well as
+# acting as a demonstration of a gruel client.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -26,24 +25,46 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent import SolentQuitException
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
+from solent.eng import log_snoop_new
 from solent.eng import nc_snoop_new
 from solent.eng import orb_new
+from solent.gruel import gruel_press_new
+from solent.gruel import gruel_puff_new
+from solent.gruel import gruel_schema_new
+from solent.gruel import spin_gruel_client_new
 from solent.log import init_logging
 from solent.log import log
+from solent.term import e_colpair
+from solent.term import cgrid_new
 from solent.util import line_finder_new
 
 from collections import deque
 from collections import OrderedDict as od
+import random
+import sys
 import time
 import traceback
 
+# want this to work for people who do not have pygame installed
+try:
+    from solent.winterm import window_console_end as console_end
+    from solent.winterm import window_console_start as console_start
+except:
+    from solent.term import curses_console_end as console_end
+    from solent.term import curses_console_start as console_start
+if '--tty' in sys.argv:
+    from solent.term import curses_console_end as console_end
+    from solent.term import curses_console_start as console_start
+
+SERVER_ADDR = '127.0.0.1'
+SERVER_PORT = 4100
+SERVER_PASS = 'qweasd'
+
 LCONSOLE_ADDR = '127.0.0.1'
 LCONSOLE_PORT = 4091
-
-TERM_LINK_ADDR = '127.0.0.1'
-TERM_LINK_PORT = 4100
 
 TAP_ADDR = '127.0.0.1'
 TAP_PORT = 4101
@@ -54,277 +75,393 @@ EVENT_PORT = 4102
 I_NEARCAST_SCHEMA = '''
     i message h
     i field h
-    
-    message something
-        field text
 
-    message connect
-        field username
+    message def_console
+        field console
+    
+    message gruel_connect
+        field server_ip
+        field server_port
         field password
-        field notes
+
+    message client_keystroke
+        field u
+
+    message term_announce
+        field s
+
+    message term_console_send_c
+        field c
+
+    message term_console_newline
+
+    message term_console_backspace
+
+    message term_plot
+        field drop
+        field rest
+        field c
+        field cpair
 '''
 
+KEY_ORD_BACKSPACE = 8
+KEY_ORD_ENTER = 10
+KEY_ORD_ESC = 27
 
-# --------------------------------------------------------
-#   :cog_gruel_client
-# --------------------------------------------------------
 class CogGruelClient:
-    def __init__(self, cog_h, orb, engine, addr, port):
-        self.cog_h = cog_h
-        self.orb = orb
-        self.engine = engine
-        self.addr = addr
-        self.port = port
-        #
-        # form: (addr, port) : deque containing data
-        self.q_received = deque()
-        self.client_sid = None
-    def close(self):
-        self.engine.close_tcp_server(self.server_sid)
-    def at_turn(self, activity):
-        "Returns a boolean which is True only if there was activity."
-        pass
-    #
-    def on_send_something(self, text):
-        pass
-    #
-    def engine_on_tcp_connect(self, cs_tcp_connect):
-        engine = cs_tcp_connect.engine
-        client_sid = cs_tcp_connect.client_sid
-        addr = cs_tcp_connect.addr
-        port = cs_tcp_connect.port
-        #
-        log("connect/%s/%s/%s/%s"%(
-            self.cog_h,
-            client_sid,
-            addr,
-            port))
-        engine.send(
-            sid=client_sid,
-            data='')
-    def engine_on_tcp_condrop(self, cs_tcp_condrop):
-        engine = cs_tcp_condrop.engine
-        client_sid = cs_tcp_condrop.client_sid
-        message = cs_tcp_condrop.message
-        #
-        log("condrop/%s/%s/%s"%(self.cog_h, client_sid, message))
-        while self.q_received:
-            self.q_received.pop()
-    def engine_on_tcp_recv(self, cs_tcp_recv):
-        engine = cs_tcp_recv.engine
-        client_sid = cs_tcp_recv.client_sid
-        data = cs_tcp_recv.data
-        #
-        self.q_received.append(data)
-        engine.send(
-            sid=client_sid,
-            data='q_received %s\n'%len(data))
-
-def cog_gruel_client_new(cog_h, orb, engine, addr, port):
-    ob = CogGruelClient(
-        cog_h=cog_h,
-        orb=orb,
-        engine=engine,
-        addr=addr,
-        port=port)
-    return ob
-
-
-
-# --------------------------------------------------------
-#   :cog_console
-# --------------------------------------------------------
-def parse_command_line(line):
-    if 0 == len(line):
-        return (None, [])
-    if ' ' not in line:
-        return (line, [])
-    t = [t for t in line.split() if len(t)>0]
-    first = t[0]
-    rest = t[1:]
-    return (first, rest)
-
-class ModestInterpreter:
-    def __init__(self, cog_console):
-        self.cog_console = cog_console
-    def clear(self):
-        pass
-    def on_line(self, line):
-        log('on_line %s'%(line))
-        (head, rest) = parse_command_line(
-            line=line)
-        if head == None:
-            return
-        elif head == 'connect':
-            self.cog_console.mi_nearcast_connect()
-        else:
-            self.cog_console.mi_network_write(
-                m='error, no command %s'%(head))
-
-def moderst_interpreter_new(cog_console):
-    ob = ModestInterpreter(
-        cog_console=cog_console)
-    return ob
-
-class CogConsole:
-    def __init__(self, cog_h, orb, engine, addr, port):
-        self.cog_h = cog_h
-        self.orb = orb
-        self.engine = engine
-        self.addr = addr
-        self.port = port
-        #
-        self.modest_interpreter = moderst_interpreter_new(
-            cog_console=self)
-        self.line_finder = line_finder_new(
-            cb_line=self.modest_interpreter.on_line)
-        #
-        self.server_sid = None
-        self.client_sid = None
-        self._open_server()
-    def close(self):
-        self._close_server()
-    def at_turn(self, activity):
-        "Returns a boolean which is True only if there was activity."
-        pass
-    #
-    def _open_server(self):
-        self.server_sid = self.engine.open_tcp_server(
-            addr=self.addr,
-            port=self.port,
-            cb_tcp_connect=self.engine_on_tcp_connect,
-            cb_tcp_condrop=self.engine_on_tcp_condrop,
-            cb_tcp_recv=self.engine_on_tcp_recv)
-    def _close_server(self):
-        self.engine.close_tcp_server(
-            sid=self.server_sid)
-        self.server_sid = None
-    def _register_client(self, client_sid):
-        self.client_sid = client_sid
-        #
-        self.line_finder.clear()
-        self.modest_interpreter.clear()
-    #
-    def engine_on_tcp_connect(self, cs_tcp_connect):
-        engine = cs_tcp_connect.engine
-        client_sid = cs_tcp_connect.client_sid
-        addr = cs_tcp_connect.addr
-        port = cs_tcp_connect.port
-        #
-        self._close_server()
-        self._register_client(
-            client_sid=client_sid)
-        #
-        log("connect/[snoop]/%s/%s/%s"%(
-            client_sid,
-            addr,
-            port))
-    def engine_on_tcp_condrop(self, cs_tcp_condrop):
-        engine = cs_tcp_condrop.engine
-        client_sid = cs_tcp_condrop.client_sid
-        message = cs_tcp_condrop.message
-        #
-        log("condrop/[snoop]/%s/%s"%(client_sid, message))
-        self.client_sid = None
-        self._open_server()
-    def engine_on_tcp_recv(self, cs_tcp_recv):
-        engine = cs_tcp_recv.engine
-        client_sid = cs_tcp_recv.client_sid
-        data = cs_tcp_recv.data
-        #
-        self.line_finder.accept_bytes(
-            barr=data)
-    #
-    def mi_nearcast_connect(self):
-        # xxx fix up configurables
-        self.orb.nearcast(
-            cog_h=self.cog_h,
-            message_h='connect',
-            username='uname',
-            password='pword',
-            notes='notes')
-    def mi_network_write(self, m):
-        if not self.client_sid:
-            raise Exception('Not valid to call this with None client sid.')
-        self.engine.send(
-            sid=self.client_sid,
-            data='%s\n'%m)
-
-def cog_console_new(cog_h, orb, engine, addr, port):
-    ob = CogConsole(
-        cog_h=cog_h,
-        orb=orb,
-        engine=engine,
-        addr=addr,
-        port=port)
-    return ob
-
-
-# --------------------------------------------------------
-#   :rest
-# --------------------------------------------------------
-class CogEventSource:
     def __init__(self, cog_h, orb, engine):
         self.cog_h = cog_h
         self.orb = orb
         self.engine = engine
         #
-        self.t_something = time.time()
+        self.gruel_schema = gruel_schema_new()
+        self.gruel_press = gruel_press_new(
+            gruel_schema=self.gruel_schema,
+            mtu=engine.mtu)
+        self.gruel_puff = gruel_puff_new(
+            gruel_schema=self.gruel_schema,
+            mtu=engine.mtu)
+        self.spin_gruel_client = spin_gruel_client_new(
+            engine=engine,
+            gruel_press=self.gruel_press,
+            gruel_puff=self.gruel_puff)
     def at_turn(self, activity):
         "Returns a boolean which is True only if there was activity."
-        t_something = time.time()
-        if t_something - self.t_something > 1:
+        self.spin_gruel_client.at_turn(
+            activity=activity)
+    def on_gruel_connect(self, server_ip, server_port, password):
+        self.spin_gruel_client.attempt_connection(
+            addr=server_ip,
+            port=server_port,
+            password=password,
+            cb_connect=self._gruel_on_connect,
+            cb_condrop=self._gruel_on_condrop,
+            cb_doc=self._gruel_on_doc)
+    #
+    def on_send_something(self, text):
+        pass
+    #
+    def _gruel_on_connect(self):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='term_announce',
+            s='connected!')
+    def _gruel_on_condrop(self, message):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='term_announce',
+            s=message)
+    def _gruel_on_doc(self, doc):
+        log('got doc! [%s]'%doc)
+
+class PanePlot:
+    def __init__(self):
+        self.pos = {}
+    def plot(self, drop, rest, c, cpair):
+        self.pos[ (drop, rest) ] = (c, cpair)
+    def light(self, cgrid):
+        for ((drop, rest), (c, cpair)) in self.pos.items():
+            cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=c,
+                cpair=cpair)
+
+class PaneConsole:
+    def __init__(self):
+        self.buf = []
+    def add(self, c):
+        self.buf.append(c)
+    def newline(self):
+        self.buf = []
+    def backspace(self):
+        if self.buf:
+            self.buf.pop()
+    def light(self, cgrid):
+        idx = 0
+        for c in self.buf:
+            drop = 1 + (idx / 40)
+            rest = idx % 40
+            cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=c,
+                cpair=e_colpair.white_t)
+            idx += 1
+        drop = 1 + (idx / 40)
+        rest = idx % 40
+        cgrid.put(
+            drop=drop,
+            rest=rest,
+            s='_',
+            cpair=e_colpair.green_t)
+        idx += 1
+        while 0 != idx % 40:
+            rest = idx % 40
+            cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=' ',
+                cpair=e_colpair.white_t)
+            idx += 1
+        cgrid.put(
+            drop=drop+1,
+            rest=0,
+            s=' ',
+            cpair=e_colpair.white_t)
+
+class PaneAnnounce:
+    def __init__(self):
+        self.s = ''
+    def set_text(self, s):
+        self.s = s
+    def light(self, cgrid):
+        cgrid.put(
+            drop=0,
+            rest=0,
+            s=self.s,
+            cpair=e_colpair.red_t)
+        cgrid.put(
+            drop=0,
+            rest=len(self.s),
+            s=' '*(79-len(self.s)),
+            cpair=e_colpair.red_t)
+
+class CogTerminal:
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+        #
+        self.console = None
+        self.cgrid = None
+        self.pane_plot = None
+        self.pane_console = None
+        self.pane_announce = None
+    #
+    def at_turn(self, activity):
+        k = self.console.async_getc()
+        if k not in ('', None):
+            activity.mark(
+                l=self,
+                s='key received')
             self.orb.nearcast(
                 cog_h=self.cog_h,
-                message_h='something',
-                text='here it is!')
-            self.t_something = t_something
+                message_h='client_keystroke',
+                u=k)
+    def on_def_console(self, console):
+        self.console = console
+        self.cgrid = cgrid_new(
+            width=console.width,
+            height=console.height)
+        self.pane_plot = PanePlot()
+        self.pane_console = PaneConsole()
+        self.pane_announce = PaneAnnounce()
+    def on_client_keystroke(self, u):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='term_plot',
+            drop=0,
+            rest=79,
+            c=u,
+            cpair=e_colpair.yellow_t)
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='term_plot',
+            drop=1,
+            rest=77,
+            c='%3s'%(str(ord(u))),
+            cpair=e_colpair.yellow_t)
+        self._console_update()
+    def on_term_announce(self, s):
+        self.pane_announce.set_text(
+            s=s)
+        self._console_update()
+    def on_term_console_send_c(self, c):
+        self.pane_console.add(c)
+        self._console_update()
+    def on_term_console_newline(self):
+        self.pane_console.newline()
+        self._console_update()
+    def on_term_console_backspace(self):
+        self.pane_console.backspace()
+        self._console_update()
+    def on_term_plot(self, drop, rest, c, cpair):
+        self.pane_plot.plot(
+            drop=drop,
+            rest=rest,
+            c=c,
+            cpair=cpair)
+        self._console_update()
+    #
+    def _console_newline(self):
+        self.tcurs_drop += 1
+        self.tcurs_rest = 0
+        if self.tcurs_drop >= 25:
+            self.tcurs_drop = 0
+    def _console_backspace(self):
+        if self.tcurs_rest == 0:
+            return
+        self.tcurs_rest -= 1
+        self.cgrid.put(
+            drop=self.tcurs_drop,
+            rest=self.tcurs_rest,
+            s=' ',
+            cpair=e_colpair.white_t)
+        self._console_update()
+    def _console_update(self):
+        self.pane_plot.light(self.cgrid)
+        self.pane_console.light(self.cgrid)
+        self.pane_announce.light(self.cgrid)
+        self.console.screen_update(
+            cgrid=self.cgrid)
 
-def main():
+class CogShell:
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+        #
+        self.b_first = True
+        self.line_finder = line_finder_new(
+            cb_line=self._console_line)
+    def at_turn(self, activity):
+        if self.b_first:
+            activity.mark(
+                l=self,
+                s='write quit message')
+            self._console_announce(
+                s='Press ESC to quit')
+            self.b_first = False
+    def on_client_keystroke(self, u):
+        self.line_finder.accept_string(
+            s=u)
+        o = ord(u)
+        if o == KEY_ORD_ENTER:
+            self.orb.nearcast(
+                cog_h=self.cog_h,
+                message_h='term_console_newline')
+        elif o == KEY_ORD_BACKSPACE:
+            self.orb.nearcast(
+                cog_h=self.cog_h,
+                message_h='term_console_backspace')
+        else:
+            self.orb.nearcast(
+                cog_h=self.cog_h,
+                message_h='term_console_send_c',
+                c=u)
+    #
+    def _console_announce(self, s):
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='term_announce',
+            s=s)
+    def _console_line(self, line):
+        if line == 'start':
+            self.orb.nearcast(
+                cog_h=self.cog_h,
+                message_h='gruel_connect',
+                server_ip=SERVER_ADDR,
+                server_port=SERVER_PORT,
+                password=SERVER_PASS)
+        else:
+            self._console_announce(
+                s='syntax error')
+
+class CogPlotRandomness:
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+        #
+        self.t = time.time()
+    def at_turn(self, activity):
+        now = time.time()
+        if now - 1 > self.t:
+            activity.mark(
+                l=self,
+                s='sending a random char')
+            self._send_a_random_char()
+            self.t = now
+    #
+    def _send_a_random_char(self):
+        drop = random.choice(range(25))
+        rest = random.choice(range(60, 80))
+        c = chr(random.choice(range(ord('a'), ord('z')+1)))
+        cpair = random.choice([e for e in e_colpair if not e.name.startswith('_')])
+        self.orb.nearcast(
+            cog_h=self.cog_h,
+            message_h='term_plot',
+            drop=drop,
+            rest=rest,
+            c=c,
+            cpair=cpair)
+
+class CogQuitScanner:
+    # Looks out for a particular letter, and tells the app to quit when it
+    # sees it.
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+        #
+        self.b_first = True
+    def on_client_keystroke(self, u):
+        if ord(u) == KEY_ORD_ESC:
+            raise SolentQuitException()
+
+def wrap_eng(console):
     init_logging()
     engine = engine_new(
         mtu=1500)
+    engine.default_timeout = 0.02
     try:
         nearcast_schema = nearcast_schema_new(
             i_nearcast=I_NEARCAST_SCHEMA)
-        snoop = nc_snoop_new(
-            engine=engine,
-            nearcast_schema=nearcast_schema,
-            addr=TAP_ADDR,
-            port=TAP_PORT)
+        # snoop = nc_snoop_new(
+        #     engine=engine,
+        #     nearcast_schema=nearcast_schema,
+        #     addr=TAP_ADDR,
+        #     port=TAP_PORT)
+        # snoop = log_snoop_new(
+        #     nearcast_schema=nearcast_schema)
+        orb = engine.init_orb(
+            nearcast_schema=nearcast_schema)
+            #snoop=snoop)
         #
-        orb = orb_new(
-            engine=engine,
-            nearcast_schema=nearcast_schema,
-            snoop=snoop)
-        orb.add_cog(
-            cog=cog_console_new(
-                cog_h='console01',
-                orb=orb,
-                engine=engine,
-                addr=CONSOLE_ADDR,
-                port=CONSOLE_PORT))
-        orb.add_cog(
-            cog=CogEventSource(
-                cog_h='esource01',
-                orb=orb,
-                engine=engine))
-        orb.add_cog(
-            cog=cog_gruel_client_new(
-                cog_h='client01',
-                orb=orb,
-                engine=engine,
-                addr=TERM_LINK_ADDR,
-                port=TERM_LINK_PORT))
-        engine.add_orb(
-            orb=orb)
+        orb.init_cog(CogGruelClient)
+        orb.init_cog(CogShell)
+        orb.init_cog(CogTerminal)
+        #orb.init_cog(CogPlotRandomness)
+        orb.init_cog(CogQuitScanner)
+        #
+        orb.nearcast(
+            cog_h='prep',
+            message_h='def_console',
+            console=console)
+        #
         engine.event_loop()
     except KeyboardInterrupt:
+        pass
+    except SolentQuitException:
         pass
     except:
         traceback.print_exc()
     finally:
         engine.close()
+
+def main():
+    try:
+        console = console_start(
+            width=80,
+            height=25)
+
+        wrap_eng(
+            console=console)
+    except:
+        traceback.print_exc()
+    finally:
+        console_end()
 
 if __name__ == '__main__':
     main()
