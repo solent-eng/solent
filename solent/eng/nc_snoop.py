@@ -66,10 +66,12 @@ class NetSnoop:
                 l=self,
                 s='processing q_outbound')
             while self.q_outbound:
-                data = self.q_outbound.popleft()
+                payload = bytes(
+                    source=self.q_outbound.popleft(),
+                    encoding='utf8')
                 self.engine.send(
                     sid=self.client_sid,
-                    data='%s\n'%(data))
+                    payload=payload)
     #
     def _open_server(self):
         self.server_sid = self.engine.open_tcp_server(

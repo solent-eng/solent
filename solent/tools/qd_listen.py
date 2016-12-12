@@ -119,6 +119,8 @@ def main():
             engine=engine,
             net_addr=net_addr,
             net_port=net_port)
+    except KeyboardInterrupt:
+        pass
     except:
         traceback.print_exc()
     finally:

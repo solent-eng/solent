@@ -163,14 +163,15 @@ def scenario_basic_nearcast_example(engine):
                     message_h='nearcast_note',
                     field_a='text in a',
                     field_b='text in b')
+                log('%s sent nearcast note'%(self.cog_h))
     class CogPrinter:
         def __init__(self, cog_h, orb, engine):
             self.cog_h = cog_h
             self.orb = orb
             self.engine = engine
         def on_nearcast_note(self, field_a, field_b):
-            log('received nearcast_note [%s] [%s]'%(
-                field_a, field_b))
+            log('%s received nearcast_note [%s] [%s]'%(
+                self.cog_h, field_a, field_b))
     class CogQuitter:
         def __init__(self, cog_h, orb, engine):
             self.cog_h = cog_h
@@ -500,9 +501,12 @@ class SpinTcpEchoServer:
         client_sid = cs_tcp_recv.client_sid
         data = cs_tcp_recv.data
         #
+        payload = bytes(
+            source='(echo from %s) [%s]\n'%(self.spin_h, data),
+            encoding='utf8')
         engine.send(
             sid=client_sid,
-            data='(echo from %s) [%s]\n'%(self.spin_h, data))
+            payload=payload)
 
 def scenario_multiple_tcp_servers(engine):
     print('''
@@ -629,9 +633,9 @@ def scenario_close_tcp_servers(engine):
                 5: ('y', '127.0.0.1', 4121),
                 8: ('z', '127.0.0.1', 4122)}
             close_schedule = {
-                8: 'y',
-                10: 'x',
-                20: 'z'}
+                10: 'z',
+                15: 'y',
+                30: 'x'}
             self.turn_counter += 1
             if self.turn_counter in open_schedule:
                 (spin_h, ip, port) = open_schedule[self.turn_counter]
@@ -865,9 +869,12 @@ def scenario_broadcast_post(engine):
                     l='scenario_broadcast_post',
                     s='two seconds passed')
                 self.last_t = t
+                payload = bytes(
+                    source='from poke [%s]'%t,
+                    encoding='utf8')
                 self.engine.send(
                     sid=self.sid,
-                    data='from poke [%s]'%t)
+                    payload=payload)
     class Orb:
         def __init__(self, engine):
             self.engine = engine
@@ -909,9 +916,12 @@ def scenario_broadcast_post_with_del(engine):
                     l='scenario_broadcast_post_with_del',
                     s='time interval')
                 log('sending to %s:%s'%(self.addr, self.port))
+                payload = bytes(
+                    source='from poke [%s]'%(t),
+                    encoding='utf8')
                 engine.send(
                     sid=self.sid,
-                    data='from poke [%s]'%(t))
+                    payload=payload)
                 self.last_t = t
             self.count_turns += 1
             if self.count_turns == 20:

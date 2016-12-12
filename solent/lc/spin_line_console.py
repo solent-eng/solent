@@ -52,9 +52,12 @@ class SpinLineConsole:
     def write_to_client(self, s):
         if not self.client_sid:
             raise Exception('Not valid to call this with None client sid.')
+        payload = bytes(
+            source=s,
+            encoding='utf8')
         self.engine.send(
             sid=self.client_sid,
-            data=s)
+            payload=payload)
     #
     def _start_server(self):
         self.server_sid = self.engine.open_tcp_server(

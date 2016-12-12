@@ -121,7 +121,7 @@ class Metasock(object):
         self.recv_len = None
         #
         self.can_it_send = False
-        self.send_buf = deque()
+        self.send_buf = deque() # buffers payloads
         #
         self.is_it_a_tcp_server = False
         self.is_it_a_tcp_client = False
@@ -182,16 +182,15 @@ class Metasock(object):
         self.cs_ms_close.message = message
         self.cb_ms_close(
             cs_ms_close=self.cs_ms_close)
-    def accept_for_send(self, data):
-        self.send_buf.append(data)
+    def accept_for_send(self, payload):
+        self.send_buf.append(payload)
     def manage_send(self):
         if not self.can_it_send:
             raise Exception("%s is not a send sock."%self.sid)
         try:
             while self.send_buf:
-                plaintext = self.send_buf.popleft()
-                msg = bytes(plaintext, 'UTF-8')
-                self.sock.send(msg)
+                payload = self.send_buf.popleft()
+                self.sock.send(payload)
         except:
             # When you try to do a send to a BSD socket that is in the
             # process of going down, you can get an exception. This caterss

@@ -98,7 +98,7 @@ class SpinGruelClient:
                 data=doc)
             self.engine.send(
                 sid=self.client_sid,
-                data=payload)
+                payload=payload)
     def send_document(self, doc):
         self.q_outbound_documents.append(doc)
     #
@@ -185,21 +185,21 @@ class SpinGruelClient:
         self.login_credentials.password = password
     def _attempt_login(self):
         log('start of _attempt_login') # xxx
-        arr = self.gruel_press.create_client_login_payload(
+        payload = self.gruel_press.create_client_login_payload(
             password=self.login_credentials.password,
             heartbeat_interval=self.heartbeat_interval)
-        hexdump_bytearray(arr)
+        hexdump_bytearray(payload) # xxx
         self.engine.send(
             sid=self.client_sid,
-            data=arr)
+            payload=payload)
         self.status = ClientStatus.login_message_in_flight
         log('end of _attempt_login') # xxx
     def _send_heartbeat(self):
         log('start of _send_heartbeat') # xxx
-        heartbeat_payload = self.gruel_press.create_heartbeat_payload()
+        payload = self.gruel_press.create_heartbeat_payload()
         self.engine.send(
             sid=self.client_sid,
-            data=heartbeat_payload)
+            payload=payload)
         log('end of _send_heartbeat') # xxx
 
 def spin_gruel_client_new(engine, gruel_press, gruel_puff):

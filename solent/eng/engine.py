@@ -166,12 +166,16 @@ class Engine(object):
                     timeout=timeout)
         except QuitEvent as e:
             log('QuitEvent [%s]'%(e.message))
-    def send(self, sid, data):
+    def send(self, sid, payload):
         #log('send sid:%s data_len:%s'%(sid, len(data)))
         ms = self._get_ms_for_sid(sid)
         if not ms.can_it_send:
             raise Exception("%s does not have can_it_send"%(sid))
-        ms.accept_for_send(data)
+        if len(payload) > self.mtu:
+            raise Exception('Payload size %s is larger than mtu %s'%(
+                len(payload), self.mtu))
+        ms.accept_for_send(
+            payload=payload)
     def _call_select(self, timeout=0):
         "Return True or False depending on whether or not there was activity."
         sock_to_metasock = {}
