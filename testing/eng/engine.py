@@ -44,8 +44,8 @@ class Engine:
         self.mtu = 500
     def get_clock(self):
         return self.clock
-    def send(self, sid, data):
-        self.sent_data.append(data[:])
+    def send(self, sid, payload):
+        self.sent_data.append(payload[:])
     def open_tcp_client(self, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
         self.events.append( ('open_tcp_client', addr, port) )
         #

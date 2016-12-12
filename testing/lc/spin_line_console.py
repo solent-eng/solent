@@ -175,7 +175,7 @@ def should_transfer_of_text():
     spin_line_console.write_to_client(
         s=s)
     assert 1 == len(engine.sent_data)
-    assert engine.sent_data[-1] == s
+    assert engine.sent_data[-1] == bytes(s, 'utf8')
     #
     return True
 
