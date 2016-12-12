@@ -26,7 +26,6 @@ from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent.eng import activity_new
 from solent.eng import nearcast_schema_new
-from solent.eng import log_snoop_new
 from solent.eng import orb_new
 from solent.eng.cs import *
 from solent.gruel import gruel_schema_new
@@ -44,13 +43,9 @@ import sys
 def should_reject_unauthorised_ip():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    snoop = log_snoop_new(
-        nearcast_schema=nearcast_schema)
-    snoop.disable()
     orb = orb_new(
         engine=engine,
-        nearcast_schema=nearcast_schema,
-        snoop=snoop)
+        nearcast_schema=nearcast_schema)
     r = orb.init_cog(
         construct=receiver_cog_fake)
     ipval_cog = orb.init_cog(
@@ -72,13 +67,9 @@ def should_reject_unauthorised_ip():
 def should_allow_authorised_ip():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    snoop = log_snoop_new(
-        nearcast_schema=nearcast_schema)
-    snoop.disable()
     orb = orb_new(
         engine=engine,
-        nearcast_schema=nearcast_schema,
-        snoop=snoop)
+        nearcast_schema=nearcast_schema)
     r = orb.init_cog(
         construct=receiver_cog_fake)
     ipval_cog = orb.init_cog(
@@ -117,13 +108,9 @@ def should_allow_authorised_ip():
 def should_allow_any_ip():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
-    snoop = log_snoop_new(
-        nearcast_schema=nearcast_schema)
-    snoop.disable()
     orb = orb_new(
         engine=engine,
-        nearcast_schema=nearcast_schema,
-        snoop=snoop)
+        nearcast_schema=nearcast_schema)
     r = orb.init_cog(
         construct=receiver_cog_fake)
     ipval_cog = orb.init_cog(

@@ -25,7 +25,6 @@
 
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
-from solent.eng import log_snoop_new
 from solent.eng import orb_new
 from solent.gruel import spin_gruel_server_new
 from solent.lc import spin_line_console_new
@@ -169,11 +168,9 @@ def main():
     try:
         nearcast_schema = nearcast_schema_new(
             i_nearcast=I_NEARCAST_SCHEMA)
-        snoop = log_snoop_new(
-            nearcast_schema=nearcast_schema)
         orb = engine.init_orb(
-            nearcast_schema=nearcast_schema,
-            snoop=snoop)
+            nearcast_schema=nearcast_schema)
+        orb.add_log_snoop()
         #
         orb.init_cog(CogLcServer)
         orb.init_cog(CogInterpretLineConsole)

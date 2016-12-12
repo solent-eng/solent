@@ -102,8 +102,6 @@
 
 from solent import SolentQuitException
 from solent.eng import engine_new
-from solent.eng import log_snoop_new
-from solent.eng import nearcast_schema_new
 from solent.eng import orb_new
 from solent.eng import QuitEvent
 from solent.log import init_logging
@@ -414,16 +412,13 @@ def scenario_broadcast_listen_and_unlisten(engine):
                 self.orb.nearcast(
                     cog=self,
                     message_h='stop_listener')
-    #
-    # We are going to create a snoop here. This one logs nearcast messages as
-    # they happen.
     nearcast_schema = nearcast_schema_new(
         i_nearcast=i_nearcast)
-    snoop = log_snoop_new(
-        nearcast_schema=nearcast_schema)
     orb = engine.init_orb(
-        nearcast_schema=nearcast_schema,
-        snoop=snoop)
+        nearcast_schema=nearcast_schema)
+    # We are going to create a snoop here. This one logs nearcast messages as
+    # they happen.
+    orb.add_log_snoop()
     orb.init_cog(CogContainsSpin)
     orb.init_cog(CogPrinter)
     orb.init_cog(CogEvents)

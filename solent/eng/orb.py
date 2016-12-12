@@ -59,20 +59,138 @@ import inspect
 from pprint import pprint
 import types
 
-class Orb:
-    def __init__(self, engine, nearcast_schema, snoop):
+class LogSnoop:
+    '''
+    Logs any message seen on the associated nearcast.
+    '''
+    def __init__(self, nearcast_schema):
+        self.b_enabled = True
+        self.nearcast_schema = nearcast_schema
+    def disable(self):
+        self.b_enabled = False
+    def at_turn(self, activity):
+        pass
+    def on_nearcast_message(self, cog_h, message_h, d_fields):
+        if not self.b_enabled:
+            return
+        def format_message():
+            sb = []
+            sb.append('%s>%s'%(cog_h, message_h))
+            for key in self.nearcast_schema[message_h]:
+                sb.append('%s:%s'%(key, d_fields[key]))
+            return '/'.join(sb)
+        nice = format_message()
+        log(nice)
+
+class NetworkSnoop:
+    '''
+    This gives you a network service that allows you to use netcat or similar
+    to see all the messages that are passing through the nearcast. Useful
+    for debugging. The snoop behaves a lot like a cog, but has different
+    construction arrangements.
+
+    Allows a user to snoop on the messages on a nearcast.
+    
+    This class is similar to a cog. However, the mechanism by which it
+    receives nearcast messages is different to cogs. Cogs implement an
+    on_message_h method. Whereas this gets everything in on_nearcast_message.
+    And that requires special logic in the orb.
+
+    This behaves like a blocking server (only one client at a time).
+    '''
+    def __init__(self, engine, nearcast_schema, addr, port):
         self.engine = engine
         self.nearcast_schema = nearcast_schema
-        self.snoop = snoop
+        self.addr = addr
+        self.port = port
         #
+        self.server_sid = None
+        self.client_sid = None
+        self.q_outbound = None
+        #
+        self._open_server()
+    def close(self):
+        self._close_server()
+    def at_turn(self, activity):
+        if self.q_outbound:
+            activity.mark(
+                l=self,
+                s='processing q_outbound')
+            while self.q_outbound:
+                payload = bytes(
+                    source=self.q_outbound.popleft(),
+                    encoding='utf8')
+                self.engine.send(
+                    sid=self.client_sid,
+                    payload=payload)
+    #
+    def _open_server(self):
+        self.server_sid = self.engine.open_tcp_server(
+            addr=self.addr,
+            port=self.port,
+            cb_tcp_connect=self.engine_on_tcp_connect,
+            cb_tcp_condrop=self.engine_on_tcp_condrop,
+            cb_tcp_recv=self.engine_on_tcp_recv)
+    def _close_server(self):
+        self.engine.close_tcp_server(
+            sid=self.server_sid)
+        self.server_sid = None
+    #
+    def engine_on_tcp_connect(self, cs_tcp_connect):
+        engine = cs_tcp_connect.engine
+        client_sid = cs_tcp_connect.client_sid
+        addr = cs_tcp_connect.addr
+        port = cs_tcp_connect.port
+        #
+        self._close_server()
+        self.q_outbound = deque()
+        self.client_sid = client_sid
+        log("connect/[snoop]/%s/%s/%s"%(
+            client_sid,
+            addr,
+            port))
+    def engine_on_tcp_condrop(self, cs_tcp_condrop):
+        engine = cs_tcp_condrop.engine
+        client_sid = cs_tcp_condrop.client_sid
+        message = cs_tcp_condrop.message
+        #
+        log("condrop/[snoop]/%s/%s"%(client_sid, message))
+        self.client_sid = None
+        self.q_outbound = None
+        self._open_server()
+    def engine_on_tcp_recv(self, cs_tcp_recv):
+        engine = cs_tcp_recv.engine
+        client_sid = cs_tcp_recv.client_sid
+        data = cs_tcp_recv.data
+        #
+        pass
+    #
+    def on_nearcast_message(self, cog_h, message_h, d_fields):
+        if not self.client_sid:
+            return
+        def format_message():
+            sb = []
+            sb.append('%s>%s'%(cog_h, message_h))
+            for key in self.nearcast_schema[message_h]:
+                sb.append('%s:%s'%(key, d_fields[key]))
+            return '/'.join(sb)
+        nice = format_message()
+        self.q_outbound.append(nice)
+
+class Orb:
+    def __init__(self, engine, nearcast_schema):
+        self.engine = engine
+        self.nearcast_schema = nearcast_schema
+        #
+        self.snoops = []
         self.cogs = []
         self.pending = deque()
     def at_turn(self, activity):
         #
         self.distribute()
         #
-        if self.snoop:
-            self.snoop.at_turn(
+        for snoop in self.snoops:
+            snoop.at_turn(
                 activity=activity)
         for cog in self.cogs:
             if 'at_turn' in dir(cog):
@@ -101,6 +219,17 @@ class Orb:
                     max_turns))
                 break
             turn_counter += 1
+    def add_network_snoop(self, addr, port):
+        self.snoops.append(
+            NetworkSnoop(
+                engine=self.engine,
+                nearcast_schema=self.nearcast_schema,
+                addr=addr,
+                port=port))
+    def add_log_snoop(self):
+        self.snoops.append(
+            LogSnoop(
+                nearcast_schema=self.nearcast_schema))
     def add_cog(self, cog):
         if cog in self.cogs:
             try:
@@ -151,8 +280,8 @@ class Orb:
         while self.pending:
             (cog, message_h, d_fields) = self.pending.popleft()
             rname = 'on_%s'%(message_h)
-            if self.snoop:
-                self.snoop.on_nearcast_message(
+            for snoop in self.snoops:
+                snoop.on_nearcast_message(
                     cog_h=cog.cog_h,
                     message_h=message_h,
                     d_fields=d_fields)
@@ -167,10 +296,9 @@ class Orb:
                         log('')
                         raise
 
-def orb_new(engine, nearcast_schema, snoop=None):
+def orb_new(engine, nearcast_schema):
     ob = Orb(
         engine=engine,
-        nearcast_schema=nearcast_schema,
-        snoop=snoop)
+        nearcast_schema=nearcast_schema)
     return ob
 

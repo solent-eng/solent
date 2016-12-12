@@ -28,8 +28,6 @@
 from solent import SolentQuitException
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
-from solent.eng import log_snoop_new
-from solent.eng import nc_snoop_new
 from solent.eng import orb_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
@@ -418,16 +416,8 @@ def wrap_eng(console):
     try:
         nearcast_schema = nearcast_schema_new(
             i_nearcast=I_NEARCAST_SCHEMA)
-        # snoop = nc_snoop_new(
-        #     engine=engine,
-        #     nearcast_schema=nearcast_schema,
-        #     addr=TAP_ADDR,
-        #     port=TAP_PORT)
-        # snoop = log_snoop_new(
-        #     nearcast_schema=nearcast_schema)
         orb = engine.init_orb(
             nearcast_schema=nearcast_schema)
-            #snoop=snoop)
         #
         orb.init_cog(CogGruelClient)
         orb.init_cog(CogShell)

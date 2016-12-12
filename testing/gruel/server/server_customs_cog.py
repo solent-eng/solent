@@ -25,7 +25,6 @@ from testing.eng import engine_fake
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent.eng import activity_new
-from solent.eng import log_snoop_new
 from solent.eng import orb_new
 from solent.eng.cs import *
 from solent.gruel import gruel_schema_new

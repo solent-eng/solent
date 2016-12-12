@@ -93,7 +93,6 @@ class SpinLineConsole:
         client_sid = cs_tcp_condrop.client_sid
         message = cs_tcp_condrop.message
         #
-        log("condrop/[snoop]/%s/%s"%(client_sid, message))
         self.client_sid = None
         self._start_server()
     def _engine_on_tcp_recv(self, cs_tcp_recv):

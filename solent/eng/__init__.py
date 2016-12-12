@@ -23,8 +23,6 @@ from .activity import activity_new
 from .engine import engine_new as engine_new
 from .engine import engine_new as QuitEvent
 from .ip_validator import ip_validator_new
-from .log_snoop import log_snoop_new
-from .nc_snoop import nc_snoop_new
 from .nearcast_schema import nearcast_schema_new
 from .orb import orb_new
 from .scenarios import scenarios_empty

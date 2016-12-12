@@ -103,11 +103,10 @@ class Engine(object):
         if orb in self.lst_orbs:
             raise Exception("Orb is already in engine. Don't double-add.")
         self.lst_orbs.append(orb)
-    def init_orb(self, nearcast_schema='', snoop=None):
+    def init_orb(self, nearcast_schema=''):
         orb = orb_new(
             engine=self,
-            nearcast_schema=nearcast_schema,
-            snoop=snoop)
+            nearcast_schema=nearcast_schema)
         self.add_orb(
             orb=orb)
         return orb

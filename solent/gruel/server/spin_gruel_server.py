@@ -30,7 +30,6 @@ from .gs_nearcast_schema import gs_nearcast_schema_new
 from .tcp_server_cog import tcp_server_cog_new
 
 from solent.eng import orb_new
-from solent.eng import log_snoop_new
 from solent.gruel import gruel_press_new
 from solent.log import hexdump_bytearray
 from solent.log import log
@@ -72,31 +71,29 @@ class SpinGruelServer:
         self.b_active = False
         #
         self.nearcast_schema = gs_nearcast_schema_new()
-        snoop = log_snoop_new(
-            nearcast_schema=self.nearcast_schema)
-        self.gruel_server_nearcast = orb_new(
+        self.orb = orb_new(
             engine=self.engine,
-            nearcast_schema=self.nearcast_schema,
-            snoop=snoop)
+            nearcast_schema=self.nearcast_schema)
+        self.orb.add_log_snoop()
         #
         self.tcp_server_cog = tcp_server_cog_new(
             cog_h='tcp_server_cog',
-            orb=self.gruel_server_nearcast,
+            orb=self.orb,
             engine=engine)
-        self.gruel_server_nearcast.add_cog(
+        self.orb.add_cog(
             cog=self.tcp_server_cog)
         #
         self.uplink = UplinkCog(
             cog_h='uplink',
-            orb=self.gruel_server_nearcast,
+            orb=self.orb,
             engine=engine)
-        self.gruel_server_nearcast.add_cog(
+        self.orb.add_cog(
             cog=self.uplink)
         #
         self.uplink.send_nearnote(
             s='spin_gruel_server: nearcast_started')
     def at_turn(self, activity):
-        self.gruel_server_nearcast.at_turn(
+        self.orb.at_turn(
             activity=activity)
     #
     def get_status(self):
