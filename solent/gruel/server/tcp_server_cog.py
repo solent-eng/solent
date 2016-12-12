@@ -81,22 +81,22 @@ class TcpServerCog:
     #
     def nc_announce_tcp_connect(self, ip, port):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='announce_tcp_connect',
             ip=ip,
             port=port)
     def nc_announce_tcp_condrop(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='announce_tcp_condrop')
     def nc_gruel_recv(self, d_gruel):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='gruel_recv',
             d_gruel=d_gruel)
     def nc_please_tcp_boot(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='please_tcp_boot')
     #
     def _engine_raise_server(self):

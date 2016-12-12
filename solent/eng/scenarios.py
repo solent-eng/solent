@@ -159,7 +159,7 @@ def scenario_basic_nearcast_example(engine):
                     l=self,
                     s="reached the important turn")
                 self.orb.nearcast(
-                    cog_h=self.cog_h,
+                    cog=self,
                     message_h='nearcast_note',
                     field_a='text in a',
                     field_b='text in b')
@@ -256,7 +256,7 @@ def scenario_broadcast_listen(engine):
                 cb_on_line=self._broadcast_on_line)
         def _broadcast_on_line(self, line):
             self.orb.nearcast(
-                cog_h=self.cog_h,
+                cog=self,
                 message_h='received_from_network',
                 data=line)
         def on_start_listener(self, ip, port):
@@ -290,7 +290,7 @@ def scenario_broadcast_listen(engine):
                     l=self,
                     s='starting listener')
                 self.orb.nearcast(
-                    cog_h=self.cog_h,
+                    cog=self,
                     message_h='start_listener',
                     ip=net_addr,
                     port=net_port)
@@ -369,7 +369,7 @@ def scenario_broadcast_listen_and_unlisten(engine):
                 cb_on_line=self._broadcast_on_line)
         def _broadcast_on_line(self, line):
             self.orb.nearcast(
-                cog_h=self.cog_h,
+                cog=self,
                 message_h='received_from_network',
                 data=line)
         def on_start_listener(self, ip, port):
@@ -403,7 +403,7 @@ def scenario_broadcast_listen_and_unlisten(engine):
                     l=self,
                     s='starting listener')
                 self.orb.nearcast(
-                    cog_h=self.cog_h,
+                    cog=self,
                     message_h='start_listener',
                     ip=net_addr,
                     port=net_port)
@@ -412,7 +412,7 @@ def scenario_broadcast_listen_and_unlisten(engine):
                     l=self,
                     s='stopping listener')
                 self.orb.nearcast(
-                    cog_h=self.cog_h,
+                    cog=self,
                     message_h='stop_listener')
     #
     # We are going to create a snoop here. This one logs nearcast messages as
@@ -566,7 +566,7 @@ def scenario_multiple_tcp_servers(engine):
                     l=self,
                     s='starting server %s'%spin_h)
                 self.orb.nearcast(
-                    cog_h=self.cog_h,
+                    cog=self,
                     message_h='start_echo_server',
                     spin_h=spin_h,
                     ip=ip,
@@ -643,7 +643,7 @@ def scenario_close_tcp_servers(engine):
                     l=self,
                     s='starting server %s'%spin_h)
                 self.orb.nearcast(
-                    cog_h=self.cog_h,
+                    cog=self,
                     message_h='start_echo_server',
                     spin_h=spin_h,
                     ip=ip,
@@ -654,7 +654,7 @@ def scenario_close_tcp_servers(engine):
                     l=self,
                     s='stopping server %s'%spin_h)
                 self.orb.nearcast(
-                    cog_h=self.cog_h,
+                    cog=self,
                     message_h='stop_echo_server',
                     spin_h=spin_h)
             if self.turn_counter == 25:

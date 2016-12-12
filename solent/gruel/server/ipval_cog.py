@@ -38,13 +38,13 @@ class IpvalCog(object):
     def on_announce_tcp_connect(self, ip, port):
         if self.ip_validator.is_ok(ip):
             self.orb.nearcast(
-                cog_h=self.cog_h,
+                cog=self,
                 message_h='nearnote',
                 s='confirm that %s is ok'%(ip))
         else:
             log('invalid ip %s'%ip)
             self.orb.nearcast(
-                cog_h=self.cog_h,
+                cog=self,
                 message_h='please_tcp_boot')
 
 def ipval_cog_new(cog_h, orb, engine):

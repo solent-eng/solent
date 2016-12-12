@@ -59,7 +59,7 @@ class ReceiverCog:
     #
     def nc_ipval_add_ip(self, ip):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='ipval_add_ip',
             ip=ip)
         self.orb.cycle()
@@ -68,7 +68,7 @@ class ReceiverCog:
     #
     def nc_ipval_disable(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='ipval_disable')
         self.orb.cycle()
     def on_ipval_disable(self):
@@ -76,7 +76,7 @@ class ReceiverCog:
     #
     def nc_start_service(self, ip, port, password):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='start_service',
             ip=ip,
             port=port,
@@ -87,7 +87,7 @@ class ReceiverCog:
     #
     def nc_stop_service(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='stop_service')
         self.orb.cycle()
     def on_stop_service(self):
@@ -102,7 +102,7 @@ class ReceiverCog:
             log(l)
     def nc_announce_tcp_connect(self, ip, port):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='announce_tcp_connect',
             ip=ip,
             port=port)
@@ -119,7 +119,7 @@ class ReceiverCog:
             log(l)
     def nc_announce_tcp_condrop(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='announce_tcp_condrop')
         self.orb.cycle()
     def on_announce_tcp_condrop(self):
@@ -127,7 +127,7 @@ class ReceiverCog:
     #
     def nc_please_tcp_boot(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='please_tcp_boot')
         self.orb.cycle()
     def on_please_tcp_boot(self):
@@ -143,7 +143,7 @@ class ReceiverCog:
         self.acc_gruel_recv.append(d_gruel)
     def nc_gruel_recv(self, d_gruel):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='gruel_recv',
             d_gruel=d_gruel)
         self.orb.cycle()
@@ -158,7 +158,7 @@ class ReceiverCog:
         self.acc_gruel_send.append(payload[:])
     def nc_gruel_send(self, payload):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='gruel_send',
             payload=payload)
         self.orb.cycle()
@@ -169,7 +169,7 @@ class ReceiverCog:
         return self.acc_announce_login[-1]
     def nc_announce_login(self, max_packet_size, max_fulldoc_size):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='announce_login',
             max_packet_size=max_packet_size,
             max_fulldoc_size=max_fulldoc_size)
@@ -192,7 +192,7 @@ class ReceiverCog:
         self.acc_doc_send.append(doc)
     def nc_doc_send(self, doc):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='doc_send',
             doc=doc)
         self.orb.cycle()
@@ -205,7 +205,7 @@ class ReceiverCog:
         self.acc_heartbeat_recv.append(None)
     def nc_heartbeat_recv(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='heartbeat_recv')
         self.orb.cycle()
     #
@@ -217,7 +217,7 @@ class ReceiverCog:
         self.acc_heartbeat_send.append(None)
     def nc_heartbeat_send(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='heartbeat_send')
         self.orb.cycle()
 

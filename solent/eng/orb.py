@@ -126,31 +126,34 @@ class Orb:
         self.add_cog(
             cog=cog)
         return cog
-    def nearcast(self, cog_h, message_h, **d_fields):
+    def nearcast(self, cog, message_h, **d_fields):
         '''
         It is important that we buffer all the messages to be sequenced, and
         then actually send them out later on in distribute. Otherwise we can
         end up in a situation where actors have hijacked activity away from
         the event loop, and a starvation scenario.
         '''
+        if 'cog_h' not in dir(cog):
+            raise Exception("Looks like an invalid cog arg. Has no cog_h. %s"%(
+                str(cog)))
         if message_h not in self.nearcast_schema:
             raise Exception("Unknown message type, [%s]"%(message_h))
         mfields = self.nearcast_schema[message_h]
         if sorted(d_fields.keys()) != sorted(mfields):
             raise Exception('inconsistent fields. need %s. got %s'%(
                 str(mfields), str(d_fields.keys())))
-        self.pending.append( (cog_h, message_h, d_fields) )
+        self.pending.append( (cog, message_h, d_fields) )
     def distribute(self):
         '''
         The event loop should periodically call this. This message distributes
         pending nearcast messages from a buffer and out to the cogs.
         '''
         while self.pending:
-            (cog_h, message_h, d_fields) = self.pending.popleft()
+            (cog, message_h, d_fields) = self.pending.popleft()
             rname = 'on_%s'%(message_h)
             if self.snoop:
                 self.snoop.on_nearcast_message(
-                    cog_h=cog_h,
+                    cog_h=cog.cog_h,
                     message_h=message_h,
                     d_fields=d_fields)
             for cog in self.cogs:
@@ -159,7 +162,9 @@ class Orb:
                     try:
                         fn(**d_fields)
                     except:
-                        log('problem is %s:%s'%(cog.cog_h, rname))
+                        log('')
+                        log('!! breaking on %s:%s'%(cog.cog_h, rname))
+                        log('')
                         raise
 
 def orb_new(engine, nearcast_schema, snoop=None):

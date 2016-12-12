@@ -42,12 +42,16 @@ import sys
 
 MTU = 500
 
+class FakeCog:
+    def __init__(self):
+        self.cog_h = 'testing'
+
 def create_sid():
     return 'fake_sid_%s'%(uniq())
 
 def start_service(orb, ip, port, password):
     orb.nearcast(
-        cog_h='testing',
+        cog=FakeCog(),
         message_h='start_service',
         ip=ip,
         port=port,
@@ -56,13 +60,13 @@ def start_service(orb, ip, port, password):
 
 def stop_service(orb):
     orb.nearcast(
-        cog_h='testing',
+        cog=FakeCog(),
         message_h='stop_service')
     orb.cycle()
 
 def send_announce_tcp_connect(orb, ip, port):
     orb.nearcast(
-        cog_h='testing',
+        cog=FakeCog(),
         message_h='announce_tcp_connect',
         ip=ip,
         port=port)

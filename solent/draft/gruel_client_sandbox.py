@@ -143,12 +143,12 @@ class CogGruelClient:
     #
     def _gruel_on_connect(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='term_announce',
             s='connected!')
     def _gruel_on_condrop(self, message):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='term_announce',
             s=message)
     def _gruel_on_doc(self, doc):
@@ -246,7 +246,7 @@ class CogTerminal:
                 l=self,
                 s='key received')
             self.orb.nearcast(
-                cog_h=self.cog_h,
+                cog=self,
                 message_h='client_keystroke',
                 u=k)
     def on_def_console(self, console):
@@ -259,14 +259,14 @@ class CogTerminal:
         self.pane_announce = PaneAnnounce()
     def on_client_keystroke(self, u):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='term_plot',
             drop=0,
             rest=79,
             c=u,
             cpair=e_colpair.yellow_t)
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='term_plot',
             drop=1,
             rest=77,
@@ -339,27 +339,27 @@ class CogShell:
         o = ord(u)
         if o == KEY_ORD_ENTER:
             self.orb.nearcast(
-                cog_h=self.cog_h,
+                cog=self,
                 message_h='term_console_newline')
         elif o == KEY_ORD_BACKSPACE:
             self.orb.nearcast(
-                cog_h=self.cog_h,
+                cog=self,
                 message_h='term_console_backspace')
         else:
             self.orb.nearcast(
-                cog_h=self.cog_h,
+                cog=self,
                 message_h='term_console_send_c',
                 c=u)
     #
     def _console_announce(self, s):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='term_announce',
             s=s)
     def _console_line(self, line):
         if line == 'start':
             self.orb.nearcast(
-                cog_h=self.cog_h,
+                cog=self,
                 message_h='gruel_connect',
                 server_ip=SERVER_ADDR,
                 server_port=SERVER_PORT,
@@ -390,7 +390,7 @@ class CogPlotRandomness:
         c = chr(random.choice(range(ord('a'), ord('z')+1)))
         cpair = random.choice([e for e in e_colpair if not e.name.startswith('_')])
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='term_plot',
             drop=drop,
             rest=rest,
@@ -435,8 +435,11 @@ def wrap_eng(console):
         #orb.init_cog(CogPlotRandomness)
         orb.init_cog(CogQuitScanner)
         #
+        class FakeCog:
+            def __init__(self):
+                self.cog_h = 'prop'
         orb.nearcast(
-            cog_h='prep',
+            cog=FakeCog(),
             message_h='def_console',
             console=console)
         #

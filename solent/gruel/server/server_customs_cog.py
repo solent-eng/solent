@@ -249,27 +249,27 @@ class ServerCustomsCog:
     #
     def nc_nearnote(self, s):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='nearnote',
             s=s)
     def nc_announce_login(self, max_packet_size, max_fulldoc_size):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='announce_login',
             max_packet_size=max_packet_size,
             max_fulldoc_size=max_fulldoc_size)
     def nc_please_tcp_boot(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='please_tcp_boot')
     def nc_gruel_send(self, payload):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='gruel_send',
             payload=payload)
     def nc_doc_recv(self, doc):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='doc_recv',
             doc=doc)
 

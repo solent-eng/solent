@@ -50,7 +50,7 @@ class HeartbeaterCog(object):
                 l=self,
                 s='heartbeat_send')
             self.orb.nearcast(
-                cog_h=self.cog_h,
+                cog=self,
                 message_h='heartbeat_send')
             self.t_last_heartbeat = now
 

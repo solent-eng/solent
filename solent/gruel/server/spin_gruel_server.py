@@ -49,19 +49,19 @@ class UplinkCog:
     #
     def send_nearnote(self, s):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='nearnote',
             s=s)
     def send_start_service(self, addr, port, password):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='start_service',
             ip=addr,
             port=port,
             password=password)
     def send_stop_service(self):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='stop_service')
 
 class SpinGruelServer:
