@@ -145,8 +145,8 @@ class GridDisplay(object):
 #   :interface
 # --------------------------------------------------------
 DIR_CODE = os.path.realpath(os.path.dirname(__file__))
-DIR_FONT = os.sep.join( [DIR_CODE, 'kongtext-font'] )
-PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'kongtext.ttf'] )
+DIR_FONT = os.sep.join( [DIR_CODE, 'fonts'] )
+PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'kongtext', 'kongtext.ttf'] )
 
 CONSOLE = None
 
