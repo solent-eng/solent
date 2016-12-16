@@ -51,8 +51,8 @@ def should_construct():
     engine = engine_fake()
     nearcast_schema = nearcast_schema_new(
         i_nearcast=I_NEARCAST_EXAMPLE)
-    orb = orb_new(
-        engine=engine,
+    orb = engine.init_orb(
+        orb_h='app',
         nearcast_schema=nearcast_schema)
     #
     return True

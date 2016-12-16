@@ -90,7 +90,7 @@ T_FUNCTIONS_FOR_MESSAGES_WITH_FIELDS = Template('''    #
         self.acc_$mname.append( ($csep_fields,) )
     def nc_$mname(self, $csep_fields):
         self.orb.nearcast(
-            cog_h=self.cog_h,
+            cog=self,
             message_h='$mname',
 $equals_bits)
         self.orb.cycle()''')

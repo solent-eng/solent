@@ -57,19 +57,6 @@ if '--tty' in sys.argv:
     from solent.term import curses_console_end as console_end
     from solent.term import curses_console_start as console_start
 
-SERVER_ADDR = '127.0.0.1'
-SERVER_PORT = 4100
-SERVER_PASS = 'qweasd'
-
-LCONSOLE_ADDR = '127.0.0.1'
-LCONSOLE_PORT = 4091
-
-TAP_ADDR = '127.0.0.1'
-TAP_PORT = 4101
-
-EVENT_ADDR = '127.0.0.1'
-EVENT_PORT = 4102
-
 I_NEARCAST_SCHEMA = '''
     i message h
     i field h
@@ -77,10 +64,15 @@ I_NEARCAST_SCHEMA = '''
     message def_console
         field console
     
-    message gruel_connect
+    message instruct_gruel_connect
         field server_ip
         field server_port
         field password
+
+    message instruct_gruel_condrop
+
+    message instruct_gruel_send
+        field doc
 
     message client_keystroke
         field u
@@ -101,6 +93,126 @@ I_NEARCAST_SCHEMA = '''
         field c
         field cpair
 '''
+
+FACES_IN_THE_STREET = '''
+.-------------------------------------------------------
+They lie, the men who tell us in a loud decisive tone 
+That want is here a stranger, and that misery's unknown; 
+For where the nearest suburb and the city proper meet 
+My window-sill is level with the faces in the street -- 
+Drifting past, drifting past, 
+To the beat of weary feet -- 
+While I sorrow for the owners of those faces in the street. 
+
+And cause I have to sorrow, in a land so young and fair, 
+To see upon those faces stamped the marks of Want and Care; 
+I look in vain for traces of the fresh and fair and sweet 
+In sallow, sunken faces that are drifting through the street -- 
+Drifting on, drifting on, 
+To the scrape of restless feet; 
+I can sorrow for the owners of the faces in the street. 
+
+In hours before the dawning dims the starlight in the sky 
+The wan and weary faces first begin to trickle by, 
+Increasing as the moments hurry on with morning feet, 
+Till like a pallid river flow the faces in the street -- 
+Flowing in, flowing in, 
+To the beat of hurried feet -- 
+Ah! I sorrow for the owners of those faces in the street. 
+
+The human river dwindles when 'tis past the hour of eight, 
+Its waves go flowing faster in the fear of being late; 
+But slowly drag the moments, whilst beneath the dust and heat 
+The city grinds the owners of the faces in the street -- 
+Grinding body, grinding soul, 
+Yielding scarce enough to eat -- 
+Oh! I sorrow for the owners of the faces in the street. 
+
+And then the only faces till the sun is sinking down 
+Are those of outside toilers and the idlers of the town, 
+Save here and there a face that seems a stranger in the street, 
+Tells of the city's unemployed upon his weary beat -- 
+Drifting round, drifting round, 
+To the tread of listless feet -- 
+Ah! My heart aches for the owner of that sad face in the street. 
+
+And when the hours on lagging feet have slowly dragged away, 
+And sickly yellow gaslights rise to mock the going day, 
+Then flowing past my window like a tide in its retreat, 
+Again I see the pallid stream of faces in the street -- 
+Ebbing out, ebbing out, 
+To the drag of tired feet, 
+While my heart is aching dumbly for the faces in the street. 
+
+And now all blurred and smirched with vice the day's sad pages end, 
+For while the short `large hours' toward the longer `small hours' trend, 
+With smiles that mock the wearer, and with words that half entreat, 
+Delilah pleads for custom at the corner of the street -- 
+Sinking down, sinking down, 
+Battered wreck by tempests beat -- 
+A dreadful, thankless trade is hers, that Woman of the Street. 
+
+But, ah! to dreader things than these our fair young city comes, 
+For in its heart are growing thick the filthy dens and slums, 
+Where human forms shall rot away in sties for swine unmeet, 
+And ghostly faces shall be seen unfit for any street -- 
+Rotting out, rotting out, 
+For the lack of air and meat -- 
+In dens of vice and horror that are hidden from the street. 
+
+I wonder would the apathy of wealthy men endure 
+Were all their windows level with the faces of the Poor? 
+Ah! Mammon's slaves, your knees shall knock, your hearts in terror beat, 
+When God demands a reason for the sorrows of the street, 
+The wrong things and the bad things 
+And the sad things that we meet 
+In the filthy lane and alley, and the cruel, heartless street. 
+
+I left the dreadful corner where the steps are never still, 
+And sought another window overlooking gorge and hill; 
+But when the night came dreary with the driving rain and sleet, 
+They haunted me -- the shadows of those faces in the street, 
+Flitting by, flitting by, 
+Flitting by with noiseless feet, 
+And with cheeks but little paler than the real ones in the street. 
+
+Once I cried: `Oh, God Almighty! if Thy might doth still endure, 
+Now show me in a vision for the wrongs of Earth a cure.' 
+And, lo! with shops all shuttered I beheld a city's street, 
+And in the warning distance heard the tramp of many feet, 
+Coming near, coming near, 
+To a drum's dull distant beat, 
+And soon I saw the army that was marching down the street. 
+
+Then, like a swollen river that has broken bank and wall, 
+The human flood came pouring with the red flags over all, 
+And kindled eyes all blazing bright with revolution's heat, 
+And flashing swords reflecting rigid faces in the street. 
+Pouring on, pouring on, 
+To a drum's loud threatening beat, 
+And the war-hymns and the cheering of the people in the street. 
+
+And so it must be while the world goes rolling round its course, 
+The warning pen shall write in vain, the warning voice grow hoarse, 
+But not until a city feels Red Revolution's feet 
+Shall its sad people miss awhile the terrors of the street -- 
+The dreadful everlasting strife 
+For scarcely clothes and meat 
+In that pent track of living death -- the city's cruel street. 
+--------------------------------------------------------.'''
+
+SERVER_ADDR = '127.0.0.1'
+SERVER_PORT = 4100
+SERVER_PASS = 'qweasd'
+
+LCONSOLE_ADDR = '127.0.0.1'
+LCONSOLE_PORT = 4091
+
+TAP_ADDR = '127.0.0.1'
+TAP_PORT = 4101
+
+EVENT_ADDR = '127.0.0.1'
+EVENT_PORT = 4102
 
 KEY_ORD_BACKSPACE = 8
 KEY_ORD_ENTER = 10
@@ -127,14 +239,19 @@ class CogGruelClient:
         "Returns a boolean which is True only if there was activity."
         self.spin_gruel_client.at_turn(
             activity=activity)
-    def on_gruel_connect(self, server_ip, server_port, password):
-        self.spin_gruel_client.attempt_connection(
+    def on_instruct_gruel_connect(self, server_ip, server_port, password):
+        self.spin_gruel_client.order_connect(
             addr=server_ip,
             port=server_port,
             password=password,
             cb_connect=self._gruel_on_connect,
             cb_condrop=self._gruel_on_condrop,
             cb_doc=self._gruel_on_doc)
+    def on_instruct_gruel_condrop(self):
+        self.spin_gruel_client.order_condrop()
+    def on_instruct_gruel_send(self, doc):
+        self.spin_gruel_client.send_document(
+            doc=doc)
     #
     def on_send_something(self, text):
         pass
@@ -143,12 +260,12 @@ class CogGruelClient:
         self.orb.nearcast(
             cog=self,
             message_h='term_announce',
-            s='connected!')
+            s='connect')
     def _gruel_on_condrop(self, message):
         self.orb.nearcast(
             cog=self,
             message_h='term_announce',
-            s=message)
+            s='condrop [%s]'%(message))
     def _gruel_on_doc(self, doc):
         log('got doc! [%s]'%doc)
 
@@ -329,7 +446,7 @@ class CogShell:
                 l=self,
                 s='write quit message')
             self._console_announce(
-                s='Press ESC to quit')
+                s='Type "quit" to quit')
             self.b_first = False
     def on_client_keystroke(self, u):
         self.line_finder.accept_string(
@@ -355,13 +472,24 @@ class CogShell:
             message_h='term_announce',
             s=s)
     def _console_line(self, line):
-        if line == 'start':
+        if line in ('q', 'quit'):
+            raise SolentQuitException()
+        elif line == 'start':
             self.orb.nearcast(
                 cog=self,
-                message_h='gruel_connect',
+                message_h='instruct_gruel_connect',
                 server_ip=SERVER_ADDR,
                 server_port=SERVER_PORT,
                 password=SERVER_PASS)
+        elif line == 'stop':
+            self.orb.nearcast(
+                cog=self,
+                message_h='instruct_gruel_condrop')
+        elif line == 'send':
+            self.orb.nearcast(
+                cog=self,
+                message_h='instruct_gruel_send',
+                doc=FACES_IN_THE_STREET)
         else:
             self._console_announce(
                 s='syntax error')
@@ -395,19 +523,6 @@ class CogPlotRandomness:
             c=c,
             cpair=cpair)
 
-class CogQuitScanner:
-    # Looks out for a particular letter, and tells the app to quit when it
-    # sees it.
-    def __init__(self, cog_h, orb, engine):
-        self.cog_h = cog_h
-        self.orb = orb
-        self.engine = engine
-        #
-        self.b_first = True
-    def on_client_keystroke(self, u):
-        if ord(u) == KEY_ORD_ESC:
-            raise SolentQuitException()
-
 def wrap_eng(console):
     init_logging()
     engine = engine_new(
@@ -417,13 +532,13 @@ def wrap_eng(console):
         nearcast_schema = nearcast_schema_new(
             i_nearcast=I_NEARCAST_SCHEMA)
         orb = engine.init_orb(
+            orb_h=__name__,
             nearcast_schema=nearcast_schema)
         #
         orb.init_cog(CogGruelClient)
         orb.init_cog(CogShell)
         orb.init_cog(CogTerminal)
         #orb.init_cog(CogPlotRandomness)
-        orb.init_cog(CogQuitScanner)
         #
         class FakeCog:
             def __init__(self):

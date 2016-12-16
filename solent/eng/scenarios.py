@@ -103,6 +103,7 @@
 from solent import SolentQuitException
 from solent.eng import engine_new
 from solent.eng import orb_new
+from solent.eng import nearcast_schema_new
 from solent.eng import QuitEvent
 from solent.log import init_logging
 from solent.log import log
@@ -189,6 +190,7 @@ def scenario_basic_nearcast_example(engine):
     nearcast_schema = nearcast_schema_new(
         i_nearcast=i_nearcast)
     orb = engine.init_orb(
+        orb_h=__name__,
         nearcast_schema=nearcast_schema)
     orb.init_cog(CogSender)
     orb.init_cog(CogPrinter)
@@ -294,6 +296,7 @@ def scenario_broadcast_listen(engine):
                     port=net_port)
     #
     orb = engine.init_orb(
+        orb_h=__name__,
         nearcast_schema=nearcast_schema_new(
             i_nearcast=i_nearcast))
     orb.init_cog(CogContainsSpin)
@@ -415,6 +418,7 @@ def scenario_broadcast_listen_and_unlisten(engine):
     nearcast_schema = nearcast_schema_new(
         i_nearcast=i_nearcast)
     orb = engine.init_orb(
+        orb_h=__name__,
         nearcast_schema=nearcast_schema)
     # We are going to create a snoop here. This one logs nearcast messages as
     # they happen.
@@ -570,6 +574,7 @@ def scenario_multiple_tcp_servers(engine):
     nearcast_schema = nearcast_schema_new(
         i_nearcast=i_nearcast)
     orb = engine.init_orb(
+        orb_h=__name__,
         nearcast_schema=nearcast_schema)
     orb.init_cog(CogEvents)
     orb.init_cog(CogServerContainer)
@@ -658,6 +663,7 @@ def scenario_close_tcp_servers(engine):
     nearcast_schema = nearcast_schema_new(
         i_nearcast=i_nearcast)
     orb = engine.init_orb(
+        orb_h=__name__,
         nearcast_schema=nearcast_schema)
     orb.init_cog(CogEvents)
     orb.init_cog(CogServerContainer)

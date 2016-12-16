@@ -97,7 +97,7 @@ def should_attempt_connection():
     #
     # connection attempt
     assert 0 == len(engine.events)
-    spin_gruel_client.attempt_connection(
+    spin_gruel_client.order_connect(
         addr=addr,
         port=port,
         password='pword',
@@ -137,7 +137,7 @@ def should_return_to_dormant_on_failed_connection():
     #
     # connection attempt
     assert 0 == len(engine.events)
-    spin_gruel_client.attempt_connection(
+    spin_gruel_client.order_connect(
         addr=addr,
         port=port,
         password='pword',
@@ -186,7 +186,7 @@ def should_handle_successful_tcp_connection():
     #
     # connection attempt
     assert 0 == len(engine.events)
-    spin_gruel_client.attempt_connection(
+    spin_gruel_client.order_connect(
         addr=addr,
         port=port,
         password='pword',
@@ -228,7 +228,7 @@ def should_simulate_common_behaviour():
         engine=engine,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)
-    assert spin_gruel_client.heartbeat_interval == 1
+    assert spin_gruel_client.heartbeat_interval == 4
     #
     # other bits we'll need
     activity = activity_new()
@@ -240,7 +240,7 @@ def should_simulate_common_behaviour():
     addr = '127.0.0.1'
     port = 4098
     password = 'pword'
-    spin_gruel_client.attempt_connection(
+    spin_gruel_client.order_connect(
         addr=addr,
         port=port,
         password=password,
@@ -279,7 +279,7 @@ def should_simulate_common_behaviour():
         payload=latest_payload)
     assert d_client_login['message_h'] == 'client_login'
     assert d_client_login['password'] == password
-    assert d_client_login['heartbeat_interval'] == 1
+    assert d_client_login['heartbeat_interval'] == 4
     #
     # simulate server sending back a successful login. (first, we create
     # the kind of payload that the server would have created in this

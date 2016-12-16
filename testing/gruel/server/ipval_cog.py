@@ -44,6 +44,7 @@ def should_reject_unauthorised_ip():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=nearcast_schema)
     r = orb.init_cog(
@@ -68,6 +69,7 @@ def should_allow_authorised_ip():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=nearcast_schema)
     r = orb.init_cog(
@@ -109,6 +111,7 @@ def should_allow_any_ip():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=nearcast_schema)
     r = orb.init_cog(

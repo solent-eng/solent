@@ -112,6 +112,7 @@ def should_start_and_stop():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=nearcast_schema)
     r = orb.init_cog(
@@ -153,6 +154,7 @@ def should_handle_client_connect_and_then_boot_client():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=nearcast_schema)
     r = orb.init_cog(
@@ -211,6 +213,7 @@ def should_broadcast_incoming_message_as_gruel_in():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=nearcast_schema)
     #
@@ -284,6 +287,7 @@ def should_boot_client_when_told_to():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=nearcast_schema)
     #
@@ -330,6 +334,7 @@ def should_boot_client_when_invalid_gruel_is_received():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=nearcast_schema)
     #
@@ -390,6 +395,7 @@ def should_ignore_gruel_send_when_no_client():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=nearcast_schema)
     r = orb.init_cog(
@@ -446,6 +452,7 @@ def should_send_gruel_send_data_to_a_connected_client():
     engine = engine_fake()
     nearcast_schema = gs_nearcast_schema_new()
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=nearcast_schema)
     r = orb.init_cog(

@@ -130,21 +130,22 @@ class ServerCustomsCog:
                     s='requesting boot')
                 self.nc_please_tcp_boot()
                 self.state = ServerCustomsState.rejected
-        elif self.send_doc_q:
-            activity.mark(
-                l=self,
-                s='preparing docpart')
-            data = self.send_doc_q.popleft()
-            b_complete = 1
-            if len(data) > self.max_docpart_size:
-                self.send_doc_q.appendleft(
-                    data[self.max_docpart_size:])
-                data = data[:self.max_docpart_size]
-                b_complete = 0
-            self.nc_gruel_send(
-                payload=self.gruel_press.create_docdata_payload(
-                    data=data,
-                    b_complete=b_complete))
+        elif self.state == ServerCustomsState.authorised:
+            if self.send_doc_q:
+                activity.mark(
+                    l=self,
+                    s='preparing docpart')
+                data = self.send_doc_q.popleft()
+                b_complete = 1
+                if len(data) > self.max_docpart_size:
+                    self.send_doc_q.appendleft(
+                        data[self.max_docpart_size:])
+                    data = data[:self.max_docpart_size]
+                    b_complete = 0
+                self.nc_gruel_send(
+                    payload=self.gruel_press.create_docdata_payload(
+                        data=data,
+                        b_complete=b_complete))
     def on_announce_tcp_connect(self, ip, port):
         self._zero()
     def on_announce_tcp_condrop(self):
@@ -175,7 +176,7 @@ class ServerCustomsCog:
                 self._to_rejection('client sent server_bye. invalid.')
                 return
             elif message_h == 'heartbeat':
-                raise Exception('xxx')
+                self.nc_heartbeat_recv()
             elif message_h == 'docdata':
                 b_complete = d_gruel['b_complete']
                 data = d_gruel['data']
@@ -272,6 +273,10 @@ class ServerCustomsCog:
             cog=self,
             message_h='doc_recv',
             doc=doc)
+    def nc_heartbeat_recv(self):
+        self.orb.nearcast(
+            cog=self,
+            message_h='heartbeat_recv')
 
 def server_customs_cog_new(cog_h, orb, engine):
     ob = ServerCustomsCog(

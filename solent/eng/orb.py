@@ -63,9 +63,11 @@ class LogSnoop:
     '''
     Logs any message seen on the associated nearcast.
     '''
-    def __init__(self, nearcast_schema):
-        self.b_enabled = True
+    def __init__(self, orb, nearcast_schema):
+        self.orb = orb
         self.nearcast_schema = nearcast_schema
+        #
+        self.b_enabled = True
     def disable(self):
         self.b_enabled = False
     def at_turn(self, activity):
@@ -75,7 +77,7 @@ class LogSnoop:
             return
         def format_message():
             sb = []
-            sb.append('%s>%s'%(cog_h, message_h))
+            sb.append('[%s/%s] %s'%(self.orb.orb_h, cog_h, message_h))
             for key in self.nearcast_schema[message_h]:
                 sb.append('%s:%s'%(key, d_fields[key]))
             return '/'.join(sb)
@@ -98,9 +100,10 @@ class NetworkSnoop:
 
     This behaves like a blocking server (only one client at a time).
     '''
-    def __init__(self, engine, nearcast_schema, addr, port):
-        self.engine = engine
+    def __init__(self, orb, nearcast_schema, engine, addr, port):
+        self.orb = orb
         self.nearcast_schema = nearcast_schema
+        self.engine = engine
         self.addr = addr
         self.port = port
         #
@@ -170,7 +173,7 @@ class NetworkSnoop:
             return
         def format_message():
             sb = []
-            sb.append('%s>%s'%(cog_h, message_h))
+            sb.append('[%s/%s] %s'%(self.orb.orb_h, cog_h, message_h))
             for key in self.nearcast_schema[message_h]:
                 sb.append('%s:%s'%(key, d_fields[key]))
             return '/'.join(sb)
@@ -178,7 +181,8 @@ class NetworkSnoop:
         self.q_outbound.append(nice)
 
 class Orb:
-    def __init__(self, engine, nearcast_schema):
+    def __init__(self, orb_h, engine, nearcast_schema):
+        self.orb_h = orb_h
         self.engine = engine
         self.nearcast_schema = nearcast_schema
         #
@@ -222,13 +226,15 @@ class Orb:
     def add_network_snoop(self, addr, port):
         self.snoops.append(
             NetworkSnoop(
-                engine=self.engine,
+                orb=self,
                 nearcast_schema=self.nearcast_schema,
+                engine=self.engine,
                 addr=addr,
                 port=port))
     def add_log_snoop(self):
         self.snoops.append(
             LogSnoop(
+                orb=self,
                 nearcast_schema=self.nearcast_schema))
     def add_cog(self, cog):
         if cog in self.cogs:
@@ -240,7 +246,7 @@ class Orb:
         self.cogs.append(cog)
     def init_cog(self, construct):
         cog = construct(
-            cog_h='cog_%s_%s'%(uniq(), construct.__name__),
+            cog_h=construct.__name__,
             orb=self,
             engine=self.engine)
         self.add_cog(
@@ -296,8 +302,9 @@ class Orb:
                         log('')
                         raise
 
-def orb_new(engine, nearcast_schema):
+def orb_new(orb_h, engine, nearcast_schema):
     ob = Orb(
+        orb_h=orb_h,
         engine=engine,
         nearcast_schema=nearcast_schema)
     return ob

@@ -44,6 +44,7 @@ from .metasock import metasock_create_tcp_client
 from .metasock import metasock_create_tcp_server
 from .orb import orb_new
 
+from solent.log import hexdump_bytearray
 from solent.log import log
 from solent.util.clock import clock_new
 
@@ -65,7 +66,7 @@ class Engine(object):
         #
         self.clock = clock_new()
         self.sid_to_metasock = {}
-        self.lst_orbs = []
+        self.orbs = {}
         #
         self.activity = activity_new()
         self.b_debug_eloop = False
@@ -94,29 +95,33 @@ class Engine(object):
                     reason='engine_closing')
             except:
                 pass
-        for orb in self.lst_orbs:
+        for orb in self.orbs.values():
             try:
                 orb.close()
             except:
                 pass
-    def add_orb(self, orb):
-        if orb in self.lst_orbs:
+    def add_orb(self, orb_h, orb):
+        if orb_h in self.orbs:
+            raise Exception("Engine already has orb_h %s"%orb_h)
+        if orb in self.orbs.values():
             raise Exception("Orb is already in engine. Don't double-add.")
-        self.lst_orbs.append(orb)
-    def init_orb(self, nearcast_schema=''):
+        self.orbs[orb_h] = orb
+    def init_orb(self, orb_h, nearcast_schema):
         orb = orb_new(
+            orb_h=orb_h,
             engine=self,
             nearcast_schema=nearcast_schema)
         self.add_orb(
+            orb_h=orb_h,
             orb=orb)
         return orb
-    def del_orb(self, orb):
-        self.lst_orbs.remove(orb)
+    def del_orb(self, orb_h):
+        del self.orbs[org_h]
     def turn(self, timeout=0):
         #
         # Caller's callback
         b_any_activity_at_all = False
-        for orb in self.lst_orbs:
+        for orb in self.orbs.values():
             orb.at_turn(
                 activity=self.activity)
         lst_orb_activity = self.activity.get()

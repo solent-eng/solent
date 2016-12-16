@@ -45,7 +45,7 @@ class HeartbeaterCog(object):
         if not self.b_active:
             return
         now = self.engine.clock.now()
-        if now > self.t_last_heartbeat:
+        if now >= self.t_last_heartbeat+5:
             activity.mark(
                 l=self,
                 s='heartbeat_send')

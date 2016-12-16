@@ -53,6 +53,7 @@ def should_throw_alg_exception_if_packet_seen_before_password():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
@@ -86,6 +87,7 @@ def should_store_password_values():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
@@ -118,6 +120,7 @@ def should_boot_client_if_first_message_is_not_client_login():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
@@ -159,6 +162,7 @@ def should_boot_user_on_receipt_of_login_message_when_already_logged_in():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
@@ -202,6 +206,7 @@ def should_do_basic_login_reject():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
@@ -247,6 +252,7 @@ def should_do_successful_login_accept():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
@@ -291,6 +297,7 @@ def should_run_a_rejection_sequence():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
@@ -346,6 +353,7 @@ def should_clear_state_in_announce_connect():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
@@ -376,6 +384,7 @@ def should_buffer_a_couple_of_docs():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
@@ -451,6 +460,7 @@ def should_send_a_couple_of_docs():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(
@@ -517,6 +527,7 @@ def should_convert_heartbeat_requests_to_gruel():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     server_customs_cog = orb.init_cog(

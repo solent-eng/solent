@@ -26,6 +26,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.eng import engine_new
+from solent.eng import nearcast_schema_new
 from solent.log import init_logging
 from solent.log import log
 from solent.log import hexdump_bytearray
@@ -99,7 +100,9 @@ def operate_a_udp_broadcast_listener(engine, net_addr, net_port):
             hexdump_bytearray(
                 arr=data,
                 title='Received')
-    orb = engine.init_orb()
+    orb = engine.init_orb(
+        orb_h=__name__,
+        nearcast_schema=nearcast_schema_new(''))
     orb.init_cog(Cog)
     engine.event_loop()
 

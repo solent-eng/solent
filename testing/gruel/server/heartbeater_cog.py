@@ -55,6 +55,7 @@ def should_start_on_announce_login_and_stop_on_announce_condrop():
         mtu=engine.mtu)
     #
     orb = orb_new(
+        orb_h='app',
         engine=engine,
         nearcast_schema=gs_nearcast_schema_new())
     heartbeater_cog = orb.init_cog(
@@ -75,14 +76,14 @@ def should_start_on_announce_login_and_stop_on_announce_condrop():
     r.nc_announce_login(
         max_packet_size=1400,
         max_fulldoc_size=20000)
-    clock.inc(1)
+    clock.inc(5)
     orb.cycle()
     #
     # confirm effects: we should see a heartbeat
     assert 1 == r.count_heartbeat_send()
     #
     # scenario: more than a second passes
-    clock.inc(3)
+    clock.inc(5)
     orb.cycle()
     #
     # confirm effects: we should see a new heartbeat

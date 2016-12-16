@@ -27,6 +27,9 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from .gs_nearcast_schema import gs_nearcast_schema_new
+from .ipval_cog import ipval_cog_new
+from .heartbeater_cog import heartbeater_cog_new
+from .server_customs_cog import server_customs_cog_new
 from .tcp_server_cog import tcp_server_cog_new
 
 from solent.eng import orb_new
@@ -46,19 +49,29 @@ class UplinkCog:
         self.orb = orb
         self.engine = engine
     #
-    def send_nearnote(self, s):
+    def nc_nearnote(self, s):
         self.orb.nearcast(
             cog=self,
             message_h='nearnote',
             s=s)
-    def send_start_service(self, addr, port, password):
+    def nc_start_service(self, addr, port, password):
         self.orb.nearcast(
             cog=self,
             message_h='start_service',
             ip=addr,
             port=port,
             password=password)
-    def send_stop_service(self):
+    def nc_ipval_add_ip(self, ip):
+        self.orb.nearcast(
+            cog=self,
+            message_h='ipval_add_ip',
+            ip=ip)
+    def nc_doc_send(self, doc):
+        self.orb.nearcast(
+            cog=self,
+            message_h='doc_send',
+            doc=doc)
+    def nc_stop_service(self):
         self.orb.nearcast(
             cog=self,
             message_h='stop_service')
@@ -70,27 +83,21 @@ class SpinGruelServer:
         #
         self.b_active = False
         #
-        self.nearcast_schema = gs_nearcast_schema_new()
-        self.orb = orb_new(
-            engine=self.engine,
-            nearcast_schema=self.nearcast_schema)
+        self.orb = engine.init_orb(
+            orb_h=__name__,
+            nearcast_schema=gs_nearcast_schema_new())
         self.orb.add_log_snoop()
         #
-        self.tcp_server_cog = tcp_server_cog_new(
-            cog_h='tcp_server_cog',
-            orb=self.orb,
-            engine=engine)
-        self.orb.add_cog(
-            cog=self.tcp_server_cog)
+        # disabled because it distracts from development
+        #self.orb.init_cog(heartbeater_cog_new)
+        self.orb.init_cog(ipval_cog_new)
+        self.orb.init_cog(server_customs_cog_new)
+        self.orb.init_cog(tcp_server_cog_new)
+        self.orb.init_cog(UplinkCog)
         #
-        self.uplink = UplinkCog(
-            cog_h='uplink',
-            orb=self.orb,
-            engine=engine)
-        self.orb.add_cog(
-            cog=self.uplink)
+        self.uplink = self.orb.init_cog(UplinkCog)
         #
-        self.uplink.send_nearnote(
+        self.uplink.nc_nearnote(
             s='spin_gruel_server: nearcast_started')
     def at_turn(self, activity):
         self.orb.at_turn(
@@ -103,17 +110,23 @@ class SpinGruelServer:
             log('ERROR: server is already started')
             return
         #
-        self.uplink.send_start_service(
+        self.uplink.nc_start_service(
             addr=addr,
             port=port,
             password=password)
         self.b_active = True
+    def enable_ip(self, ip):
+        self.uplink.nc_ipval_add_ip(
+            ip=ip)
+    def send_doc(self, doc):
+        self.uplink.nc_doc_send(
+            doc=doc)
     def stop(self):
         if not self.b_active:
             log('ERROR: server is already stopped')
             return
         #
-        self.uplink.send_stop_service()
+        self.uplink.nc_stop_service()
         self.b_active = False
     #
     def on_doc_recv(self, doc):

@@ -60,6 +60,7 @@
 
 from .cs import CsMsClose, CsTcpConnect, CsTcpCondrop, CsTcpRecv, CsSubRecv
 
+from solent.log import hexdump_bytearray
 from solent.log import log
 
 from collections import deque
@@ -190,6 +191,9 @@ class Metasock(object):
         try:
             while self.send_buf:
                 payload = self.send_buf.popleft()
+                hexdump_bytearray(
+                    arr=payload,
+                    title='metasock:manage_send') # xxx
                 self.sock.send(payload)
         except:
             # When you try to do a send to a BSD socket that is in the
@@ -262,6 +266,9 @@ class Metasock(object):
             return
         #
         if self.is_it_a_tcp_client:
+            hexdump_bytearray(
+                arr=data,
+                title='** metasock client read**')
             self.cs_tcp_recv.data = data
             self.cs_tcp_recv.engine = self.engine
             self.cs_tcp_recv.client_sid = self.sid
