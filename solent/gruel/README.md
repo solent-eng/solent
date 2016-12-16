@@ -104,12 +104,9 @@ The first byte of every payload indicates a message type.
     server_bye:     u1/message_type         2
                     vs/notes
 
-    server_bye:     u1/message_type         3
-                    vs/notes
+    heartbeat:      u1/message_type         3
 
-    heartbeat:      u1/message_type         4
-
-    docpart:        u1/message_type         5
+    docpart:        u1/message_type         4
                     u1/b_completes          acts as bool. should be 0 or 1.
                     vs/payload
 ```
