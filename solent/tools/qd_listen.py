@@ -29,7 +29,7 @@ from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
 from solent.log import init_logging
 from solent.log import log
-from solent.log import hexdump_bytearray
+from solent.log import hexdump_bytes
 
 import sys
 import traceback
@@ -97,7 +97,7 @@ def operate_a_udp_broadcast_listener(engine, net_addr, net_port):
                 ip=net_addr,
                 port=net_port)
         def spin_on_data(self, data):
-            hexdump_bytearray(
+            hexdump_bytes(
                 arr=data,
                 title='Received')
     orb = engine.init_orb(

@@ -25,7 +25,7 @@
 from .gruel_schema import GruelMessageType
 
 from solent.log import log
-from solent.log import hexdump_bytearray
+from solent.log import hexdump_bytes
 
 import struct
 

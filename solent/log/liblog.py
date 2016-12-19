@@ -142,11 +142,11 @@ def hexdump_string(s, title='hexdump'):
     for c in s:
         int_buffer.append(ord(c))
     b = bytearray(int_buffer)
-    hexdump_bytearray(
+    hexdump_bytes(
         arr=b,
         title=title)
 
-def hexdump_bytearray(arr, title='hexdump'):
+def hexdump_bytes(arr, title='hexdump'):
     #
     # Awkward implementation of. Mixes up print-as-you-go (for the bytes
     # on the left) with buffer-building (for the displayable characters

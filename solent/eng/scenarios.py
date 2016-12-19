@@ -729,7 +729,9 @@ def scenario_tcp_client_cannot_connect(engine):
                 cog.at_turn(
                     activity=activity)
     orb = Orb()
-    engine.add_orb(orb)
+    engine.add_orb(
+        orb_h=__name__,
+        orb=orb)
     #
     details = { 'p': ('localhost', 1233)
               }
@@ -840,7 +842,9 @@ def scenario_tcp_client_mixed_scenarios(engine):
                 addr=addr,
                 port=port,
                 close_turn=close_turn))
-    engine.add_orb(orb)
+    engine.add_orb(
+        orb_h=__name__,
+        orb=orb)
     #
     # here we go!
     engine.event_loop()
@@ -887,7 +891,9 @@ def scenario_broadcast_post(engine):
                     activity=activity)
     orb = Orb(engine)
     orb.cogs.append(Cog(engine, orb, addr, port))
-    engine.add_orb(orb)
+    engine.add_orb(
+        orb_h=__name__,
+        orb=orb)
     engine.event_loop()
 
 def scenario_broadcast_post_with_del(engine):
@@ -942,7 +948,9 @@ def scenario_broadcast_post_with_del(engine):
                 cog.at_turn(
                     activity=activity)
     orb = Orb(engine)
-    engine.add_orb(orb)
+    engine.add_orb(
+        orb_h=__name__,
+        orb=orb)
     cog = Cog(engine, orb, addr, port)
     orb.cogs.append(cog)
     engine.event_loop()
@@ -956,7 +964,7 @@ def main():
         #
         # Comment these in or out as you want to test scenarios.
         #
-        scenario_basic_nearcast_example(engine)
+        #scenario_basic_nearcast_example(engine)
         #scenario_broadcast_listen(engine)
         #scenario_broadcast_listen_and_unlisten(engine)
         #scenario_multiple_tcp_servers(engine)
@@ -964,7 +972,7 @@ def main():
         #scenario_tcp_client_cannot_connect(engine)
         #scenario_tcp_client_mixed_scenarios(engine)
         #scenario_broadcast_post(engine)
-        #scenario_broadcast_post_with_del(engine)
+        scenario_broadcast_post_with_del(engine)
         pass
     except KeyboardInterrupt:
         pass

@@ -30,7 +30,7 @@ from solent.eng import orb_new
 from solent.lc import lc_nearcast_schema_new
 from solent.lc import spin_line_console_new
 from solent.log import log
-from solent.log import hexdump_bytearray
+from solent.log import hexdump_bytes
 from solent.util import uniq
 
 import sys

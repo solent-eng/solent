@@ -32,7 +32,7 @@ from solent.gruel import gruel_press_new
 from solent.gruel import gruel_schema_new
 from solent.gruel import spin_gruel_server_new
 from solent.log import log
-from solent.log import hexdump_bytearray
+from solent.log import hexdump_bytes
 from solent.util import uniq
 
 import sys

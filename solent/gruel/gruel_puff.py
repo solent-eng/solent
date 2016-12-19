@@ -26,7 +26,7 @@
 from .gruel_schema import Datatype
 from .gruel_schema import gmt_value_to_name
 
-from solent.log import hexdump_bytearray
+from solent.log import hexdump_bytes
 
 import struct
 

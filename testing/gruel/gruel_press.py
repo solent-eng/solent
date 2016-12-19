@@ -31,7 +31,7 @@ from testing import test
 
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_schema_new
-from solent.log import hexdump_bytearray
+from solent.log import hexdump_bytes
 from solent.log import hexdump_string
 
 import sys
@@ -59,7 +59,7 @@ def test_client_login_creation():
         password='password_value',
         heartbeat_interval=1)
     '''
-    print(hexdump_bytearray(
+    print(hexdump_bytes(
         arr=payload))
     '''
     #
@@ -79,7 +79,7 @@ def test_server_greet_creation():
     payload = gruel_press.create_server_greet_payload(
         max_packet_size=800)
     '''
-    print(hexdump_bytearray(
+    print(hexdump_bytes(
         arr=payload))
     '''
     #
@@ -99,7 +99,7 @@ def test_server_bye_creation():
     payload = gruel_press.create_server_bye_payload(
         notes='notes for server_bye')
     '''
-    print(hexdump_bytearray(
+    print(hexdump_bytes(
         arr=payload))
     '''
     #
@@ -118,7 +118,7 @@ def test_heartbeat_creation():
         message_h=message_h)
     payload = gruel_press.create_heartbeat_payload()
     '''
-    print(hexdump_bytearray(
+    print(hexdump_bytes(
         arr=payload))
     '''
     #
@@ -139,7 +139,7 @@ def test_docdata_creation():
         b_complete=1,
         data='some content for the payload block')
     '''
-    print(hexdump_bytearray(
+    print(hexdump_bytes(
         arr=payload))
     '''
     #

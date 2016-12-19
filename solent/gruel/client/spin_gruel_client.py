@@ -23,7 +23,7 @@ from solent.gruel import gruel_press_new
 from solent.gruel.gruel_schema import GruelMessageType
 from solent.gruel.gruel_schema import gmt_value_to_name
 from solent.log import log
-from solent.log import hexdump_bytearray
+from solent.log import hexdump_bytes
 from solent.util import ns
 from solent.util import uniq
 
@@ -167,7 +167,7 @@ class SpinGruelClient:
             payload=data)
         gmt = gmt_value_to_name(d_message['message_type'])
         if gmt == 'client_login':
-            hexdump_bytearray(data)
+            hexdump_bytes(data)
             raise Exception("Client should not receive client_login")
         elif gmt == 'server_greet':
             self.status = ClientStatus.streaming
@@ -191,7 +191,7 @@ class SpinGruelClient:
                 self.cb_doc(
                     doc=doc)
         else:
-            hexdump_bytearray(data)
+            hexdump_bytes(data)
             raise Exception("Unhandled message type %s"%gmt)
     #
     def _set_login_credentials(self, password):

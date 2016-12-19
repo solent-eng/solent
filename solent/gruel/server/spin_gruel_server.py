@@ -34,7 +34,7 @@ from .tcp_server_cog import tcp_server_cog_new
 
 from solent.eng import orb_new
 from solent.gruel import gruel_press_new
-from solent.log import hexdump_bytearray
+from solent.log import hexdump_bytes
 from solent.log import log
 from solent.util import ns
 from solent.util import uniq

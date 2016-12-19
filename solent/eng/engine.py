@@ -44,7 +44,8 @@ from .metasock import metasock_create_tcp_client
 from .metasock import metasock_create_tcp_server
 from .orb import orb_new
 
-from solent.log import hexdump_bytearray
+from solent import mempool_new
+from solent.log import hexdump_bytes
 from solent.log import log
 from solent.util.clock import clock_new
 
@@ -64,6 +65,7 @@ class Engine(object):
     def __init__(self, mtu):
         self.mtu = mtu
         #
+        self.mempool = mempool_new()
         self.clock = clock_new()
         self.sid_to_metasock = {}
         self.orbs = {}
@@ -171,6 +173,32 @@ class Engine(object):
         except QuitEvent as e:
             log('QuitEvent [%s]'%(e.message))
     def send(self, sid, payload):
+        '''This is called send to correspond to user intent.
+
+        In fact, the payload data goes into a buffer. The event loop will get
+        around to pushing that data to the network.
+        
+        This method makes a copy of payload. So you don't need to worry
+        about the effect of subsequent writes made to that buffer.
+
+        In short: you can call send here, know that a copy of your payload is
+        in the mail, and carry on without further concern. So long as
+        connectivity stays up, your user will get a copy of what was in
+        payload when it was supplied to this method.
+        '''
+        # --------------------------------------------------------
+        #   conversion logic from payload to sip
+        # --------------------------------------------------------
+        #
+        #   !   This is only needed whilst we are switching between the
+        #       new and old memory models.
+        #
+        sip = self.mempool.alloc(
+            size=len(payload))
+        sip.arr[:] = payload
+        # --------------------------------------------------------
+        #   standard logic
+        # --------------------------------------------------------
         #log('send sid:%s data_len:%s'%(sid, len(data)))
         ms = self._get_ms_for_sid(sid)
         if not ms.can_it_send:
@@ -178,8 +206,16 @@ class Engine(object):
         if len(payload) > self.mtu:
             raise Exception('Payload size %s is larger than mtu %s'%(
                 len(payload), self.mtu))
-        ms.accept_for_send(
-            payload=payload)
+        ms.copy_to_send_queue(
+            sip=sip)
+        # --------------------------------------------------------
+        #   cleanup of converstion logic
+        # --------------------------------------------------------
+        #
+        # This will need to go also
+        #
+        self.mempool.free(
+            sip=sip)
     def _call_select(self, timeout=0):
         "Return True or False depending on whether or not there was activity."
         sock_to_metasock = {}
@@ -295,6 +331,7 @@ class Engine(object):
         client_sid = self.create_sid()
         ms = metasock_create_accepted_tcp_client(
             engine=self,
+            mempool=self.mempool,
             sid=client_sid,
             csock=csock,
             addr=addr,
@@ -306,7 +343,13 @@ class Engine(object):
         return client_sid
     def open_broadcast_listener(self, addr, port, cb_sub_recv):
         sid = self.create_sid()
-        ms = metasock_create_broadcast_listener(self, sid, addr, port, cb_sub_recv)
+        ms = metasock_create_broadcast_listener(
+            engine=self,
+            mempool=self.mempool,
+            sid=sid,
+            addr=addr,
+            port=port,
+            cb_sub_recv=cb_sub_recv)
         self.sid_to_metasock[sid] = ms
         return sid
     def close_broadcast_listener(self, sid):
@@ -315,6 +358,7 @@ class Engine(object):
         sid = self.create_sid()
         ms = metasock_create_broadcast_sender(
             engine=self,
+            mempool=self.mempool,
             sid=sid,
             addr=addr,
             port=port)
@@ -326,6 +370,7 @@ class Engine(object):
         sid = self.create_sid()
         ms = metasock_create_tcp_server(
             engine=self,
+            mempool=self.mempool,
             sid=sid,
             addr=addr,
             port=port,
@@ -340,6 +385,7 @@ class Engine(object):
         sid = self.create_sid()
         ms = metasock_create_tcp_client(
             engine=self,
+            mempool=self.mempool,
             sid=sid,
             addr=addr,
             port=port,

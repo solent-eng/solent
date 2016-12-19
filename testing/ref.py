@@ -1,8 +1,5 @@
 #
-# lc_nearcast_schema (testing)
-#
-# // overview
-# The nearcast schema for the line console server functionality.
+# ref_store
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -24,21 +21,37 @@
 
 from testing import run_tests
 from testing import test
-from testing.eng import engine_fake
-from testing.util import clock_fake
 
-from solent.eng import activity_new
-from solent.eng import cs
-from solent.lc import lc_nearcast_schema_new
 from solent.log import log
-from solent.log import hexdump_bytes
-from solent.util import uniq
 
-import sys
+from solent import mempool_new
+from solent import ref_create
+from solent import ref_lookup
+from solent import ref_acquire
+from solent import ref_release
 
 @test
-def should_not_crash():
-    nearcast_schema = lc_nearcast_schema_new()
+def should_acquire_and_release():
+    source = 'abc'
+    ref = ref_create(
+        data=source)
+    ref_acquire(
+        ref=ref)
+    taken = ref_lookup(
+        ref=ref)
+    assert taken == source
+    #
+    # see that it gets cleaned up
+    ref_release(
+        ref=ref)
+    b_exception = False
+    try:
+        ref_lookup(
+            ref=ref)
+    except:
+        b_exception = True
+    if not b_exception:
+        raise Exception("looks like it did not get cleaed up")
     #
     return True
 

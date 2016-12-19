@@ -60,7 +60,7 @@
 
 from .cs import CsMsClose, CsTcpConnect, CsTcpCondrop, CsTcpRecv, CsSubRecv
 
-from solent.log import hexdump_bytearray
+from solent.log import hexdump_bytes
 from solent.log import log
 
 from collections import deque
@@ -110,8 +110,9 @@ class Metasock(object):
     one that has been explicitly called) because that will allow the caller
     to keep all of the cleanup logic in a single place.
     """
-    def __init__(self, engine, sid, addr, port):
+    def __init__(self, engine, mempool, sid, addr, port):
         self.engine = engine
+        self.mempool = mempool
         self.sid = sid
         self.addr = addr
         self.port = port
@@ -122,7 +123,7 @@ class Metasock(object):
         self.recv_len = None
         #
         self.can_it_send = False
-        self.send_buf = deque() # buffers payloads
+        self.send_buf = deque() # buffers sips
         #
         self.is_it_a_tcp_server = False
         self.is_it_a_tcp_client = False
@@ -183,18 +184,33 @@ class Metasock(object):
         self.cs_ms_close.message = message
         self.cb_ms_close(
             cs_ms_close=self.cs_ms_close)
-    def accept_for_send(self, payload):
-        self.send_buf.append(payload)
+    def copy_to_send_queue(self, sip):
+        self.send_buf.append(
+            self.mempool.clone(sip))
     def manage_send(self):
         if not self.can_it_send:
             raise Exception("%s is not a send sock."%self.sid)
         try:
             while self.send_buf:
-                payload = self.send_buf.popleft()
-                hexdump_bytearray(
-                    arr=payload,
-                    title='metasock:manage_send') # xxx
-                self.sock.send(payload)
+                sip = self.send_buf.popleft()
+                bb = sip.get()
+                send_size = self.sock.send(bb)
+                if send_size == len(bb):
+                    # Ideal situation: we sent the payload
+                    self.mempool.free(
+                        sip=sip)
+                    continue
+                elif 0 == send_size:
+                    # Network conjestion or slow throughput by the reader
+                    # is causing things to back up. This will happen from
+                    # time to time in normal operation.
+                    self.send_buf.appendleft(sip)
+                    break
+                else:
+                    # This is weird. Since our payload must be smaller than
+                    # the MTU size, this should never happen.
+                    raise Algorithm("Weird: partial payload send. %s of %s"%(
+                        send_size, len(bb)))
         except:
             # When you try to do a send to a BSD socket that is in the
             # process of going down, you can get an exception. This caterss
@@ -266,7 +282,7 @@ class Metasock(object):
             return
         #
         if self.is_it_a_tcp_client:
-            hexdump_bytearray(
+            hexdump_bytes(
                 arr=data,
                 title='** metasock client read**')
             self.cs_tcp_recv.data = data
@@ -291,14 +307,19 @@ class Metasock(object):
         self.cb_tcp_connect(
             cs_tcp_connect=self.cs_tcp_connect)
 
-def metasock_create_broadcast_listener(engine, sid, addr, port, cb_sub_recv):
+def metasock_create_broadcast_listener(engine, mempool, sid, addr, port, cb_sub_recv):
     log('metasock_create_broadcast_listener %s (%s:%s)'%(sid, addr, port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((addr, port))
     sock.setblocking(0)
     #
-    ms = Metasock(engine, sid, addr, port)
+    ms = Metasock(
+        engine=engine,
+        mempool=mempool,
+        sid=sid,
+        addr=addr,
+        port=port)
     ms.sock = sock
     ms.can_it_recv = True
     ms.can_it_send = False
@@ -306,7 +327,7 @@ def metasock_create_broadcast_listener(engine, sid, addr, port, cb_sub_recv):
     ms.cb_sub_recv = cb_sub_recv
     return ms
 
-def metasock_create_tcp_server(engine, sid, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
+def metasock_create_tcp_server(engine, mempool, sid, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
     log('metasock_create_tcp_server %s (%s:%s)'%(sid, addr, port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -314,7 +335,12 @@ def metasock_create_tcp_server(engine, sid, addr, port, cb_tcp_connect, cb_tcp_c
     sock.setblocking(0)
     sock.listen(0)
     #
-    ms = Metasock(engine, sid, addr, port)
+    ms = Metasock(
+        engine=engine,
+        mempool=mempool,
+        sid=sid,
+        addr=addr,
+        port=port)
     ms.sock = sock
     ms.can_it_recv = True
     ms.can_it_send = True
@@ -327,14 +353,19 @@ def metasock_create_tcp_server(engine, sid, addr, port, cb_tcp_connect, cb_tcp_c
     log('// cb_connect %s'%(ms.cb_tcp_connect.__doc__))
     return ms
 
-def metasock_create_broadcast_sender(engine, sid, addr, port):
+def metasock_create_broadcast_sender(engine, mempool, sid, addr, port):
     log('metasock_create_broadcast_sender %s (%s:%s)'%(sid, addr, port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  
     sock.connect((addr, port))
     #
-    ms = Metasock(engine, sid, addr, port)
+    ms = Metasock(
+        engine=engine,
+        mempool=mempool,
+        sid=sid,
+        addr=addr,
+        port=port)
     ms.sock = sock
     ms.can_it_recv = False
     ms.can_it_send = True
@@ -342,13 +373,18 @@ def metasock_create_broadcast_sender(engine, sid, addr, port):
     ms.is_it_a_tcp_client = False
     return ms
 
-def metasock_create_tcp_client(engine, sid, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
+def metasock_create_tcp_client(engine, mempool, sid, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
     log('metasock_create_tcp_client %s (%s:%s)'%(sid, addr, port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setblocking(0)
     sock.connect_ex( (addr, port) )
     #
-    ms = Metasock(engine, sid, addr, port)
+    ms = Metasock(
+        engine=engine,
+        mempool=mempool,
+        sid=sid,
+        addr=addr,
+        port=port)
     ms.sock = sock
     ms.can_it_recv = True
     ms.can_it_send = True
@@ -361,11 +397,16 @@ def metasock_create_tcp_client(engine, sid, addr, port, cb_tcp_connect, cb_tcp_c
     ms.cb_tcp_recv = cb_tcp_recv
     return ms
 
-def metasock_create_accepted_tcp_client(engine, sid, csock, addr, port, cb_tcp_condrop, cb_tcp_recv, cb_ms_close):
+def metasock_create_accepted_tcp_client(engine, mempool, sid, csock, addr, port, cb_tcp_condrop, cb_tcp_recv, cb_ms_close):
     """This is in the chain of functions that get called after a tcp
     server accepts a client connection."""
     log('metasock_create_accepted_tcp_client %s (%s:%s)'%(sid, addr, port))
-    ms = Metasock(engine, sid, addr, port)
+    ms = Metasock(
+        engine=engine,
+        mempool=mempool,
+        sid=sid,
+        addr=addr,
+        port=port)
     ms.sock = csock
     ms.can_it_recv = True
     ms.can_it_send = True
