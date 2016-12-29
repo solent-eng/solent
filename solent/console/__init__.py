@@ -23,8 +23,7 @@ from .glyph import glyph_new
 from .keystream import keystream_new
 from .scope import scope_new
 
-from .curses_console import curses_console_start
-from .curses_console import curses_console_end
+from .curses_console import curses_console_new
 
 from .enumerations import e_boxtype
 from .enumerations import e_colpair

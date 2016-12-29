@@ -46,9 +46,12 @@ import traceback
 # This weirdness allows the tty version to run for people who do not have
 # pygame available.
 if '--win' in sys.argv:
-    from solent.winconsole.window_console import window_console_start, window_console_end
-if '--tty' in sys.argv:
-    from solent.console.curses_console import curses_console_start, curses_console_end
+    from solent.winconsole.window_console import window_console_new as console_new
+elif '--tty' in sys.argv:
+    from solent.console.curses_console import curses_console_new as console_new
+else:
+    print('ERROR: specify --tty or --win')
+    sys.exit(1)
 
 ESC_KEY_ORD = 27
 
@@ -480,22 +483,13 @@ def husk_new(console):
 #   :rest
 # --------------------------------------------------------
 def main():
-    if '--tty' in sys.argv:
-        fn_device_start = curses_console_start
-        fn_device_end = curses_console_end
-    elif '--win' in sys.argv:
-        fn_device_start = window_console_start
-        fn_device_end = window_console_end
-    else:
-        print('ERROR: specify --tty or --win')
-        sys.exit(1)
+    console = None
     try:
-        console = fn_device_start(
+        console = console_new(
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
         husk = husk_new(
             console=console)
-        #
         #
         # event loop
         husk.event_loop()
@@ -504,7 +498,8 @@ def main():
     except:
         traceback.print_exc()
     finally:
-        fn_device_end()
+        if None != console:
+            console.close()
 
 if __name__ == '__main__':
     main()

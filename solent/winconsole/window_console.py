@@ -27,6 +27,7 @@ from solent.console import console_new
 from solent.console import e_colpair
 from solent.console import e_keycode
 from solent.console import keystream_new
+from solent.log import log
 
 from solent.exceptions import SolentQuitException
 
@@ -74,44 +75,15 @@ def _window_console_translate_key(u):
         return e_keycode.backspace.value
     return u
 
-Q_ASYNC_GETC = deque()
-def pygame_async_getc():
-    global Q_ASYNC_GETC
-    for itm in pygame.event.get():
-        Q_ASYNC_GETC.append(itm)
-    while True:
-        if not Q_ASYNC_GETC:
-            return None
-        ev = Q_ASYNC_GETC.popleft()
-        if ev.type == pygame.QUIT:
-            raise SolentQuitException()
-        if not ev.type == pygame.KEYDOWN:
-            continue
-        c = _window_console_translate_key(
-            u=ev.unicode)
-        return c
-
-def pygame_block_getc():
-    while True:
-        ev = pygame.event.wait()
-        #
-        if ev.type == pygame.QUIT:
-            raise SolentQuitException()
-        if not ev.type == pygame.KEYDOWN:
-            continue
-        #
-        c = _window_console_translate_key(
-            u=ev.unicode)
-        return c
-
 class GridDisplay(object):
-    def __init__(self, internal_cgrid, font):
-        self.internal_cgrid = internal_cgrid
+    def __init__(self, width, height, font):
+        self.width = width
+        self.height = height
         self.font = font
         #
-        width = internal_cgrid.width
-        height = internal_cgrid.height
-        #
+        self.internal_cgrid = cgrid_new(
+            width=width,
+            height=height)
         (self.cwidth, self.cheight) = font.size('@')
         #
         dim = (width * self.cwidth, height * self.cheight)
@@ -139,42 +111,127 @@ class GridDisplay(object):
             rest_pixels = self.cheight*int(idx/self.internal_cgrid.width)
             self.screen.blit(label, (drop_pixels, rest_pixels))
         pygame.display.flip()
+    def coords_from_mousepos(self, xpos, ypos):
+        '''
+        From the supplied pixel dimensions, return the drop and rest of the
+        selected grid reference.
+        '''
+        rest = int(xpos / self.cwidth)
+        drop = int(ypos / self.cheight)
+        return (drop, rest)
 
 
 # --------------------------------------------------------
 #   :interface
 # --------------------------------------------------------
+class WindowConsole:
+    def __init__(self, width, height, font):
+        self.width = width
+        self.height = height
+        self.font = font
+        #
+        self.grid_display = GridDisplay(
+            width=width,
+            height=height,
+            font=font)
+        #
+        self.keystream = keystream_new(
+            cb_async_getc=self.async_getc,
+            cb_block_getc=self.block_getc)
+        #
+        self.event_queue = deque()
+        #
+        # (drop, rest)
+        self.last_mousedown = None
+        self.last_mouseup = None
+    def on_close(self):
+        pygame.quit()
+    def get_last_mousedown(self):
+        return self.last_mousedown
+    def get_last_mouseup(self):
+        return self.last_mouseup
+    def get_grid_display(self):
+        return self.grid_display
+    def get_keystream(self):
+        return self.keystream
+    def async_getc(self):
+        for itm in pygame.event.get():
+            self.event_queue.append(itm)
+        # The reason this is a while loop is to get through event characters
+        # we don't care about. i.e. it's a different reason for a while loop
+        # in the same position in block_getc. (At first glance, it looks
+        # trivial to merge them, but it's not)
+        while True:
+            if not self.event_queue:
+                return None
+            ev = self.event_queue.popleft()
+            if ev.type == pygame.QUIT:
+                raise SolentQuitException()
+            if ev.type == pygame.MOUSEBUTTONDOWN:
+                (xpos, ypos) = ev.pos
+                self.last_mousedown = self.grid_display.coords_from_mousepos(
+                    xpos=xpos,
+                    ypos=ypos)
+                return e_keycode.mousedown
+            if ev.type == pygame.MOUSEBUTTONUP:
+                (xpos, ypos) = ev.pos
+                self.last_mouseup = self.grid_display.coords_from_mousepos(
+                    xpos=xpos,
+                    ypos=ypos)
+                return e_keycode.mouseup
+            if not ev.type == pygame.KEYDOWN:
+                continue
+            #
+            c = _window_console_translate_key(
+                u=ev.unicode)
+            return c
+    def block_getc(self):
+        while True:
+            if self.event_queue:
+                ev = self.event_queue.popleft()
+            else:
+                ev = pygame.event.wait()
+            #
+            if ev.type == pygame.QUIT:
+                raise SolentQuitException()
+            if ev.type == pygame.MOUSEBUTTONDOWN:
+                (xpos, ypos) = ev.pos
+                self.last_mousedown = self.grid_display.coords_from_mousepos(
+                    xpos=xpos,
+                    ypos=ypos)
+                return e_keycode.mousedown
+            if ev.type == pygame.MOUSEBUTTONUP:
+                (xpos, ypos) = ev.pos
+                self.last_mouseup = self.grid_display.coords_from_mousepos(
+                    xpos=xpos,
+                    ypos=ypos)
+                return e_keycode.mouseup
+            if not ev.type == pygame.KEYDOWN:
+                continue
+            #
+            c = _window_console_translate_key(
+                u=ev.unicode)
+            return c
+
 DIR_CODE = os.path.realpath(os.path.dirname(__file__))
 DIR_FONT = os.sep.join( [DIR_CODE, 'fonts'] )
 PATH_TTF_FONT = os.sep.join( [DIR_FONT, 'kongtext', 'kongtext.ttf'] )
 
-CONSOLE = None
-
-def window_console_start(width, height):
-    global CONSOLE
-    if None != CONSOLE:
-        raise Exception('window_console is singleton. (cannot restart)')
-    #
-    cgrid = cgrid_new(
-        width=width,
-        height=height)
+def window_console_new(width, height):
     pygame.font.init()
     font = pygame.font.Font(PATH_TTF_FONT, 16)
-    #
-    keystream = keystream_new(
-        cb_async_getc=pygame_async_getc,
-        cb_block_getc=pygame_block_getc)
-    grid_display = GridDisplay(
-        internal_cgrid=cgrid,
-        font=font)
-    CONSOLE = console_new(
-        keystream=keystream,
-        grid_display=grid_display,
+    window_console = WindowConsole(
         width=width,
-        height=height)
-    return CONSOLE
-
-def window_console_end():
-    CONSOLE = None
-    pygame.quit()
+        height=height,
+        font=font)
+    #
+    ob = console_new(
+        keystream=window_console.get_keystream(),
+        grid_display=window_console.get_grid_display(),
+        width=width,
+        height=height,
+        cb_last_mouseup=window_console.get_last_mouseup,
+        cb_last_mousedown=window_console.get_last_mousedown,
+        cb_close=window_console.on_close)
+    return ob
 

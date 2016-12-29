@@ -217,10 +217,10 @@ class GridDisplay(object):
 # --------------------------------------------------------
 CONSOLE = None
 
-def curses_console_start(width, height):
+def curses_console_new(width, height):
     global CONSOLE
     if None != CONSOLE:
-        raise Exception('curses console is singleton. (cannot restart)')
+        raise Exception('curses console is singleton. (cannot run more than one)')
     cgrid = cgrid_new(
         width=width,
         height=height)
@@ -239,16 +239,18 @@ def curses_console_start(width, height):
     # Emphasis: see note about regarding keystream: ordering is significant.
     screen_curses_init()
     #
+    def on_close():
+        screen_curses_exit()
+        #
+        global CONSOLE
+        CONSOLE = None
     CONSOLE = console_new(
         keystream=keystream,
         grid_display=grid_display,
         width=width,
-        height=height)
+        height=height,
+        cb_last_mouseup=lambda: None,
+        cb_last_mousedown=lambda: None,
+        cb_close=on_close)
     return CONSOLE
-
-def curses_console_end():
-    screen_curses_exit()
-    #
-    global CONSOLE
-    CONSOLE = None
 

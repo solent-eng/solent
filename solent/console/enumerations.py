@@ -49,6 +49,10 @@ class e_boxtype(enum.Enum):
     stop          = 2004
 
 class e_keycode(enum.Enum):
+    # repurposing these values for mouse events
+    mousedown     = chr(0x1)  # in ascii this is start-of-heading
+    mouseup       = chr(0x2)  # in ascii this is end-of-heading
+    #
     backspace     = chr(0x8)
     newline       = chr(0xa)
 

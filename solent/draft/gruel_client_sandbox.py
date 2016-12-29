@@ -47,15 +47,13 @@ import time
 import traceback
 
 # want this to work for people who do not have pygame installed
-try:
-    from solent.winconsole import window_console_end as console_end
-    from solent.winconsole import window_console_start as console_start
-except:
-    from solent.console import curses_console_end as console_end
-    from solent.console import curses_console_start as console_start
 if '--tty' in sys.argv:
-    from solent.console import curses_console_end as console_end
-    from solent.console import curses_console_start as console_start
+    from solent.console import curses_console_new as console_new
+else:
+    try:
+        from solent.winconsole import window_console_new as console_new
+    except:
+        from solent.console import curses_console_new as console_new
 
 I_NEARCAST_SCHEMA = '''
     i message h
@@ -560,16 +558,15 @@ def wrap_eng(console):
 
 def main():
     try:
-        console = console_start(
+        console = console_new(
             width=80,
             height=25)
-
         wrap_eng(
             console=console)
     except:
         traceback.print_exc()
     finally:
-        console_end()
+        console.close()
 
 if __name__ == '__main__':
     main()

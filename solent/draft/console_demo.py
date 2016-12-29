@@ -1,8 +1,9 @@
 #
-# basic_term_demo
+# console_demo
 #
 # // overview
-# created to demonstrate async functionality
+# created to demonstrate simple uses cases of the console, including
+# asynchronous interaction.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -24,16 +25,22 @@
 
 from solent.console import e_colpair
 from solent.console import cgrid_new
-from solent.console import curses_console_start
-from solent.console import curses_console_end
-from solent.winconsole import window_console_start
-from solent.winconsole import window_console_end
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
 
 import sys
 import time
 import traceback
+
+# This weirdness allows the tty version to run for people who do not have
+# pygame available.
+if '--win' in sys.argv:
+    from solent.winconsole.window_console import window_console_new as console_new
+elif '--tty' in sys.argv:
+    from solent.console.curses_console import curses_console_new as console_new
+else:
+    print('ERROR: specify --tty or --win')
+    sys.exit(1)
 
 ESC_KEY_ORD = 27
 
@@ -78,17 +85,9 @@ def event_loop(console):
         t += 1
 
 def main():
-    if '--tty' in sys.argv:
-        fn_device_start = curses_console_start
-        fn_device_end = curses_console_end
-    elif '--win' in sys.argv:
-        fn_device_start = window_console_start
-        fn_device_end = window_console_end
-    else:
-        print('ERROR: specify --tty or --win')
-        sys.exit(1)
+    console = None
     try:
-        console = fn_device_start(
+        console = console_new(
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
         event_loop(
@@ -98,7 +97,8 @@ def main():
     except:
         traceback.print_exc()
     finally:
-        fn_device_end()
+        if None != console:
+            console.close()
     
 if __name__ == '__main__':
     main()

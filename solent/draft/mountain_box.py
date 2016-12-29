@@ -39,8 +39,7 @@ from solent.console import e_boxtype
 from solent.console import cgrid_new
 from solent.console import cursor_new
 from solent.util import uniq
-from solent.winconsole import window_console_end
-from solent.winconsole import window_console_start
+from solent.winconsole import window_console_new
 
 from collections import deque
 import os
@@ -420,8 +419,9 @@ def husk_new(console):
 #   :rest
 # --------------------------------------------------------
 def main():
+    console = None
     try:
-        console = window_console_start(
+        console = window_console_new(
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
         husk = husk_new(
@@ -435,7 +435,8 @@ def main():
     except:
         traceback.print_exc()
     finally:
-        window_console_end()
+        if console != None:
+            console.close()
 
 if __name__ == '__main__':
     main()

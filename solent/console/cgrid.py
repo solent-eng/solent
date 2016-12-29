@@ -27,6 +27,7 @@
 from .enumerations import e_colpair
 
 import sys
+import types
 
 DEFAULT_CPAIR = e_colpair.white_t
 
@@ -64,7 +65,11 @@ class CellGrid(object):
         for spot in self.spots:
             spot.c = ' '
             spot.cpair = DEFAULT_CPAIR
+    def get(self, drop, rest):
+        return self.spots[ (drop*self.width) + rest ]
     def put(self, drop, rest, s, cpair):
+        if type(s) != str:
+            s = str(s)
         offset = int((int(drop)*self.width) + int(rest))
         for idx, c in enumerate(s):
             spot = self.spots[offset+idx]
