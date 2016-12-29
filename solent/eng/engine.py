@@ -98,10 +98,7 @@ class Engine(object):
             except:
                 pass
         for orb in self.orbs.values():
-            try:
-                orb.close()
-            except:
-                pass
+            orb.close()
     def add_orb(self, orb_h, orb):
         if orb_h in self.orbs:
             raise Exception("Engine already has orb_h %s"%orb_h)

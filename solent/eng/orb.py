@@ -68,6 +68,8 @@ class LogSnoop:
         self.nearcast_schema = nearcast_schema
         #
         self.b_enabled = True
+    def close(self):
+        pass
     def disable(self):
         self.b_enabled = False
     def at_turn(self, activity):
@@ -189,6 +191,13 @@ class Orb:
         self.snoops = []
         self.cogs = []
         self.pending = deque()
+    def close(self):
+        for snoop in self.snoops:
+            if 'close' in dir(snoop):
+                snoop.close()
+        for cog in self.cogs:
+            if 'close' in dir(cog):
+                cog.close()
     def at_turn(self, activity):
         #
         self.distribute()
