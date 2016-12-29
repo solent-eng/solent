@@ -33,7 +33,7 @@
 
 from .meep import meep_new
 
-from solent.term import e_colpair
+from solent.console import e_colpair
 
 import types
 

@@ -35,8 +35,8 @@ from solent.gruel import gruel_schema_new
 from solent.gruel import spin_gruel_client_new
 from solent.log import init_logging
 from solent.log import log
-from solent.term import e_colpair
-from solent.term import cgrid_new
+from solent.console import e_colpair
+from solent.console import cgrid_new
 from solent.util import line_finder_new
 
 from collections import deque
@@ -48,14 +48,14 @@ import traceback
 
 # want this to work for people who do not have pygame installed
 try:
-    from solent.winterm import window_console_end as console_end
-    from solent.winterm import window_console_start as console_start
+    from solent.winconsole import window_console_end as console_end
+    from solent.winconsole import window_console_start as console_start
 except:
-    from solent.term import curses_console_end as console_end
-    from solent.term import curses_console_start as console_start
+    from solent.console import curses_console_end as console_end
+    from solent.console import curses_console_start as console_start
 if '--tty' in sys.argv:
-    from solent.term import curses_console_end as console_end
-    from solent.term import curses_console_start as console_start
+    from solent.console import curses_console_end as console_end
+    from solent.console import curses_console_start as console_start
 
 I_NEARCAST_SCHEMA = '''
     i message h

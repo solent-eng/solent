@@ -34,13 +34,13 @@ from solent.draft.turnlib.rogue_interaction import rogue_interaction_new
 from solent.draft.turnlib.rogue_plane import rogue_plane_new
 from solent.draft.turnlib.initiative import initiative_new
 from solent.exceptions import SolentQuitException
-from solent.term import e_colpair
-from solent.term import e_boxtype
-from solent.term import cgrid_new
-from solent.term import cursor_new
+from solent.console import e_colpair
+from solent.console import e_boxtype
+from solent.console import cgrid_new
+from solent.console import cursor_new
 from solent.util import uniq
-from solent.winterm import window_console_end
-from solent.winterm import window_console_start
+from solent.winconsole import window_console_end
+from solent.winconsole import window_console_start
 
 from collections import deque
 import os

@@ -30,10 +30,10 @@ from .turnlib.rogue_interaction import rogue_interaction_new
 from .turnlib.rogue_plane import rogue_plane_new
 from .turnlib.initiative import initiative_new
 
-from solent.term import e_boxtype
-from solent.term import e_colpair
-from solent.term import cgrid_new
-from solent.term import cursor_new
+from solent.console import e_boxtype
+from solent.console import e_colpair
+from solent.console import cgrid_new
+from solent.console import cursor_new
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
 
@@ -46,9 +46,9 @@ import traceback
 # This weirdness allows the tty version to run for people who do not have
 # pygame available.
 if '--win' in sys.argv:
-    from solent.winterm.window_console import window_console_start, window_console_end
+    from solent.winconsole.window_console import window_console_start, window_console_end
 if '--tty' in sys.argv:
-    from solent.term.curses_console import curses_console_start, curses_console_end
+    from solent.console.curses_console import curses_console_start, curses_console_end
 
 ESC_KEY_ORD = 27
 

@@ -22,11 +22,11 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.term import cgrid_new
-from solent.term import console_new
-from solent.term import e_colpair
-from solent.term import e_keycode
-from solent.term import keystream_new
+from solent.console import cgrid_new
+from solent.console import console_new
+from solent.console import e_colpair
+from solent.console import e_keycode
+from solent.console import keystream_new
 
 from solent.exceptions import SolentQuitException
 

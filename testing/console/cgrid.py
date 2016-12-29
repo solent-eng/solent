@@ -19,8 +19,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.term import cgrid_new
-from solent.term import e_colpair
+from solent.console import cgrid_new
+from solent.console import e_colpair
 
 from testing import run_tests
 from testing import test

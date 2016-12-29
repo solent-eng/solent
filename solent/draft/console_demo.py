@@ -22,12 +22,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.term import e_colpair
-from solent.term import cgrid_new
-from solent.term import curses_console_start
-from solent.term import curses_console_end
-from solent.winterm import window_console_start
-from solent.winterm import window_console_end
+from solent.console import e_colpair
+from solent.console import cgrid_new
+from solent.console import curses_console_start
+from solent.console import curses_console_end
+from solent.winconsole import window_console_start
+from solent.winconsole import window_console_end
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
 

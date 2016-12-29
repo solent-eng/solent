@@ -1,5 +1,5 @@
 #
-# enumerations for terminal package
+# enumerations
 #
 # // overview
 # constants for the term package

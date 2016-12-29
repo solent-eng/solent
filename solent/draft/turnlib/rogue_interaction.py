@@ -24,10 +24,10 @@
 
 from .logbook import logbook_new
 
-from solent.term import e_colpair
-from solent.term import cgrid_new
-from solent.term import glyph_new
-from solent.term import scope_new
+from solent.console import e_colpair
+from solent.console import cgrid_new
+from solent.console import glyph_new
+from solent.console import scope_new
 from solent.exceptions import SolentQuitException
 
 from collections import deque
