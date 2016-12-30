@@ -1,3 +1,31 @@
+#
+# spin_term
+#
+# // overview
+# This provides an idea of a 'standard' terminal that can be used in front of
+# solent apps. Note that it is not the same thing as a console. The terminal
+# acts as a layer similar to a TTY that sits between a system and a console.
+# It provides features such as gollop-selection (press escape and use q-c to
+# navigate around, and s to select).
+#
+# // license
+# Copyright 2016, Free Software Foundation.
+#
+# This file is part of Solent.
+#
+# Solent is free software: you can redistribute it and/or modify it under the
+# terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Solent is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Solent. If not, see <http://www.gnu.org/licenses/>.
+
 from solent.console import cgrid_new
 from solent.console import e_colpair
 from solent.console import e_keycode
@@ -89,7 +117,8 @@ class SpinTerm:
         self.mouse_coords = None
     #
     def close(self):
-        self.console.close()
+        if None != self.console:
+            self.console.close()
     def at_turn(self, activity):
         if self.mode == MODE_NONE:
             return
@@ -141,6 +170,14 @@ class SpinTerm:
         self.mode = MODE_SELECT
         self.select_cursor_on = True
         self.select_cursor_t100 = time.time() * 100
+    def clear(self):
+        self.cgrid.clear()
+    def write(self, drop, rest, s, cpair):
+        self.cgrid.put(
+            drop=drop,
+            rest=rest,
+            s=s,
+            cpair=cpair)
     def accept_key(self, keycode):
         '''
         By making this an exposed command, we can allow the console to be used
@@ -157,11 +194,6 @@ class SpinTerm:
             else:
                 # we let the user navigate the cursor using arrow keys, vi
                 # keys, gollop keys.
-                self.cgrid.put(
-                    drop=0,
-                    rest=0,
-                    s='%4s %4s'%(keycode, chr(keycode)),
-                    cpair=e_colpair.green_t)
                 b_moved = False
                 # standard navigation
                 if keycode in (KEY_q, KEY_a, KEY_z, KEY_y, KEY_h, KEY_b):
@@ -205,21 +237,6 @@ class SpinTerm:
                 self.cb_keycode(
                     keycode=keycode)
     def refresh_console(self):
-        self.cgrid.put(
-            drop=2,
-            rest=0,
-            s=str(time.time()),
-            cpair=e_colpair.green_t)
-        self.cgrid.put(
-            drop=3,
-            rest=0,
-            s=self.mode,
-            cpair=e_colpair.green_t)
-        self.cgrid.put(
-            drop=4,
-            rest=0,
-            s=str(self.mouse_coords),
-            cpair=e_colpair.green_t)
         if self.mode == MODE_NONE:
             pass
         elif self.mode == MODE_SELECT:

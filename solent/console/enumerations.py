@@ -50,9 +50,22 @@ class e_boxtype(enum.Enum):
 
 class e_keycode(enum.Enum):
     # repurposing these values for mouse events
-    mousedown     = chr(0x1)  # in ascii this is start-of-heading
-    mouseup       = chr(0x2)  # in ascii this is end-of-heading
+    mousedown     = 0x1  # in ascii this is start-of-heading
+    mouseup       = 0x2  # in ascii this is end-of-heading
     #
-    backspace     = chr(0x8)
-    newline       = chr(0xa)
+    backspace     = 0x8
+    tab           = 0x9
+    newline       = 0xa
+    #
+    Q             = 0x51
+
+def key(name):
+    '''
+    Convenience function. This saves us having to type e_keycode.blah.value.
+    The 'dot value' bit is a hassle, and I keep forgetting to do it.
+    '''
+    l = dir(e_keycode)
+    if name not in l:
+        raise Exception("e_keycode.%s does not exist"%(name))
+    return getattr(e_keycode, name).value
 

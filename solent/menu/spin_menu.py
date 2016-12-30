@@ -1,0 +1,72 @@
+#
+# spin_menu
+#
+# // overview
+# Provides an easy mechanism for managing a menu.
+#
+# // license
+# Copyright 2016, Free Software Foundation.
+#
+# This file is part of Solent.
+#
+# Solent is free software: you can redistribute it and/or modify it under the
+# terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Solent is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Solent. If not, see <http://www.gnu.org/licenses/>.
+
+from solent.console import cgrid_new
+
+from collections import OrderedDict as od
+
+class SpinMenu:
+    def __init__(self, height, width, cb_display_clear, cb_display_write):
+        self.height = height
+        self.width = width
+        self.cb_display_clear = cb_display_clear
+        self.cb_display_write = cb_display_write
+        #
+        self.title = ''
+        self.cgrid = cgrid_new(
+            width=width,
+            height=height)
+        self.d_menu = od()
+    def set_title(self, text):
+        self.title = text
+    def add_menu_item(self, key, text, cb_select):
+        '''
+        cb_select takes no arguments. (You will probably want to use a lambda to set it up)
+        '''
+        key = str(key)
+        if len(key) != 1:
+            raise Exception('weird menu key [%s]'%key)
+        if key in self.d_menu:
+            raise Exception('key %s is already in menu')
+        self.d_menu[key] = text
+    def render_menu(self):
+        self.cb_display_clear()
+        self.cb_display_write(
+            drop=0,
+            rest=0,
+            s=self.title)
+        for idx, (key, text) in enumerate(self.d_menu.items()):
+            self.cb_display_write(
+                drop=idx+2,
+                rest=0,
+                s="[%s] %s"%(key, text))
+
+def spin_menu_new(height, width, cb_display_clear, cb_display_write):
+    ob = SpinMenu(
+        height=height,
+        width=width,
+        cb_display_clear=cb_display_clear,
+        cb_display_write=cb_display_write)
+    return ob
+

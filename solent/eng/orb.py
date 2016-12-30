@@ -50,6 +50,7 @@
 from .activity import activity_new
 from .test_receiver_cog import test_receiver_cog_new
 
+from solent import SolentQuitException
 from solent.log import log
 from solent.util import uniq
 
@@ -280,24 +281,28 @@ class Orb:
         if 'cog_h' not in dir(cog):
             raise Exception("Looks like an invalid cog arg. Has no cog_h. %s"%(
                 str(cog)))
+        elif None == cog:
+            cog_h = 'None'
+        else:
+            cog_h = cog.cog_h
         if message_h not in self.nearcast_schema:
             raise Exception("Unknown message type, [%s]"%(message_h))
         mfields = self.nearcast_schema[message_h]
         if sorted(d_fields.keys()) != sorted(mfields):
             raise Exception('inconsistent fields. need %s. got %s'%(
                 str(mfields), str(d_fields.keys())))
-        self.pending.append( (cog, message_h, d_fields) )
+        self.pending.append( (cog_h, message_h, d_fields) )
     def distribute(self):
         '''
         The event loop should periodically call this. This message distributes
         pending nearcast messages from a buffer and out to the cogs.
         '''
         while self.pending:
-            (cog, message_h, d_fields) = self.pending.popleft()
+            (cog_h, message_h, d_fields) = self.pending.popleft()
             rname = 'on_%s'%(message_h)
             for snoop in self.snoops:
                 snoop.on_nearcast_message(
-                    cog_h=cog.cog_h,
+                    cog_h=cog_h,
                     message_h=message_h,
                     d_fields=d_fields)
             for cog in self.cogs:
@@ -305,6 +310,8 @@ class Orb:
                     fn = getattr(cog, rname)
                     try:
                         fn(**d_fields)
+                    except SolentQuitException:
+                        raise
                     except:
                         log('')
                         log('!! breaking on %s:%s'%(cog.cog_h, rname))

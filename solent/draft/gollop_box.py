@@ -3,9 +3,7 @@
 # gollop box
 #
 # // overview
-# I'm adding a mechanism to the console where you can select things in the
-# current grid using a gollop-like interface. This is the vehicle for playing
-# with that idea.
+# Sandbox used for developing gollop-style selection within spin_term.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -25,6 +23,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent.console import e_colpair
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
 from solent.exceptions import SolentQuitException
@@ -60,52 +59,13 @@ class CogInterpreter(object):
         if keycode == ord('Q'):
             raise SolentQuitException()
 
-class CogConsole(object):
-    def __init__(self, cog_h, engine, orb):
-        self.cog_h = cog_h
-        self.engine = engine
-        self.orb = orb
-        #
-        width = 10
-        height = 20
-        #
-        self.cgrid = cgrid_new(
-            width=width,
-            height=height)
-        self.keys = deque()
-        self.console = window_console_new(
-            width=width,
-            height=height)
-    def close(self):
-        self.console.close()
-    def at_turn(self, activity):
-        self.console.screen_update(
-            cgrid=self.cgrid)
-        key = self.console.async_getc()
-        if key:
-            activity.mark(
-                l=self,
-                s='received keystroke')
-            self.orb.nearcast(
-                cog=self,
-                message_h='keystroke',
-                keycode=ord(key))
-    def on_keystroke(self, keycode):
-        self.cgrid.put(
-            drop=0,
-            rest=0,
-            s='%4s'%(keycode),
-            cpair=e_colpair.green_t)
-        log('key received %s'%keycode)
-        if keycode == ESC_KEY_ORD:
-            raise SolentQuitException()
-
 class CogTerm(object):
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
         self.orb = orb
         #
+        self.counter = 0
         self.spin_term = spin_term_new(
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)
@@ -115,6 +75,13 @@ class CogTerm(object):
     def close(self):
         self.spin_term.close()
     def at_turn(self, activity):
+        self.spin_term.write(
+            drop=6,
+            rest=2,
+            s=self.counter,
+            cpair=e_colpair.blue_t)
+        self.counter += 1
+        #
         self.spin_term.at_turn(
             activity=activity)
     def term_on_keycode(self, keycode):
@@ -141,7 +108,6 @@ def main():
             orb_h=__name__,
             nearcast_schema=nearcast_schema)
         orb.init_cog(CogInterpreter)
-        #orb.init_cog(CogConsole)
         orb.init_cog(CogTerm)
         engine.event_loop()
     except SolentQuitException:
