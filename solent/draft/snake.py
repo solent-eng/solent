@@ -20,12 +20,15 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent.console import e_colpair
+from solent.console import key
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
 from solent.term import spin_term_new
+from solent.menu import spin_menu_new
 from solent.util import uniq
 from solent.winconsole import window_console_new
 
@@ -154,7 +157,92 @@ class CogTerm(object):
             width=width,
             height=height)
 
-class CogButler(object):
+class CogMenu(object):
+    def __init__(self, cog_h, engine, orb):
+        self.cog_h = cog_h
+        self.engine = engine
+        self.orb = orb
+        #
+        self.spin_menu = None
+    def close(self):
+        pass
+    def on_init(self, height, width):
+        self.spin_menu = spin_menu_new(
+            height=height,
+            width=width,
+            cb_display_clear=self.menu_display_clear,
+            cb_display_write=self.menu_display_write)
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_title',
+            text=__name__)
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_item',
+            menu_keycode=MENU_KEYCODE_NEW_GAME,
+            text='new game')
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_item',
+            menu_keycode=MENU_KEYCODE_CONTINUE,
+            text='continue')
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_item',
+            menu_keycode=MENU_KEYCODE_QUIT,
+            text='quit')
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_done')
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_display')
+    def on_menu_title(self, text):
+        self.spin_menu.set_title(
+            text=text)
+    def on_menu_item(self, menu_keycode, text):
+        self.spin_menu.add_menu_item(
+            menu_keycode=menu_keycode,
+            text=text,
+            cb_select=lambda: self.menu_select(
+                menu_keycode=keycode))
+    def on_menu_display(self):
+        self.spin_menu.render_menu()
+    def on_menu_select(self, menu_keycode):
+        d = { MENU_KEYCODE_NEW_GAME: self._mi_new_game
+            , MENU_KEYCODE_CONTINUE: self._mi_continue
+            , MENU_KEYCODE_QUIT: self._mi_quit
+            }
+        if menu_keycode not in d:
+            return
+        fn = d[menu_keycode]
+        fn()
+    #
+    def menu_select(self, menu_keycode):
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_select',
+            menu_keycode=menu_keycode)
+    def menu_display_clear(self):
+        self.orb.nearcast(
+            cog=self,
+            message_h='term_clear')
+    def menu_display_write(self, drop, rest, s):
+        self.orb.nearcast(
+            cog=self,
+            message_h='term_write',
+            drop=drop,
+            rest=rest,
+            s=s)
+    #
+    def _mi_new_game(self):
+        raise Exception('xxx new game')
+    def _mi_continue(self):
+        raise Exception('xxx continue game')
+    def _mi_quit(self):
+        raise SolentQuitException()
+
+class CogInterpreter(object):
     '''
     Coordinates high-level concepts such as whether we are in a menu or in the
     game.
@@ -206,11 +294,12 @@ def main():
         orb = engine.init_orb(
             orb_h=__name__,
             nearcast_schema=nearcast_schema)
-        primer = orb.init_cog(CogPrimer)
+        orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)
-        orb.init_cog(CogButler)
+        orb.init_cog(CogMenu)
         orb.init_cog(CogGame)
         #
+        primer = orb.init_cog(CogPrimer)
         primer.nc_init(
             height=24,
             width=78)
