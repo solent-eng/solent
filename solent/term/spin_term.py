@@ -128,10 +128,13 @@ class SpinTerm:
             activity.mark(
                 l=self,
                 s='received keystroke %s'%key)
-            if key == e_keycode.mousedown:
-                log('yes %s'%str(self.console.get_last_mousedown()))
-                self.mouse_coords = self.console.get_last_mousedown()
-            elif key == e_keycode.mouseup:
+            if key == e_keycode.lmousedown:
+                self.mouse_coords = self.console.get_last_lmousedown()
+            elif key == e_keycode.lmouseup:
+                pass
+            elif key == e_keycode.rmousedown:
+                self.mouse_coords = self.console.get_last_rmousedown()
+            elif key == e_keycode.rmouseup:
                 pass
             else:
                 keycode = ord(key)

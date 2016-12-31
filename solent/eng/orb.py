@@ -253,6 +253,32 @@ class Orb:
             except:
                 name = 'unknown, has no cog_h'
             raise Exception("Cog %s is already added."%(name))
+        #
+        # validate the cog's on_methods match the schema
+        cog_h = cog.cog_h
+        on_methods = [m for m in dir(cog) if m.startswith('on_')]
+        for om_name in on_methods:
+            method = getattr(cog, om_name)
+            args = inspect.getargspec(method).args
+            if args[0] != 'self':
+                raise Exception("cog method %s should have arg 'self'."%(
+                    om_name))
+            args = args[1:]
+            message_h = om_name[3:]
+            if not self.nearcast_schema.has_message(message_h):
+                m = "Cog has %s but there is no message %s in schema."%(
+                    om_name, message_h)
+                raise Exception(m)
+            desired_args = self.nearcast_schema.get_args_for_message(
+                message_h=message_h)
+            if desired_args != args:
+                sb = [ "Nearcast schema message %s"%(message_h)
+                     , "defines these args: [%s]"%('|'.join(desired_args))
+                     , "but %s.%s"%(cog_h, om_name)
+                     , "params are inconsistent: [%s]"%('|'.join(args))
+                     ]
+                raise Exception(' '.join(sb))
+        #
         self.cogs.append(cog)
     def init_cog(self, construct):
         cog = construct(

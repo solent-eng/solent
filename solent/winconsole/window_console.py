@@ -70,9 +70,7 @@ def _window_console_translate_key(u):
     if 0 == len(u):
         return None
     if u == u'\r':
-        return e_keycode.newline.value
-    if ord(u) == 0x8:
-        return e_keycode.backspace.value
+        return u'\n'
     return u
 
 class GridDisplay(object):
@@ -142,14 +140,20 @@ class WindowConsole:
         self.event_queue = deque()
         #
         # (drop, rest)
-        self.last_mousedown = None
-        self.last_mouseup = None
+        self.last_lmousedown = None
+        self.last_lmouseup = None
+        self.last_rmousedown = None
+        self.last_rmouseup = None
     def on_close(self):
         pygame.quit()
-    def get_last_mousedown(self):
-        return self.last_mousedown
-    def get_last_mouseup(self):
-        return self.last_mouseup
+    def get_last_lmousedown(self):
+        return self.last_lmousedown
+    def get_last_lmouseup(self):
+        return self.last_lmouseup
+    def get_last_rmousedown(self):
+        return self.last_rmousedown
+    def get_last_rmouseup(self):
+        return self.last_rmouseup
     def get_grid_display(self):
         return self.grid_display
     def get_keystream(self):
@@ -169,16 +173,28 @@ class WindowConsole:
                 raise SolentQuitException()
             if ev.type == pygame.MOUSEBUTTONDOWN:
                 (xpos, ypos) = ev.pos
-                self.last_mousedown = self.grid_display.coords_from_mousepos(
-                    xpos=xpos,
-                    ypos=ypos)
-                return e_keycode.mousedown
+                if ev.button == 1:
+                    self.last_lmousedown = self.grid_display.coords_from_mousepos(
+                        xpos=xpos,
+                        ypos=ypos)
+                    return e_keycode.lmousedown
+                if ev.button == 3:
+                    self.last_rmousedown = self.grid_display.coords_from_mousepos(
+                        xpos=xpos,
+                        ypos=ypos)
+                    return e_keycode.rmousedown
             if ev.type == pygame.MOUSEBUTTONUP:
                 (xpos, ypos) = ev.pos
-                self.last_mouseup = self.grid_display.coords_from_mousepos(
-                    xpos=xpos,
-                    ypos=ypos)
-                return e_keycode.mouseup
+                if ev.button == 1:
+                    self.last_lmouseup = self.grid_display.coords_from_mousepos(
+                        xpos=xpos,
+                        ypos=ypos)
+                    return e_keycode.lmouseup
+                if ev.button == 3:
+                    self.last_rmouseup = self.grid_display.coords_from_mousepos(
+                        xpos=xpos,
+                        ypos=ypos)
+                    return e_keycode.rmouseup
             if not ev.type == pygame.KEYDOWN:
                 continue
             #
@@ -230,8 +246,10 @@ def window_console_new(width, height):
         grid_display=window_console.get_grid_display(),
         width=width,
         height=height,
-        cb_last_mouseup=window_console.get_last_mouseup,
-        cb_last_mousedown=window_console.get_last_mousedown,
+        cb_last_lmouseup=window_console.get_last_lmouseup,
+        cb_last_lmousedown=window_console.get_last_lmousedown,
+        cb_last_rmouseup=window_console.get_last_rmouseup,
+        cb_last_rmousedown=window_console.get_last_rmousedown,
         cb_close=window_console.on_close)
     return ob
 

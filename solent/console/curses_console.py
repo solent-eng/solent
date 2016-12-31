@@ -85,7 +85,7 @@ def screen_curses_exit():
 
 def _curses_translate_key(k):
     if k in (127, curses.KEY_BACKSPACE, curses.KEY_DC):
-        return e_keycode.backspace.value
+        k = 0x8
     c = chr(k)
     return c
 

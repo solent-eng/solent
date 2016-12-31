@@ -71,6 +71,10 @@ class SpinMenu:
                 s="[%s] %s"%(chr(menu_keycode), text))
 
 def spin_menu_new(height, width, cb_display_clear, cb_display_write):
+    '''
+    cb_display_clear()
+    cb_display_write(drop, rest, s)
+    '''
     ob = SpinMenu(
         height=height,
         width=width,

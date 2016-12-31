@@ -50,8 +50,11 @@ class e_boxtype(enum.Enum):
 
 class e_keycode(enum.Enum):
     # repurposing these values for mouse events
-    mousedown     = 0x1  # in ascii this is start-of-heading
-    mouseup       = 0x2  # in ascii this is end-of-heading
+    none          = 0x0
+    lmousedown    = 0x1  # in ascii this is start-of-heading
+    lmouseup      = 0x2  # in ascii this is end-of-heading
+    rmousedown    = 0x3  # in ascii this is end-of-text
+    rmouseup      = 0x4  # in ascii this is end-of-transmission
     #
     backspace     = 0x8
     tab           = 0x9

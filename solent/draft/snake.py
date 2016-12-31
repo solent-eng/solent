@@ -30,7 +30,6 @@ from solent.log import log
 from solent.term import spin_term_new
 from solent.menu import spin_menu_new
 from solent.util import uniq
-from solent.winconsole import window_console_new
 
 from collections import deque
 import os
@@ -65,11 +64,29 @@ I_GAME_NEARCAST_SCHEMA = '''
 '''
 
 class SpinSnakeGame:
-    def __init__(self):
-        pass
+    def __init__(self, height, width, cb_display_clear, cb_display_write):
+        self.height = height
+        self.width = width
+        self.cb_display_clear = cb_display_clear
+        self.cb_display_write = cb_display_write
+    def render_game(self):
+        self.cb_display_clear()
+        self.cb_display_write(
+            drop=0,
+            rest=0,
+            s='[game]',
+            cpair=e_colpair.green_t)
 
-def spin_snake_game_new():
-    ob = SpinSnakeGame()
+def spin_snake_game_new(height, width, cb_display_clear, cb_display_write):
+    '''
+    cb_display_clear()
+    cb_display_write(drop, rest, s, cpair)
+    '''
+    ob = SpinSnakeGame(
+        height=height,
+        width=width,
+        cb_display_clear=cb_display_clear,
+        cb_display_write=cb_display_write)
     return ob
 
 
@@ -84,49 +101,88 @@ I_OUTER_NEARCAST_SCHEMA = '''
         field height
         field width
 
-    message show_game_menu
-    message new_game
-    message continue
     message quit
-
-    message term_clear
-    message term_plot
-        field drop
-        field rest
-        field c
 
     message keystroke
         field keycode
+
+    message game_focus
+    message game_new
+    message game_input
+        field keycode
+
+    message term_clear
+    message term_write
+        field drop
+        field rest
+        field s
+        field cpair
+
+    message menu_focus
+    message menu_title
+        field text
+    message menu_item
+        field menu_keycode
+        field text
+    message menu_select
+        field menu_keycode
 '''
 
-class MenuWaiter:
-    '''
-    Tracks whether we are in the menu or not.
-    '''
-    def __init__(self):
-        self.in_menu = False
-    def on_init(self, width, height):
-        self.in_menu = True
-    def 
+MENU_KEYCODE_NEW_GAME = key('n')
+MENU_KEYCODE_CONTINUE = key('c')
+MENU_KEYCODE_QUIT = key('q')
 
 def t100():
     return time.time() * 100
 
-class CogPrimer:
-    def __init__(self, cog_h, orb, engine):
+class CogInterpreter(object):
+    '''
+    Coordinates high-level concepts such as whether we are in a menu or in the
+    game.
+    '''
+    def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
-        self.orb = orb
         self.engine = engine
-    def nc_show_menu(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='show_menu')
-    def nc_init(self, height, width):
-        self.orb.nearcast(
-            cog=self,
-            message_h='init',
-            height=height,
-            width=width)
+        self.orb = orb
+        #
+        self.b_in_menu = False
+    def on_init(self, height, width):
+        self.b_in_menu = True
+    def on_quit(self):
+        raise SolentQuitException('Quit message on stream')
+    def on_menu_focus(self):
+        self.b_in_menu = True
+    def on_game_focus(self):
+        self.b_in_menu = False
+    def on_keystroke(self, keycode):
+        # xxx
+        if keycode == ord('Q'):
+            self.orb.nearcast(
+                cog=self,
+                message_h='quit')
+        #
+        if self.b_in_menu:
+            if keycode == key('tab'):
+                self.b_in_menu = False
+                self.orb.nearcast(
+                    cog=self,
+                    message_h='game_focus')
+            else:
+                self.orb.nearcast(
+                    cog=self,
+                    message_h='menu_select',
+                    menu_keycode=keycode)
+        else:
+            if keycode == key('tab'):
+                self.b_in_menu = True
+                self.orb.nearcast(
+                    cog=self,
+                    message_h='menu_focus')
+            else:
+                self.orb.nearcast(
+                    cog=self,
+                    message_h='game_input',
+                    keycode=keycode)
 
 class CogTerm(object):
     def __init__(self, cog_h, engine, orb):
@@ -142,6 +198,14 @@ class CogTerm(object):
     def at_turn(self, activity):
         self.spin_term.at_turn(
             activity=activity)
+    def on_term_clear(self):
+        self.spin_term.clear()
+    def on_term_write(self, drop, rest, s, cpair):
+        self.spin_term.write(
+            drop=drop,
+            rest=rest,
+            s=s,
+            cpair=cpair)
     #
     def term_on_keycode(self, keycode):
         self.orb.nearcast(
@@ -193,10 +257,7 @@ class CogMenu(object):
             text='quit')
         self.orb.nearcast(
             cog=self,
-            message_h='menu_done')
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_display')
+            message_h='menu_focus')
     def on_menu_title(self, text):
         self.spin_menu.set_title(
             text=text)
@@ -206,7 +267,7 @@ class CogMenu(object):
             text=text,
             cb_select=lambda: self.menu_select(
                 menu_keycode=keycode))
-    def on_menu_display(self):
+    def on_menu_focus(self):
         self.spin_menu.render_menu()
     def on_menu_select(self, menu_keycode):
         d = { MENU_KEYCODE_NEW_GAME: self._mi_new_game
@@ -233,52 +294,73 @@ class CogMenu(object):
             message_h='term_write',
             drop=drop,
             rest=rest,
-            s=s)
+            s=s,
+            cpair=e_colpair.blue_t)
     #
     def _mi_new_game(self):
-        raise Exception('xxx new game')
+        self.orb.nearcast(
+            cog=self,
+            message_h='game_new')
+        self.orb.nearcast(
+            cog=self,
+            message_h='game_focus')
     def _mi_continue(self):
         raise Exception('xxx continue game')
     def _mi_quit(self):
         raise SolentQuitException()
 
-class CogInterpreter(object):
-    '''
-    Coordinates high-level concepts such as whether we are in a menu or in the
-    game.
-    '''
+class CogSnakeGame:
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
         self.orb = orb
         #
-        self.menu_waiter = MenuWaiter()
-    def on_init(self, width, height):
-        self.menu_waiter.on_init(
-            width=width,
-            height=height)
-        self.orb.nearcast(
-            cog=self,
-            message_h='show_game_menu')
-    def on_show_game_menu(self):
-        log('xxx!')
-    def on_butler_show_menu(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='canvas_clear')
-    def on_quit(self):
-        raise SolentQuitException('Quit message on stream')
-    def on_keystroke(self, keycode):
-        if keycode == ord('Q'):
+        self.height = None
+        self.width = None
+        self.spin_snake_game = None
+    def on_init(self, height, width):
+        self.height = height
+        self.width = width
+    def on_game_new(self):
+        self.spin_snake_game = spin_snake_game_new(
+            height=self.height,
+            width=self.width,
+            cb_display_clear=self.game_display_clear,
+            cb_display_write=self.game_display_write)
+    def on_game_input(self, keycode):
+        raise Exception('xxx')
+    def on_game_focus(self):
+        if None == self.spin_snake_game:
             self.orb.nearcast(
                 cog=self,
-                message_h='quit')
+                message_h='menu_focus')
+            return
+        self.spin_snake_game.render_game()
+    #
+    def game_display_clear(self):
+        self.orb.nearcast(
+            cog=self,
+            message_h='term_clear')
+    def game_display_write(self, drop, rest, s, cpair):
+        self.orb.nearcast(
+            cog=self,
+            message_h='term_write',
+            drop=drop,
+            rest=rest,
+            s=s,
+            cpair=cpair)
 
-class CogGame:
-    def __init__(self, cog_h, engine, orb):
+class CogPrimer:
+    def __init__(self, cog_h, orb, engine):
         self.cog_h = cog_h
-        self.engine = engine
         self.orb = orb
+        self.engine = engine
+    def nc_init(self, height, width):
+        self.orb.nearcast(
+            cog=self,
+            message_h='init',
+            height=height,
+            width=width)
 
 def main():
     init_logging()
@@ -294,10 +376,11 @@ def main():
         orb = engine.init_orb(
             orb_h=__name__,
             nearcast_schema=nearcast_schema)
+        orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)
         orb.init_cog(CogMenu)
-        orb.init_cog(CogGame)
+        orb.init_cog(CogSnakeGame)
         #
         primer = orb.init_cog(CogPrimer)
         primer.nc_init(

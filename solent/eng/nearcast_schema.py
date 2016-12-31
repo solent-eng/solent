@@ -44,7 +44,7 @@ I_NEARCAST_EXAMPLE = '''
         field organisation_h
 '''
 
-class NearcastConsumer(SignalConsumer):
+class NearcastSignalConsumer(SignalConsumer):
     '''
     User for converting interface script into a nearcast schema.
 
@@ -82,6 +82,10 @@ class NearcastSchema:
     '''
     def __init__(self, d_messages):
         self.messages = d_messages
+    def has_message(self, name):
+        return name in self.messages
+    def get_args_for_message(self, message_h):
+        return self.messages[message_h]
     def get_messages(self):
         return self.messages
     def exists(self, message_h):
@@ -96,14 +100,14 @@ class NearcastSchema:
 def nearcast_schema_new(i_nearcast):
     '''
     i_nearcast: text in interface script format. It will need to match the
-    dialect described by NearcastConsumer in this module. Look in nearcast.py
-    for an example of some interface script
+    dialect described by NearcastSignalConsumer in this module. Look in
+    nearcast.py for an example of some interface script
 
     This class will return a dictionary. Keys are the names of messages. Each
     value is a list of field names. (This is sufficient for describing a
     nearcast schema)
     '''
-    signal_consumer = NearcastConsumer()
+    signal_consumer = NearcastSignalConsumer()
     parser = init_interface_script_parser(
         signal_consumer=signal_consumer)
     parser.parse(i_nearcast)

@@ -26,13 +26,15 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 class Console(object):
-    def __init__(self, keystream, grid_display, width, height, cb_last_mouseup, cb_last_mousedown, cb_close):
+    def __init__(self, keystream, grid_display, width, height, cb_last_lmousedown, cb_last_lmouseup, cb_last_rmousedown, cb_last_rmouseup, cb_close):
         self.keystream = keystream
         self.grid_display = grid_display
         self.width = width
         self.height = height
-        self.cb_last_mouseup = cb_last_mouseup
-        self.cb_last_mousedown = cb_last_mousedown
+        self.cb_last_lmouseup = cb_last_lmouseup
+        self.cb_last_lmousedown = cb_last_lmousedown
+        self.cb_last_rmouseup = cb_last_rmouseup
+        self.cb_last_rmousedown = cb_last_rmousedown
         self.cb_close = cb_close
     def close(self):
         self.cb_close()
@@ -40,15 +42,19 @@ class Console(object):
         return self.keystream.async_getc()
     def block_getc(self):
         return self.keystream.block_getc()
-    def get_last_mouseup(self):
-        return self.cb_last_mouseup()
-    def get_last_mousedown(self):
-        return self.cb_last_mousedown()
+    def get_last_lmouseup(self):
+        return self.cb_last_lmouseup()
+    def get_last_lmousedown(self):
+        return self.cb_last_lmousedown()
+    def get_last_rmouseup(self):
+        return self.cb_last_rmouseup()
+    def get_last_rmousedown(self):
+        return self.cb_last_rmousedown()
     def screen_update(self, cgrid):
         self.grid_display.update(
             cgrid=cgrid)
 
-def console_new(keystream, grid_display, width, height, cb_last_mouseup, cb_last_mousedown, cb_close):
+def console_new(keystream, grid_display, width, height, cb_last_lmousedown, cb_last_lmouseup, cb_last_rmousedown, cb_last_rmouseup, cb_close):
     '''
     cb_close: takes no arguments
     '''
@@ -57,8 +63,10 @@ def console_new(keystream, grid_display, width, height, cb_last_mouseup, cb_last
         grid_display=grid_display,
         width=width,
         height=height,
-        cb_last_mouseup=cb_last_mouseup,
-        cb_last_mousedown=cb_last_mousedown,
+        cb_last_lmouseup=cb_last_lmouseup,
+        cb_last_lmousedown=cb_last_lmousedown,
+        cb_last_rmouseup=cb_last_rmouseup,
+        cb_last_rmousedown=cb_last_rmousedown,
         cb_close=cb_close)
     return ob
 
