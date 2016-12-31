@@ -26,6 +26,9 @@ from solent.console import cgrid_new
 
 from collections import OrderedDict as od
 
+def menu_entry(text, cb_select):
+    return (text, cb_select)
+
 class SpinMenu:
     def __init__(self, height, width, cb_display_clear, cb_display_write):
         self.height = height
@@ -40,27 +43,32 @@ class SpinMenu:
         self.d_menu = od()
     def set_title(self, text):
         self.title = text
-    def add_menu_item(self, key, text, cb_select):
+    def add_menu_item(self, menu_keycode, text, cb_select):
         '''
-        cb_select takes no arguments. (You will probably want to use a lambda to set it up)
+        cb_select() # no arguments
         '''
-        key = str(key)
-        if len(key) != 1:
-            raise Exception('weird menu key [%s]'%key)
-        if key in self.d_menu:
-            raise Exception('key %s is already in menu')
-        self.d_menu[key] = text
+        if menu_keycode in self.d_menu:
+            raise Exception('menu_keycode %s is already in menu')
+        self.d_menu[menu_keycode] = menu_entry(
+            text=text,
+            cb_select=cb_select)
+    def select(self, menu_keycode):
+        if menu_keycode not in self.d_menu:
+            return
+        (text, cb_select) = self.d_menu[menu_keycode]
+        cb_select()
     def render_menu(self):
         self.cb_display_clear()
         self.cb_display_write(
             drop=0,
             rest=0,
             s=self.title)
-        for idx, (key, text) in enumerate(self.d_menu.items()):
+        for idx, (menu_keycode, tpl) in enumerate(self.d_menu.items()):
+            (text, cb_select) = tpl
             self.cb_display_write(
                 drop=idx+2,
                 rest=0,
-                s="[%s] %s"%(key, text))
+                s="[%s] %s"%(chr(menu_keycode), text))
 
 def spin_menu_new(height, width, cb_display_clear, cb_display_write):
     ob = SpinMenu(

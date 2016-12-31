@@ -60,7 +60,7 @@ I_NEARCAST_SCHEMA = '''
 
     # define a menu item
     message menu_item
-        field key
+        field menu_keycode
         field text
 
     # communicate that the menu design is finished
@@ -68,7 +68,7 @@ I_NEARCAST_SCHEMA = '''
 
     # select an item from the menu
     message menu_select
-        field keycode
+        field menu_keycode
 
     message keystroke
         field keycode
@@ -90,7 +90,15 @@ I_NEARCAST_SCHEMA = '''
         field s
 '''
 
+MENU_KEYCODE_NEW_GAME = key('n')
+MENU_KEYCODE_CONTINUE = key('c')
+MENU_KEYCODE_QUIT = key('q')
+
 class CogInterpreter(object):
+    '''
+    Keeps track of whether we are in menu or not, and directs keystrokes as
+    appropriate.
+    '''
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
@@ -109,7 +117,7 @@ class CogInterpreter(object):
             self.orb.nearcast(
                 cog=self,
                 message_h='menu_select',
-                keycode=keycode)
+                menu_keycode=keycode)
         else:
             self.orb.nearcast(
                 cog=self,
@@ -169,19 +177,55 @@ class CogMenu(object):
             cb_display_write=self.menu_display_write)
         self.orb.nearcast(
             cog=self,
+            message_h='menu_title',
+            text=__name__)
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_item',
+            menu_keycode=MENU_KEYCODE_NEW_GAME,
+            text='new game')
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_item',
+            menu_keycode=MENU_KEYCODE_CONTINUE,
+            text='continue')
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_item',
+            menu_keycode=MENU_KEYCODE_QUIT,
+            text='quit')
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_done')
+        self.orb.nearcast(
+            cog=self,
             message_h='menu_display')
     def on_menu_title(self, text):
         self.spin_menu.set_title(
             text=text)
-    def on_menu_item(self, key, text):
+    def on_menu_item(self, menu_keycode, text):
         self.spin_menu.add_menu_item(
-            key=key,
+            menu_keycode=menu_keycode,
             text=text,
-            cb_select=lambda key: self.menu(select))
+            cb_select=lambda: self.menu_select(
+                menu_keycode=keycode))
     def on_menu_display(self):
         self.spin_menu.render_menu()
-    def menu_select(self, key):
-        raise Exception('menu select %s'%key)
+    def on_menu_select(self, menu_keycode):
+        d = { MENU_KEYCODE_NEW_GAME: self._mi_new_game
+            , MENU_KEYCODE_CONTINUE: self._mi_continue
+            , MENU_KEYCODE_QUIT: self._mi_quit
+            }
+        if menu_keycode not in d:
+            return
+        fn = d[menu_keycode]
+        fn()
+    #
+    def menu_select(self, menu_keycode):
+        self.orb.nearcast(
+            cog=self,
+            message_h='menu_select',
+            menu_keycode=menu_keycode)
     def menu_display_clear(self):
         self.orb.nearcast(
             cog=self,
@@ -193,6 +237,13 @@ class CogMenu(object):
             drop=drop,
             rest=rest,
             s=s)
+    #
+    def _mi_new_game(self):
+        raise Exception('xxx new game')
+    def _mi_continue(self):
+        raise Exception('xxx continue game')
+    def _mi_quit(self):
+        raise SolentQuitException()
 
 class CogPrimer(object):
     def __init__(self, cog_h, engine, orb):
@@ -210,11 +261,11 @@ class CogPrimer(object):
             cog=self,
             message_h='menu_title',
             text=text)
-    def nc_menu_item(self, key, text):
+    def nc_menu_item(self, menu_keycode, text):
         self.orb.nearcast(
             cog=self,
             message_h='menu_item',
-            key=key,
+            menu_keycode=menu_keycode,
             text=text)
     def nc_menu_done(self):
         self.orb.nearcast(
@@ -247,15 +298,6 @@ def main():
         primer.nc_init(
             height=HEIGHT,
             width=WIDTH)
-        primer.nc_menu_title(
-            text=__name__)
-        primer.nc_menu_item(
-            key='1',
-            text='one')
-        primer.nc_menu_item(
-            key='2',
-            text='two')
-        primer.nc_menu_done()
         #
         engine.event_loop()
     except SolentQuitException:
