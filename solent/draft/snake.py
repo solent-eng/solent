@@ -58,13 +58,13 @@ class Board:
         self.game_over = False
         self.egg_life = 0
         #
+        self.wall_spots = []
         self.free_spots = []
-        for drop in range(height):
-            for rest in range(width):
-                self.free_spots.append( create_spot(drop, rest) )
         self.egg_spots = []
         self.snake_spots = deque()
         #
+        self._create_free_spots()
+        self._create_barrier()
         self._create_snake()
         self._create_egg()
     #
@@ -103,6 +103,25 @@ class Board:
             drop=drop,
             rest=rest)
     #
+    def _create_free_spots(self):
+        for drop in range(self.height):
+            for rest in range(self.width):
+                self.free_spots.append( create_spot(drop, rest) )
+    def _create_barrier(self):
+        for rest in range(self.width):
+            spot = (0, rest)
+            self.free_spots.remove(spot)
+            self.wall_spots.append(spot)
+            spot = (self.height-1, rest)
+            self.free_spots.remove(spot)
+            self.wall_spots.append(spot)
+        for drop in range(self.height-2):
+            spot = (drop+1, 0)
+            self.free_spots.remove(spot)
+            self.wall_spots.append(spot)
+            spot = (drop+1, self.width-1)
+            self.free_spots.remove(spot)
+            self.wall_spots.append(spot)
     def _create_snake(self):
         (drop, rest) = (int(self.height/2), int(self.width/4))
         #
@@ -174,23 +193,22 @@ class SpinSnakeGame:
         # this is a list so we can effectively ignore conflicting keystrokes.
         # (Avoiding the player from turning back on themselves in the same
         # space is more of a problem than I first expected.)
-        self.snake_direction = deque()
-        self.snake_direction.append('e')
+        self.snake_direction = 'e'
+        self.steer_orders = deque()
     def tick(self):
         if self.board.is_game_over():
             return
         #
-        while len(self.snake_direction) > 1:
-            self.snake_direction.popleft()
-        cardinal = self.snake_direction[0]
+        if self.steer_orders:
+            self.snake_direction = self.steer_orders.popleft()
         #
-        if cardinal == 'e':
+        if self.snake_direction == 'e':
             self.board.tick_e()
-        if cardinal == 'w':
+        if self.snake_direction == 'w':
             self.board.tick_w()
-        if cardinal == 's':
+        if self.snake_direction == 's':
             self.board.tick_s()
-        if cardinal == 'n':
+        if self.snake_direction == 'n':
             self.board.tick_n()
         #
         self.render()
@@ -199,18 +217,29 @@ class SpinSnakeGame:
             raise Exception('invalid cardinal %s'%(cardinal))
         #
         # can't go back on yourself
-        if self.snake_direction[0] == 'n' and cardinal == 's':
+        if self.steer_orders:
+            last_move = self.steer_orders[-1]
+        else:
+            last_move = self.snake_direction
+        if last_move == 'n' and cardinal == 's':
             return
-        if self.snake_direction[0] == 's' and cardinal == 'n':
+        if last_move == 's' and cardinal == 'n':
             return
-        if self.snake_direction[0] == 'w' and cardinal == 'e':
+        if last_move == 'w' and cardinal == 'e':
             return
-        if self.snake_direction[0] == 'e' and cardinal == 'w':
+        if last_move == 'e' and cardinal == 'w':
             return
         #
-        self.snake_direction.append(cardinal)
+        self.steer_orders.append(cardinal)
     def render(self):
         self.cb_display_clear()
+        for spot in self.board.wall_spots:
+            (drop, rest) = spot
+            self.cb_display_write(
+                drop=drop,
+                rest=rest,
+                s='#',
+                cpair=e_colpair.purple_t)
         for spot in self.board.egg_spots:
             (drop, rest) = spot
             self.cb_display_write(
@@ -534,14 +563,13 @@ def main():
     try:
         engine = engine_new(
             mtu=MTU)
-        engine.default_timeout = 0.04
+        engine.default_timeout = 0.01
         #
         nearcast_schema = nearcast_schema_new(
             i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         orb = engine.init_orb(
             orb_h=__name__,
             nearcast_schema=nearcast_schema)
-        orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)
         orb.init_cog(CogMenu)
