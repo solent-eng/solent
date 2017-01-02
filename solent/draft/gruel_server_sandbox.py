@@ -208,9 +208,7 @@ class CogLcServer:
             port=LC_PORT)
     #
     def lc_on_line(self, line):
-        self.orb.nearcast(
-            cog=self,
-            message_h='lc_input',
+        self.nearcast.lc_input(
             line=line)
     #
     def on_lc_output(self, s):
@@ -238,34 +236,24 @@ class CogInterpretLineConsole:
         # This is really primitive not even going to parse it. :)
         line = line.strip()
         if line not in self.commands:
-            self.orb.nearcast(
-                cog=self,
-                message_h='lc_output',
+            self.nearcast.lc_output(
                 s='syntax error')
             return
         cmd = self.commands[line]
         cmd()
     #
     def cmd_start(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='start_gruel_server',
+        self.nearcast.start_gruel_server(
             addr=SERVER_ADDR,
             port=SERVER_PORT,
             password=SERVER_PASS)
     def cmd_send(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='doc_send',
+        self.nearcast.doc_send(
             doc=MAN_FROM_SNOWY_RIVER)
     def cmd_stop(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='stop_gruel_server')
+        self.nearcast.stop_gruel_server()
     def cmd_help(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='lc_output',
+        self.nearcast.lc_output(
             s='\n'.join(sorted(self.commands.keys())))
 
 class CogGruelServer:
@@ -299,9 +287,7 @@ class CogGruelServer:
         self.spin_gruel_server.send_doc(
             doc=doc)
     def _gruel_on_doc(self, doc):
-        self.orb.nearcast(
-            cog=self,
-            message_h='doc_recv',
+        self.nearcast.doc_recv(
             doc=doc)
 
 class CogDocReceiver:
@@ -318,9 +304,7 @@ class CogUplink:
         self.orb = orb
         self.engine = engine
     def nc_permit_client_ip(self, ip):
-        self.orb.nearcast(
-            cog=self,
-            message_h='permit_client_ip',
+        self.nearcast.permit_client_ip(
             ip=ip)
 
 def main():

@@ -63,9 +63,6 @@ I_NEARCAST_SCHEMA = '''
         field menu_keycode
         field text
 
-    # communicate that the menu design is finished
-    message menu_done
-
     # select an item from the menu
     message menu_select
         field menu_keycode
@@ -114,14 +111,10 @@ class CogInterpreter(object):
         if self.is_in_menu:
             if keycode == key('tab'):
                 self.is_in_menu = False
-            self.orb.nearcast(
-                cog=self,
-                message_h='menu_select',
+            self.nearcast.menu_select(
                 menu_keycode=keycode)
         else:
-            self.orb.nearcast(
-                cog=self,
-                message_h='game_input',
+            self.nearcast.game_input(
                 keycode=keycode)
 
 class CogTerm(object):
@@ -152,9 +145,7 @@ class CogTerm(object):
             cpair=e_colpair.white_t)
     #
     def term_on_keycode(self, keycode):
-        self.orb.nearcast(
-            cog=self,
-            message_h='keystroke',
+        self.nearcast.keystroke(
             keycode=keycode)
     def term_on_select(self, drop, rest):
         # user makes a selection
@@ -175,31 +166,18 @@ class CogMenu(object):
             width=width,
             cb_display_clear=self.menu_display_clear,
             cb_display_write=self.menu_display_write)
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_title',
+        self.nearcast.menu_title(
             text=__name__)
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_item',
+        self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_NEW_GAME,
             text='new game')
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_item',
+        self.nearcast.menu_item
             menu_keycode=MENU_KEYCODE_CONTINUE,
             text='continue')
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_item',
+        self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_QUIT,
             text='quit')
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_done')
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_display')
+        self.nearcast.menu_display()
     def on_menu_title(self, text):
         self.spin_menu.set_title(
             text=text)
@@ -222,18 +200,12 @@ class CogMenu(object):
         fn()
     #
     def menu_select(self, menu_keycode):
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_select',
+        self.nearcast.menu_select(
             menu_keycode=menu_keycode)
     def menu_display_clear(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='term_clear')
+        self.nearcast.term_clear()
     def menu_display_write(self, drop, rest, s):
-        self.orb.nearcast(
-            cog=self,
-            message_h='term_write',
+        self.nearcast.term_write(
             drop=drop,
             rest=rest,
             s=s)
@@ -251,26 +223,16 @@ class CogPrimer(object):
         self.engine = engine
         self.orb = orb
     def nc_init(self, height, width):
-        self.orb.nearcast(
-            cog=self,
-            message_h='init',
+        self.nearcast.init(
             height=height,
             width=width)
     def nc_menu_title(self, text):
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_title',
+        self.nearcast.menu_title(
             text=text)
     def nc_menu_item(self, menu_keycode, text):
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_item',
+        self.nearcast.menu_item(
             menu_keycode=menu_keycode,
             text=text)
-    def nc_menu_done(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_done')
 
 HEIGHT = 25
 WIDTH = 80

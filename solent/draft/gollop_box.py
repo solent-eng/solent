@@ -85,9 +85,7 @@ class CogTerm(object):
         self.spin_term.at_turn(
             activity=activity)
     def term_on_keycode(self, keycode):
-        self.orb.nearcast(
-            cog=self,
-            message_h='keystroke',
+        self.nearcast.keystroke(
             keycode=keycode)
     def term_on_select(self, drop, rest):
         # user makes a selection

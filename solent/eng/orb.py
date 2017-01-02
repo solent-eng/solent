@@ -279,6 +279,9 @@ class Orb:
                      ]
                 raise Exception(' '.join(sb))
         #
+        self.nearcast_schema.attach_nearcast_dispatcher_on_cog(
+            orb=self,
+            cog=cog)
         self.cogs.append(cog)
     def init_cog(self, construct):
         cog = construct(

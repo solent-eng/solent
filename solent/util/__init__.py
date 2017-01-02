@@ -20,6 +20,8 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from .clock import clock_new
+from .interface_script import init_interface_script_parser
+from .interface_script import SignalConsumer
 from .line_finder import line_finder_new
 from .simple import ns as ns
 from .simple import uniq as uniq

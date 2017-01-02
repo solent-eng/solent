@@ -157,31 +157,21 @@ class CogInterpreter(object):
     def on_keystroke(self, keycode):
         # xxx
         if keycode == ord('Q'):
-            self.orb.nearcast(
-                cog=self,
-                message_h='quit')
+            self.nearcast.quit()
         #
         if self.b_in_menu:
             if keycode == key('tab'):
                 self.b_in_menu = False
-                self.orb.nearcast(
-                    cog=self,
-                    message_h='game_focus')
+                self.nearcast.game_focus()
             else:
-                self.orb.nearcast(
-                    cog=self,
-                    message_h='menu_select',
+                self.nearcast.menu_select(
                     menu_keycode=keycode)
         else:
             if keycode == key('tab'):
                 self.b_in_menu = True
-                self.orb.nearcast(
-                    cog=self,
-                    message_h='menu_focus')
+                self.nearcast.menu_focus()
             else:
-                self.orb.nearcast(
-                    cog=self,
-                    message_h='game_input',
+                self.nearcast.game_input(
                     keycode=keycode)
 
 class CogTerm(object):
@@ -208,9 +198,7 @@ class CogTerm(object):
             cpair=cpair)
     #
     def term_on_keycode(self, keycode):
-        self.orb.nearcast(
-            cog=self,
-            message_h='keystroke',
+        self.nearcast.keystroke(
             keycode=keycode)
     def term_on_select(self, drop, rest):
         # user makes a selection
@@ -236,28 +224,18 @@ class CogMenu(object):
             width=width,
             cb_display_clear=self.menu_display_clear,
             cb_display_write=self.menu_display_write)
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_title',
+        self.nearcast.menu_title(
             text=__name__)
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_item',
+        self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_NEW_GAME,
             text='new game')
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_item',
+        self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_CONTINUE,
             text='continue')
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_item',
+        self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_QUIT,
             text='quit')
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_focus')
+        self.nearcast.menu_focus()
     def on_menu_title(self, text):
         self.spin_menu.set_title(
             text=text)
@@ -280,30 +258,20 @@ class CogMenu(object):
         fn()
     #
     def menu_select(self, menu_keycode):
-        self.orb.nearcast(
-            cog=self,
-            message_h='menu_select',
+        self.nearcast.menu_select(
             menu_keycode=menu_keycode)
     def menu_display_clear(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='term_clear')
+        self.nearcast.term_clear()
     def menu_display_write(self, drop, rest, s):
-        self.orb.nearcast(
-            cog=self,
-            message_h='term_write',
+        self.nearcast.term_write(
             drop=drop,
             rest=rest,
             s=s,
             cpair=e_colpair.blue_t)
     #
     def _mi_new_game(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='game_new')
-        self.orb.nearcast(
-            cog=self,
-            message_h='game_focus')
+        self.nearcast.game_new()
+        self.nearcast.game_focus()
     def _mi_continue(self):
         raise Exception('xxx continue game')
     def _mi_quit(self):
@@ -331,20 +299,14 @@ class CogSnakeGame:
         raise Exception('xxx')
     def on_game_focus(self):
         if None == self.spin_snake_game:
-            self.orb.nearcast(
-                cog=self,
-                message_h='menu_focus')
+            self.nearcast.menu_focus()
             return
         self.spin_snake_game.render_game()
     #
     def game_display_clear(self):
-        self.orb.nearcast(
-            cog=self,
-            message_h='term_clear')
+        self.nearcast.term_clear()
     def game_display_write(self, drop, rest, s, cpair):
-        self.orb.nearcast(
-            cog=self,
-            message_h='term_write',
+        self.nearcast.term_write(
             drop=drop,
             rest=rest,
             s=s,
@@ -356,9 +318,7 @@ class CogPrimer:
         self.orb = orb
         self.engine = engine
     def nc_init(self, height, width):
-        self.orb.nearcast(
-            cog=self,
-            message_h='init',
+        self.nearcast.init(
             height=height,
             width=width)
 

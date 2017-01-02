@@ -20,6 +20,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.log import log
+from solent.util import ns
 from solent.util.interface_script import init_interface_script_parser
 from solent.util.interface_script import SignalConsumer
 
@@ -96,6 +97,49 @@ class NearcastSchema:
         return item in self.messages.keys()
     def __getitem__(self, key):
         return self.messages[key]
+    def attach_nearcast_dispatcher_on_cog(self, orb, cog):
+        '''
+        This attaches a variable called nearcast to a cog so that cog code can
+        nearcast just by saying "self.nearcast.message_h(args)". This is a lot
+        less hassle than typing "self.orb.nearcast", and then having to supply
+        the cog itself, the message_h, and then the arguments.
+
+        Essentially, this gives the semantics of python functions to nearcast
+        messages. Which is pretty damn cool.
+
+        The mechanism here is ugly. Unimportant. When we move to a typed
+        language, there's several ways we could handle this: inheritance, use
+        of macros.
+        '''
+        if 'nearcast' in dir(cog):
+            raise Exception("Cog %s already has a member 'nearcast'."%(
+                cog.cog_h))
+        sb = []
+        sb.append('class DynamicNearcastDispatcher:')
+        sb.append('    def __init__(self, orb, cog):')
+        sb.append('        self.orb = orb')
+        sb.append('        self.cog = cog')
+        for (message_h, fields) in self.messages.items():
+            if fields:
+                args = ', '.join(fields)
+                sb.append('    def %s(self, %s):'%(message_h, args))
+            else:
+                sb.append('    def %s(self):'%(message_h))
+            sb.append('        self.orb.nearcast(')
+            sb.append('            cog=self.cog,')
+            sb.append("            message_h='%s',"%message_h)
+            for field in fields:
+                sb.append('            %s=%s,'%(field, field))
+            sb.append('            )')
+        sb.append('')
+        sb.append('''globals()['DynamicNearcastDispatcher'] = DynamicNearcastDispatcher''')
+        sb.append('')
+        code = '\n'.join(sb)
+        exec(code)
+        nearcast_dispatcher = DynamicNearcastDispatcher(
+            orb=orb,
+            cog=cog)
+        setattr(cog, 'nearcast', nearcast_dispatcher)
 
 def nearcast_schema_new(i_nearcast):
     '''
