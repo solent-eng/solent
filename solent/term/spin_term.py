@@ -29,6 +29,7 @@
 from solent.console import cgrid_new
 from solent.console import e_colpair
 from solent.console import e_keycode
+from solent.console import key
 from solent.log import log
 from solent.util import uniq
 
@@ -39,64 +40,15 @@ try:
 except:
     from solent.console import curses_console_new as console_new
 
-KEY_ENTER = 10
-KEY_ESC = 27
-KEY_a = ord('a')
-KEY_b = ord('b')
-KEY_c = ord('c')
-KEY_d = ord('d')
-KEY_e = ord('e')
-KEY_f = ord('f')
-KEY_g = ord('g')
-KEY_h = ord('h')
-KEY_i = ord('i')
-KEY_j = ord('j')
-KEY_k = ord('k')
-KEY_l = ord('l')
-KEY_m = ord('m')
-KEY_n = ord('n')
-KEY_o = ord('o')
-KEY_p = ord('p')
-KEY_q = ord('q')
-KEY_r = ord('r')
-KEY_s = ord('s')
-KEY_t = ord('t')
-KEY_u = ord('u')
-KEY_v = ord('v')
-KEY_w = ord('w')
-KEY_x = ord('x')
-KEY_y = ord('y')
-KEY_z = ord('z')
-KEY_A = ord('A')
-KEY_B = ord('B')
-KEY_C = ord('C')
-KEY_D = ord('D')
-KEY_E = ord('E')
-KEY_F = ord('F')
-KEY_G = ord('G')
-KEY_H = ord('H')
-KEY_I = ord('I')
-KEY_J = ord('J')
-KEY_K = ord('K')
-KEY_L = ord('L')
-KEY_M = ord('M')
-KEY_N = ord('N')
-KEY_O = ord('O')
-KEY_P = ord('P')
-KEY_Q = ord('Q')
-KEY_R = ord('R')
-KEY_S = ord('S')
-KEY_T = ord('T')
-KEY_U = ord('U')
-KEY_V = ord('V')
-KEY_W = ord('W')
-KEY_X = ord('X')
-KEY_Y = ord('Y')
-KEY_Z = ord('Z')
-
 MODE_NONE = 0
 MODE_SELECT = 1
 MODE_STANDARD = 2
+
+MOUSE_EVENTS = (
+    e_keycode.lmousedown.value,
+    e_keycode.lmouseup.value,
+    e_keycode.rmousedown.value,
+    e_keycode.rmouseup.value)
 
 class SpinTerm:
     def __init__(self, cb_keycode, cb_select):
@@ -114,7 +66,7 @@ class SpinTerm:
         self.select_rest = 0
         self.select_cgrid = None
         #
-        self.mouse_coords = None
+        self.lmousedown_coords = None
     #
     def close(self):
         if None != self.console:
@@ -129,17 +81,21 @@ class SpinTerm:
                 l=self,
                 s='received keystroke %s'%key)
             if key == e_keycode.lmousedown:
-                self.mouse_coords = self.console.get_last_lmousedown()
+                keycode = e_keycode.lmousedown.value
+                self.lmousedown_coords = self.console.get_last_lmousedown()
             elif key == e_keycode.lmouseup:
-                pass
+                keycode = e_keycode.lmouseup.value
+                self.lmouseup_coords = self.console.get_last_lmouseup()
             elif key == e_keycode.rmousedown:
-                self.mouse_coords = self.console.get_last_rmousedown()
+                keycode = e_keycode.rmousedown.value
+                self.rmousedown_coords = self.console.get_last_rmousedown()
             elif key == e_keycode.rmouseup:
-                pass
+                keycode = e_keycode.rmouseup.value
+                self.rmouseup_coords = self.console.get_last_rmouseup()
             else:
                 keycode = ord(key)
-                self.accept_key(
-                    keycode=keycode)
+            self.accept_key(
+                keycode=keycode)
         #
         self.refresh_console()
     #
@@ -187,9 +143,9 @@ class SpinTerm:
         as a display with input coming from elsewhere.
         '''
         if self.mode == MODE_SELECT:
-            if keycode == KEY_ESC:
+            if keycode == key('esc'):
                 self.to_mode_standard()
-            if keycode in (KEY_ENTER, KEY_s):
+            if keycode in (key('newline'), key('s')):
                 self.cb_select(
                     drop=self.select_drop,
                     rest=self.select_rest)
@@ -199,33 +155,33 @@ class SpinTerm:
                 # keys, gollop keys.
                 b_moved = False
                 # standard navigation
-                if keycode in (KEY_q, KEY_a, KEY_z, KEY_y, KEY_h, KEY_b):
+                if keycode in (key('q'), key('a'), key('z'), key('y'), key('h'), key('b')):
                     if self.select_rest > 0:
                         self.select_rest -= 1
                     b_moved = True
-                if keycode in (KEY_e, KEY_d, KEY_c, KEY_u, KEY_l, KEY_n):
+                if keycode in (key('e'), key('d'), key('c'), key('u'), key('l'), key('n')):
                     if self.select_rest < self.width-1:
                         self.select_rest += 1
                     b_moved = True
-                if keycode in (KEY_q, KEY_w, KEY_e, KEY_y, KEY_k, KEY_u):
+                if keycode in (key('q'), key('w'), key('e'), key('y'), key('k'), key('u')):
                     if self.select_drop > 0:
                         self.select_drop -= 1
                     b_moved = True
-                if keycode in (KEY_z, KEY_x, KEY_c, KEY_b, KEY_j, KEY_n):
+                if keycode in (key('z'), key('x'), key('c'), key('b'), key('j'), key('n')):
                     if self.select_drop < self.height-1:
                         self.select_drop += 1
                     b_moved = True
                 # shift navigation
-                if keycode in (KEY_Q, KEY_A, KEY_Z, KEY_Y, KEY_H, KEY_B):
+                if keycode in (key('Q'), key('A'), key('Z'), key('Y'), key('H'), key('B')):
                     self.select_rest = 0
                     b_moved = True
-                if keycode in (KEY_E, KEY_D, KEY_C, KEY_U, KEY_L, KEY_N):
+                if keycode in (key('E'), key('D'), key('C'), key('U'), key('L'), key('N')):
                     self.select_rest = self.width-1
                     b_moved = True
-                if keycode in (KEY_Q, KEY_W, KEY_E, KEY_Y, KEY_K, KEY_U):
+                if keycode in (key('Q'), key('W'), key('E'), key('Y'), key('K'), key('U')):
                     self.select_drop = 0
                     b_moved = True
-                if keycode in (KEY_Z, KEY_X, KEY_C, KEY_B, KEY_J, KEY_N):
+                if keycode in (key('Z'), key('X'), key('C'), key('B'), key('J'), key('N')):
                     self.select_drop = self.height-1
                     b_moved = True
                 #
@@ -233,12 +189,27 @@ class SpinTerm:
                     self.select_cursor_on = True
                     self.select_cursor_t100 = time.time() * 100
         elif self.mode == MODE_STANDARD:
-            if keycode == KEY_ESC:
+            if keycode == key('esc'):
                 self.to_mode_select()
             else:
-                # we pass the keystroke back in a callback
-                self.cb_keycode(
-                    keycode=keycode)
+                if keycode == e_keycode.lmouseup.value:
+                    # We check to see that the coords were the same as
+                    # when the mouse was depressed. If they weren't, this
+                    # usually implies the user has rethought their
+                    # decision, and we abort. From memory, this is how FTL
+                    # works, and it's super-useful.
+                    (ddrop, drest) = self.lmousedown_coords
+                    (udrop, urest) = self.lmouseup_coords
+                    if (ddrop, drest) == (udrop, urest):
+                        self.cb_select(
+                            drop=udrop,
+                            rest=urest)
+                elif keycode in MOUSE_EVENTS:
+                    pass
+                else:
+                    # we pass the keystroke back in a callback
+                    self.cb_keycode(
+                        keycode=keycode)
     def refresh_console(self):
         if self.mode == MODE_NONE:
             pass
@@ -270,6 +241,10 @@ def spin_term_new(cb_keycode, cb_select):
     '''
     cb_keycode(keycode)
     cb_select(drop, rest)
+        # We are avoiding more complex forms of selection (e.g. left and
+        # right mouse) because we want the interface to be viable as a
+        # touch interface. We will probably need to support left dragging
+        # later on.
     '''
     ob = SpinTerm(
         cb_keycode=cb_keycode,
