@@ -60,9 +60,13 @@ class e_keycode(enum.Enum):
     tab           = 0x9
     newline       = 0xa
     #
+    a             = 0x61
     c             = 0x63
+    d             = 0x64
     n             = 0x6e
     q             = 0x71
+    w             = 0x77
+    x             = 0x78
     Q             = 0x51
 
 def key(name):

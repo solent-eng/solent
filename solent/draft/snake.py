@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent.console import cgrid_new
 from solent.console import e_colpair
 from solent.console import key
 from solent.eng import engine_new
@@ -33,6 +34,7 @@ from solent.util import uniq
 
 from collections import deque
 import os
+import random
 import sys
 import time
 import traceback
@@ -43,25 +45,120 @@ MTU = 1500
 # --------------------------------------------------------
 #   :game
 # --------------------------------------------------------
-I_GAME_NEARCAST_SCHEMA = '''
-    i message h
-        i field h
+def create_spot(drop, rest):
+    return (drop, rest)
 
-    message game_start
-    message game_pause
+MAX_EGG_LIFE = 60
 
-    message canvas_clear
-    message canvas_create_snake
-    message canvas_grow_snake
+class Board:
+    def __init__(self, height, width):
+        self.height = height
+        self.width = width
+        #
+        self.game_over = False
+        self.egg_life = 0
+        #
+        self.free_spots = []
+        for drop in range(height):
+            for rest in range(width):
+                self.free_spots.append( create_spot(drop, rest) )
+        self.egg_spots = []
+        self.snake_spots = deque()
+        #
+        self._create_snake()
+        self._create_egg()
+    #
+    def is_game_over(self):
+        return self.game_over
+    def tick_n(self):
+        if self.game_over:
+            raise Exception("game is over")
+        (drop, rest) = self.snake_spots[-1]
+        drop -= 1
+        self._handle_movement(
+            drop=drop,
+            rest=rest)
+    def tick_w(self):
+        if self.game_over:
+            raise Exception("game is over")
+        (drop, rest) = self.snake_spots[-1]
+        rest -= 1
+        self._handle_movement(
+            drop=drop,
+            rest=rest)
+    def tick_e(self):
+        if self.game_over:
+            raise Exception("game is over")
+        (drop, rest) = self.snake_spots[-1]
+        rest += 1
+        self._handle_movement(
+            drop=drop,
+            rest=rest)
+    def tick_s(self):
+        if self.game_over:
+            raise Exception("game is over")
+        (drop, rest) = self.snake_spots[-1]
+        drop += 1
+        self._handle_movement(
+            drop=drop,
+            rest=rest)
+    #
+    def _create_snake(self):
+        (drop, rest) = (int(self.height/2), int(self.width/4))
+        #
+        # tail segment
+        spot = create_spot(drop, rest)
+        self.free_spots.remove(spot)
+        self.snake_spots.appendleft(spot)
+        rest -= 1
+        spot = create_spot(drop, rest)
+        self.free_spots.remove(spot)
+        self.snake_spots.appendleft(spot)
+        rest -= 1
+        spot = create_spot(drop, rest)
+        self.free_spots.remove(spot)
+        self.snake_spots.appendleft(spot)
+        rest -= 1
+    def _create_egg(self):
+        spot = random.choice(self.free_spots)
+        self.egg_spots.append(spot)
+        self.free_spots.remove(spot)
+        self.egg_life = 0
+    def _egg_rotation(self):
+        # for the moment, just create a new one
+        #
+        # Remove the current egg
+        if self.egg_spots:
+            self.free_spots.append(
+                self.egg_spots.pop())
+        self._create_egg()
+    def _handle_movement(self, drop, rest):
+        spot = create_spot(drop, rest)
+        if self.game_over:
+            raise Exception('game is over')
+        #
+        if spot in self.egg_spots:
+            # snake grows
+            self.egg_spots.remove(spot)
+            self.snake_spots.append(spot)
+            self._create_egg()
+        elif spot in self.free_spots:
+            # snake shuffles
+            self.free_spots.remove(spot)
+            self.snake_spots.append(spot)
+            self.free_spots.append(
+                self.snake_spots.popleft())
+        else:
+            self.game_over = True
+        #
+        self.egg_life += 1
+        if self.egg_life > MAX_EGG_LIFE:
+            self._egg_rotation()
+            self.egg_life = 0
 
-    message snake_up
-    message snake_down
-    message snake_left
-    message snake_right
-
-    message keystroke
-        field keycode
-'''
+SPOT_SNAKE_CAR = '@'
+SPOT_SNAKE_CDR = 'x'
+SPOT_EGG = 'O'
 
 class SpinSnakeGame:
     def __init__(self, height, width, cb_display_clear, cb_display_write):
@@ -70,27 +167,76 @@ class SpinSnakeGame:
         self.cb_display_clear = cb_display_clear
         self.cb_display_write = cb_display_write
         #
-        self.counter = 0
+        self.board = Board(
+            height=height,
+            width=width)
+        #
+        # this is a list so we can effectively ignore conflicting keystrokes.
+        # (Avoiding the player from turning back on themselves in the same
+        # space is more of a problem than I first expected.)
+        self.snake_direction = deque()
+        self.snake_direction.append('e')
     def tick(self):
-        '''
-        We control game ticks from the cog, rather than having an at_turn
-        within this spin. This gives us better control over game turns.
-        Consider if someone pauses the game.
-        '''
-        self.counter += 1
+        if self.board.is_game_over():
+            return
+        #
+        while len(self.snake_direction) > 1:
+            self.snake_direction.popleft()
+        cardinal = self.snake_direction[0]
+        #
+        if cardinal == 'e':
+            self.board.tick_e()
+        if cardinal == 'w':
+            self.board.tick_w()
+        if cardinal == 's':
+            self.board.tick_s()
+        if cardinal == 'n':
+            self.board.tick_n()
+        #
         self.render()
+    def steer(self, cardinal):
+        if len(cardinal) != 1 or cardinal not in 'nsew':
+            raise Exception('invalid cardinal %s'%(cardinal))
+        #
+        # can't go back on yourself
+        if self.snake_direction[0] == 'n' and cardinal == 's':
+            return
+        if self.snake_direction[0] == 's' and cardinal == 'n':
+            return
+        if self.snake_direction[0] == 'w' and cardinal == 'e':
+            return
+        if self.snake_direction[0] == 'e' and cardinal == 'w':
+            return
+        #
+        self.snake_direction.append(cardinal)
     def render(self):
         self.cb_display_clear()
+        for spot in self.board.egg_spots:
+            (drop, rest) = spot
+            self.cb_display_write(
+                drop=drop,
+                rest=rest,
+                s='O',
+                cpair=e_colpair.yellow_t)
+        #
+        if self.board.is_game_over():
+            cpair = e_colpair.red_t
+        else:
+            cpair = e_colpair.green_t
+        #
+        for spot in self.board.snake_spots:
+            (drop, rest) = spot
+            self.cb_display_write(
+                drop=drop,
+                rest=rest,
+                s='O',
+                cpair=cpair)
+        # replace the head with a new character
         self.cb_display_write(
-            drop=0,
-            rest=0,
-            s='[game]',
-            cpair=e_colpair.green_t)
-        self.cb_display_write(
-            drop=1,
-            rest=0,
-            s='counter: %s'%(self.counter),
-            cpair=e_colpair.red_t)
+            drop=drop,
+            rest=rest,
+            s='X',
+            cpair=cpair)
 
 def spin_snake_game_new(height, width, cb_display_clear, cb_display_write):
     '''
@@ -328,7 +474,7 @@ class CogSnakeGame:
         if not self.pin_containment_mode.is_focus_on_game():
             return
         now_t100 = t100()
-        if now_t100 - self.tick_t100 > 40:
+        if now_t100 - self.tick_t100 > 6:
             activity.mark(self, 'game tick')
             self.spin_snake_game.tick()
             self.tick_t100 = now_t100
@@ -343,7 +489,18 @@ class CogSnakeGame:
             cb_display_clear=self.game_display_clear,
             cb_display_write=self.game_display_write)
     def on_game_input(self, keycode):
-        raise Exception('xxx')
+        if keycode == key('a'):
+            self.spin_snake_game.steer(
+                cardinal='w')
+        elif keycode == key('w'):
+            self.spin_snake_game.steer(
+                cardinal='n')
+        elif keycode == key('d'):
+            self.spin_snake_game.steer(
+                cardinal='e')
+        elif keycode == key('x'):
+            self.spin_snake_game.steer(
+                cardinal='s')
     def on_game_focus(self):
         self.tick_t100 = t100()
         if None == self.spin_snake_game:
