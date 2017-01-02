@@ -190,6 +190,7 @@ class Orb:
         self.nearcast_schema = nearcast_schema
         #
         self.snoops = []
+        self.pins = []
         self.cogs = []
         self.pending = deque()
     def close(self):
@@ -246,7 +247,42 @@ class Orb:
             LogSnoop(
                 orb=self,
                 nearcast_schema=self.nearcast_schema))
-    def add_cog(self, cog):
+    def init_pin(self, construct):
+        '''
+        construct must have no arguments, and will typically be the __init__
+        method of a pin class. (No arguments is deliberate. It discourages
+        abuse. Their purpose is to listen for things, not to act on
+        information. Acting is done by cogs.)
+        '''
+        pin = construct()
+        #
+        # validate that the pin's on_methods match the schema
+        on_methods = [m for m in dir(pin) if m.startswith('on_')]
+        for om_name in on_methods:
+            method = getattr(pin, om_name)
+            args = inspect.getargspec(method).args
+            if args[0] != 'self':
+                raise Exception("pin method %s should have arg 'self'."%(
+                    om_name))
+            args = args[1:]
+            message_h = om_name[3:]
+            if not self.nearcast_schema.has_message(message_h):
+                m = "Cog has %s but there is no message %s in schema."%(
+                    om_name, message_h)
+                raise Exception(m)
+            desired_args = self.nearcast_schema.get_args_for_message(
+                message_h=message_h)
+            if desired_args != args:
+                sb = [ "Nearcast schema message %s"%(message_h)
+                     , "defines these args: [%s]"%('|'.join(desired_args))
+                     , "but %s.%s"%(pin.__class__.__name__, om_name)
+                     , "params are inconsistent: [%s]"%('|'.join(args))
+                     ]
+                raise Exception(' '.join(sb))
+        #
+        self.pins.append(pin)
+        return pin
+    def _add_cog(self, cog):
         if cog in self.cogs:
             try:
                 name = cog.cog_h
@@ -288,7 +324,7 @@ class Orb:
             cog_h=construct.__name__,
             orb=self,
             engine=self.engine)
-        self.add_cog(
+        self._add_cog(
             cog=cog)
         return cog
     def init_test_receiver_cog(self):
@@ -297,7 +333,7 @@ class Orb:
             cog_h='test_receiver',
             orb=self,
             engine=self.engine)
-        self.add_cog(
+        self._add_cog(
             cog=cog)
         return cog
     def nearcast(self, cog, message_h, **d_fields):
@@ -334,6 +370,19 @@ class Orb:
                     cog_h=cog_h,
                     message_h=message_h,
                     d_fields=d_fields)
+            for pin in self.pins:
+                if rname in dir(pin):
+                    fn = getattr(pin, rname)
+                    try:
+                        fn(**d_fields)
+                    except SolentQuitException:
+                        raise
+                    except:
+                        log('')
+                        log('!! breaking in pin, %s:%s'%(
+                            cog.__class__.__name__, rname))
+                        log('')
+                        raise
             for cog in self.cogs:
                 if rname in dir(cog):
                     fn = getattr(cog, rname)
@@ -343,7 +392,7 @@ class Orb:
                         raise
                     except:
                         log('')
-                        log('!! breaking on %s:%s'%(cog.cog_h, rname))
+                        log('!! breaking in cog, %s:%s'%(cog.cog_h, rname))
                         log('')
                         raise
 

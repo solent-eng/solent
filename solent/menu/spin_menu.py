@@ -43,6 +43,8 @@ class SpinMenu:
         self.d_menu = od()
     def set_title(self, text):
         self.title = text
+    def has_menu_keycode(self, menu_keycode):
+        return menu_keycode in self.d_menu
     def add_menu_item(self, menu_keycode, text, cb_select):
         '''
         cb_select() # no arguments

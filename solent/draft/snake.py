@@ -69,13 +69,28 @@ class SpinSnakeGame:
         self.width = width
         self.cb_display_clear = cb_display_clear
         self.cb_display_write = cb_display_write
-    def render_game(self):
+        #
+        self.counter = 0
+    def tick(self):
+        '''
+        We control game ticks from the cog, rather than having an at_turn
+        within this spin. This gives us better control over game turns.
+        Consider if someone pauses the game.
+        '''
+        self.counter += 1
+        self.render()
+    def render(self):
         self.cb_display_clear()
         self.cb_display_write(
             drop=0,
             rest=0,
             s='[game]',
             cpair=e_colpair.green_t)
+        self.cb_display_write(
+            drop=1,
+            rest=0,
+            s='counter: %s'%(self.counter),
+            cpair=e_colpair.red_t)
 
 def spin_snake_game_new(height, width, cb_display_clear, cb_display_write):
     '''
@@ -91,9 +106,13 @@ def spin_snake_game_new(height, width, cb_display_clear, cb_display_write):
 
 
 # --------------------------------------------------------
-#   :outer
+#   :containment
 # --------------------------------------------------------
-I_OUTER_NEARCAST_SCHEMA = '''
+#
+# Containment consists of a menu system, a terminal, and a cog that
+# encapsulates the game.
+#
+I_CONTAINMENT_NEARCAST_SCHEMA = '''
     i message h
         i field h
 
@@ -135,7 +154,24 @@ MENU_KEYCODE_QUIT = key('q')
 def t100():
     return time.time() * 100
 
-class CogInterpreter(object):
+class PinContainmentMode:
+    '''
+    Tracks whether we are in the menu or not.
+    '''
+    def __init__(self):
+        self.b_in_menu = True
+    #
+    def on_menu_focus(self):
+        self.b_in_menu = True
+    def on_game_focus(self):
+        self.b_in_menu = False
+    #
+    def is_focus_on_menu(self):
+        return self.b_in_menu
+    def is_focus_on_game(self):
+        return not self.b_in_menu
+
+class CogInterpreter:
     '''
     Coordinates high-level concepts such as whether we are in a menu or in the
     game.
@@ -145,21 +181,15 @@ class CogInterpreter(object):
         self.engine = engine
         self.orb = orb
         #
-        self.b_in_menu = False
-    def on_init(self, height, width):
-        self.b_in_menu = True
+        self.pin_containment_mode = orb.init_pin(PinContainmentMode)
     def on_quit(self):
         raise SolentQuitException('Quit message on stream')
-    def on_menu_focus(self):
-        self.b_in_menu = True
-    def on_game_focus(self):
-        self.b_in_menu = False
     def on_keystroke(self, keycode):
         # xxx
         if keycode == ord('Q'):
             self.nearcast.quit()
         #
-        if self.b_in_menu:
+        if self.pin_containment_mode.is_focus_on_menu():
             if keycode == key('tab'):
                 self.b_in_menu = False
                 self.nearcast.game_focus()
@@ -174,7 +204,7 @@ class CogInterpreter(object):
                 self.nearcast.game_input(
                     keycode=keycode)
 
-class CogTerm(object):
+class CogTerm:
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
@@ -209,7 +239,7 @@ class CogTerm(object):
             width=width,
             height=height)
 
-class CogMenu(object):
+class CogMenu:
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
@@ -229,9 +259,6 @@ class CogMenu(object):
         self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_NEW_GAME,
             text='new game')
-        self.nearcast.menu_item(
-            menu_keycode=MENU_KEYCODE_CONTINUE,
-            text='continue')
         self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_QUIT,
             text='quit')
@@ -256,6 +283,11 @@ class CogMenu(object):
             return
         fn = d[menu_keycode]
         fn()
+    def on_game_new(self):
+        if not self.spin_menu.has_menu_keycode(MENU_KEYCODE_CONTINUE):
+            self.nearcast.menu_item(
+                menu_keycode=MENU_KEYCODE_CONTINUE,
+                text='continue')
     #
     def menu_select(self, menu_keycode):
         self.nearcast.menu_select(
@@ -273,7 +305,7 @@ class CogMenu(object):
         self.nearcast.game_new()
         self.nearcast.game_focus()
     def _mi_continue(self):
-        raise Exception('xxx continue game')
+        self.nearcast.game_focus()
     def _mi_quit(self):
         raise SolentQuitException()
 
@@ -283,9 +315,24 @@ class CogSnakeGame:
         self.engine = engine
         self.orb = orb
         #
+        self.pin_containment_mode = orb.init_pin(PinContainmentMode)
         self.height = None
         self.width = None
         self.spin_snake_game = None
+        self.tick_t100 = None
+    def close(self):
+        pass
+    def at_turn(self, activity):
+        if self.spin_snake_game == None:
+            return
+        if not self.pin_containment_mode.is_focus_on_game():
+            return
+        now_t100 = t100()
+        if now_t100 - self.tick_t100 > 40:
+            activity.mark(self, 'game tick')
+            self.spin_snake_game.tick()
+            self.tick_t100 = now_t100
+    #
     def on_init(self, height, width):
         self.height = height
         self.width = width
@@ -298,10 +345,11 @@ class CogSnakeGame:
     def on_game_input(self, keycode):
         raise Exception('xxx')
     def on_game_focus(self):
+        self.tick_t100 = t100()
         if None == self.spin_snake_game:
             self.nearcast.menu_focus()
             return
-        self.spin_snake_game.render_game()
+        self.spin_snake_game.render()
     #
     def game_display_clear(self):
         self.nearcast.term_clear()
@@ -332,7 +380,7 @@ def main():
         engine.default_timeout = 0.04
         #
         nearcast_schema = nearcast_schema_new(
-            i_nearcast=I_OUTER_NEARCAST_SCHEMA)
+            i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         orb = engine.init_orb(
             orb_h=__name__,
             nearcast_schema=nearcast_schema)
