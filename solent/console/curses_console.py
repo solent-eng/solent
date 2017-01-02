@@ -249,8 +249,10 @@ def curses_console_new(width, height):
         grid_display=grid_display,
         width=width,
         height=height,
-        cb_last_mouseup=lambda: None,
-        cb_last_mousedown=lambda: None,
+        cb_last_lmouseup=lambda: None,
+        cb_last_lmousedown=lambda: None,
+        cb_last_rmouseup=lambda: None,
+        cb_last_rmousedown=lambda: None,
         cb_close=on_close)
     return CONSOLE
 
