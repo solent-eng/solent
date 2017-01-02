@@ -360,10 +360,6 @@ class CogInterpreter:
     def on_quit(self):
         raise SolentQuitException('Quit message on stream')
     def on_keystroke(self, keycode):
-        # xxx
-        if keycode == ord('Q'):
-            self.nearcast.quit()
-        #
         if self.pin_containment_mode.is_focus_on_menu():
             if keycode == key('tab'):
                 self.b_in_menu = False
