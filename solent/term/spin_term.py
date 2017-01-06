@@ -145,7 +145,7 @@ class SpinTerm:
         if self.mode == MODE_SELECT:
             if keycode == key('esc'):
                 self.to_mode_standard()
-            if keycode in (key('newline'), key('s')):
+            elif keycode in (key('newline'), key('s')):
                 self.cb_select(
                     drop=self.select_drop,
                     rest=self.select_rest)
