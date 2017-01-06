@@ -60,6 +60,19 @@ class e_keycode(enum.Enum):
     tab           = 0x9
     newline       = 0xa
     esc           = 0x1b
+    space         = 0x20
+    star          = 0x2a
+    #
+    n0            = 0x30
+    n1            = 0x31
+    n2            = 0x32
+    n3            = 0x33
+    n4            = 0x34
+    n5            = 0x35
+    n6            = 0x36
+    n7            = 0x37
+    n8            = 0x38
+    n9            = 0x39
     #
     a             = 0x61
     b             = 0x62
