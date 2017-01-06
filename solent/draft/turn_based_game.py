@@ -24,6 +24,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from .turnlib.algobunny_mind import algobunny_mind_new
+from .turnlib.cursor import cursor_new
 from .turnlib.menu import menu_new
 from .turnlib.player_mind import player_mind_new
 from .turnlib.rogue_interaction import rogue_interaction_new
@@ -33,7 +34,6 @@ from .turnlib.initiative import initiative_new
 from solent.console import e_boxtype
 from solent.console import e_colpair
 from solent.console import cgrid_new
-from solent.console import cursor_new
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
 

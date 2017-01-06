@@ -18,10 +18,7 @@
 
 from .cgrid import cgrid_new
 from .console import console_new
-from .cursor import cursor_new
-from .glyph import glyph_new
 from .keystream import keystream_new
-from .scope import scope_new
 
 from .curses_console import curses_console_new
 

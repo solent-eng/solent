@@ -1,5 +1,5 @@
 #
-# cell grid
+# cgrid (cell grid)
 #
 # // overview
 # This is a simple block of memory that holds display information. It has a

@@ -23,11 +23,11 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from .logbook import logbook_new
+from .glyph import glyph_new
+from .scope import scope_new
 
 from solent.console import e_colpair
 from solent.console import cgrid_new
-from solent.console import glyph_new
-from solent.console import scope_new
 from solent.exceptions import SolentQuitException
 
 from collections import deque
