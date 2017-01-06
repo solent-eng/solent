@@ -380,7 +380,7 @@ class Orb:
                     except:
                         log('')
                         log('!! breaking in pin, %s:%s'%(
-                            cog.__class__.__name__, rname))
+                            pin.__class__.__name__, rname))
                         log('')
                         raise
             for cog in self.cogs:

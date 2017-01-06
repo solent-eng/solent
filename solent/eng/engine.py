@@ -82,6 +82,8 @@ class Engine(object):
         return self.clock
     def get_mtu(self):
         return self.mtu
+    def set_default_timeout(self, value):
+        self.default_timeout = value
     def set_mtu(self, mtu):
         self.mtu = mtu
     def create_sid(self):
@@ -117,10 +119,11 @@ class Engine(object):
     def del_orb(self, orb_h):
         del self.orbs[org_h]
     def turn(self, timeout=0):
+        b_any_activity_at_all = False
         #
         # Caller's callback
-        b_any_activity_at_all = False
-        for orb in self.orbs.values():
+        orbs_in_this_loop = list(self.orbs.values())
+        for orb in orbs_in_this_loop:
             orb.at_turn(
                 activity=self.activity)
         lst_orb_activity = self.activity.get()
@@ -141,10 +144,11 @@ class Engine(object):
         # If we have activity, we don't want select jamming
         # things up with delays.
         if b_any_activity_at_all:
-            # i.e. nothing
+            # want no timeout in next loop
             timeout = 0
         else:
-            # i.e. something
+            # We are in a period of inactivity: let the next loop
+            # select have some timeout.
             timeout = self.default_timeout
         return timeout
     def cycle(self):
