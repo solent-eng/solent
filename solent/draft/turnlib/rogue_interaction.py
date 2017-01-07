@@ -26,7 +26,7 @@ from .logbook import logbook_new
 from .glyph import glyph_new
 from .scope import scope_new
 
-from solent.console import e_colpair
+from solent import e_colpair
 from solent.console import cgrid_new
 from solent.exceptions import SolentQuitException
 

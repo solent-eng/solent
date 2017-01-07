@@ -31,8 +31,8 @@ from .turnlib.rogue_interaction import rogue_interaction_new
 from .turnlib.rogue_plane import rogue_plane_new
 from .turnlib.initiative import initiative_new
 
+from solent import e_colpair
 from solent.console import e_boxtype
-from solent.console import e_colpair
 from solent.console import cgrid_new
 from solent.exceptions import SolentQuitException
 from solent.util import uniq

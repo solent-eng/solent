@@ -23,7 +23,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 # .
 
-from solent.console import e_colpair
+from solent import e_colpair
 
 DEFAULT_CPAIR = e_colpair.t_red
 

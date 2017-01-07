@@ -27,6 +27,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent import e_colpair
 from solent.draft.turnlib.algobunny_mind import algobunny_mind_new
 from solent.draft.turnlib.cursor import cursor_new
 from solent.draft.turnlib.menu import menu_new
@@ -35,7 +36,6 @@ from solent.draft.turnlib.rogue_interaction import rogue_interaction_new
 from solent.draft.turnlib.rogue_plane import rogue_plane_new
 from solent.draft.turnlib.initiative import initiative_new
 from solent.exceptions import SolentQuitException
-from solent.console import e_colpair
 from solent.console import e_boxtype
 from solent.console import cgrid_new
 from solent.util import uniq

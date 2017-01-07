@@ -25,7 +25,9 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent import e_colpair
 from solent import SolentQuitException
+from solent.console import cgrid_new
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
 from solent.eng import orb_new
@@ -35,8 +37,6 @@ from solent.gruel import gruel_schema_new
 from solent.gruel import spin_gruel_client_new
 from solent.log import init_logging
 from solent.log import log
-from solent.console import e_colpair
-from solent.console import cgrid_new
 from solent.util import line_finder_new
 
 from collections import deque

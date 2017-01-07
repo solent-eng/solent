@@ -21,9 +21,10 @@
 
 from .cgrid import cgrid_new
 from .console import console_new
-from .enumerations import e_colpair
-from .enumerations import e_keycode
 from .keystream import keystream_new
+
+from solent import e_colpair
+from solent import e_keycode
 
 from collections import deque
 import atexit

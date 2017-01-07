@@ -22,8 +22,6 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.console import cgrid_new
-
 from collections import OrderedDict as od
 
 def menu_entry(text, cb_select):
@@ -37,9 +35,6 @@ class SpinMenu:
         self.cb_display_write = cb_display_write
         #
         self.title = ''
-        self.cgrid = cgrid_new(
-            width=width,
-            height=height)
         self.d_menu = od()
     def set_title(self, text):
         self.title = text

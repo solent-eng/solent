@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.console import e_colpair
+from solent import e_colpair
 
 class GridFabric(object):
     def __init__(self):

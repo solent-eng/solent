@@ -23,7 +23,4 @@ from .keystream import keystream_new
 from .curses_console import curses_console_new
 
 from .enumerations import e_boxtype
-from .enumerations import e_colpair
-from .enumerations import e_keycode
-from .enumerations import key
 

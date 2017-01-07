@@ -26,7 +26,7 @@
 from .chart import chart_new
 from .swamp import swamp_new
 
-from solent.console import e_colpair
+from solent import e_colpair
 from solent.eng import nearcast_schema_new
 from solent.log import log
 from solent.util import uniq

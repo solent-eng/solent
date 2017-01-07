@@ -23,9 +23,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.console import cgrid_new
-from solent.console import e_colpair
-from solent.console import key
+from solent import e_colpair
+from solent import key
 from solent.rogue.swamp_monster import spin_swamp_monster_new
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new

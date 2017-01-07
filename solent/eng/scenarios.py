@@ -964,7 +964,7 @@ def main():
         #
         # Comment these in or out as you want to test scenarios.
         #
-        #scenario_basic_nearcast_example(engine)
+        scenario_basic_nearcast_example(engine)
         #scenario_broadcast_listen(engine)
         #scenario_broadcast_listen_and_unlisten(engine)
         #scenario_multiple_tcp_servers(engine)
@@ -972,7 +972,7 @@ def main():
         #scenario_tcp_client_cannot_connect(engine)
         #scenario_tcp_client_mixed_scenarios(engine)
         #scenario_broadcast_post(engine)
-        scenario_broadcast_post_with_del(engine)
+        #scenario_broadcast_post_with_del(engine)
         pass
     except KeyboardInterrupt:
         pass

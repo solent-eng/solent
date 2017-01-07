@@ -23,8 +23,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.console import e_colpair
-from solent.console import key
+from solent import e_colpair
+from solent import key
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
 from solent.exceptions import SolentQuitException
@@ -171,7 +171,7 @@ class CogMenu(object):
         self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_NEW_GAME,
             text='new game')
-        self.nearcast.menu_item
+        self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_CONTINUE,
             text='continue')
         self.nearcast.menu_item(
