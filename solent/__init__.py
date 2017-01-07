@@ -7,6 +7,7 @@ from .ref import ref_acquire
 from .ref import ref_release
 
 import enum
+import os
 
 class e_colpair(enum.Enum):
     "colour pairs"
@@ -27,15 +28,15 @@ class e_colpair(enum.Enum):
 
 class e_keycode(enum.Enum):
     # repurposing these values for mouse events
-    none          = 0x0
-    lmousedown    = 0x1  # in ascii this is start-of-heading
-    lmouseup      = 0x2  # in ascii this is end-of-heading
-    rmousedown    = 0x3  # in ascii this is end-of-text
-    rmouseup      = 0x4  # in ascii this is end-of-transmission
+    none          = 0x00
+    lmousedown    = 0x01  # in ascii this is start-of-heading
+    lmouseup      = 0x02  # in ascii this is end-of-heading
+    rmousedown    = 0x03  # in ascii this is end-of-text
+    rmouseup      = 0x04  # in ascii this is end-of-transmission
     #
-    backspace     = 0x8
-    tab           = 0x9
-    newline       = 0xa
+    backspace     = 0x08
+    tab           = 0x09
+    newline       = 0x0a
     esc           = 0x1b
     space         = 0x20
     star          = 0x2a
@@ -114,4 +115,10 @@ def key(name):
     if name not in l:
         raise Exception("e_keycode.%s does not exist"%(name))
     return getattr(e_keycode, name).value
+
+def get_solent_root():
+    solent = os.path.realpath(os.path.dirname(__file__))
+    parent = os.sep.join( solent.split(os.sep)[:-1] )
+    return parent
+    
 
