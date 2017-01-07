@@ -1,5 +1,5 @@
 #
-# console
+# iconsole
 #
 # // overview
 # Bundle of stuff you need to put a console together. Typically, an
@@ -25,7 +25,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-class Console(object):
+class IConsole(object):
     def __init__(self, keystream, grid_display, width, height, cb_last_lmousedown, cb_last_lmouseup, cb_last_rmousedown, cb_last_rmouseup, cb_close):
         self.keystream = keystream
         self.grid_display = grid_display
@@ -54,11 +54,11 @@ class Console(object):
         self.grid_display.update(
             cgrid=cgrid)
 
-def console_new(keystream, grid_display, width, height, cb_last_lmousedown, cb_last_lmouseup, cb_last_rmousedown, cb_last_rmouseup, cb_close):
+def iconsole_new(keystream, grid_display, width, height, cb_last_lmousedown, cb_last_lmouseup, cb_last_rmousedown, cb_last_rmouseup, cb_close):
     '''
     cb_close: takes no arguments
     '''
-    ob = Console(
+    ob = IConsole(
         keystream=keystream,
         grid_display=grid_display,
         width=width,

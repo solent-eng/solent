@@ -31,7 +31,6 @@ from solent.log import init_logging
 from solent.log import log
 from solent.term import spin_term_new
 from solent.util import uniq
-from solent.winconsole import window_console_new
 
 from collections import deque
 import os
@@ -67,6 +66,7 @@ class CogTerm(object):
         #
         self.counter = 0
         self.spin_term = spin_term_new(
+			console_type='pygame',
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)
         self.spin_term.open_console(

@@ -1,5 +1,5 @@
 #
-# curses_console
+# curses console
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -19,12 +19,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .cgrid import cgrid_new
-from .console import console_new
-from .keystream import keystream_new
 
 from solent import e_colpair
 from solent import e_keycode
+from solent.console import cgrid_new
+from solent.console import iconsole_new
+from solent.console import keystream_new
 
 from collections import deque
 import atexit
@@ -245,7 +245,7 @@ def curses_console_new(width, height):
         #
         global CONSOLE
         CONSOLE = None
-    CONSOLE = console_new(
+    CONSOLE = iconsole_new(
         keystream=keystream,
         grid_display=grid_display,
         width=width,

@@ -26,7 +26,7 @@ from solent import e_colpair
 from solent import e_keycode
 from solent import get_solent_root
 from solent.console import cgrid_new
-from solent.console import console_new
+from solent.console import iconsole_new
 from solent.console import keystream_new
 from solent.log import log
 
@@ -119,7 +119,7 @@ class GridDisplay(object):
         drop = int(ypos / self.cheight)
         return (drop, rest)
 
-class WindowConsole:
+class PygameConsole:
     def __init__(self, width, height, font):
         self.width = width
         self.height = height
@@ -231,15 +231,15 @@ DIR_STATIC = os.sep.join( [DIR_SOLENT_ROOT, 'static'] )
 DIR_FONTS = os.sep.join( [DIR_STATIC, 'console_pygame_fonts'] )
 PATH_TTF_FONT = os.sep.join( [DIR_FONTS, 'kongtext', 'kongtext.ttf'] )
 
-def window_console_new(width, height):
+def pygame_console_new(width, height):
     pygame.font.init()
     font = pygame.font.Font(PATH_TTF_FONT, 16)
-    window_console = WindowConsole(
+    window_console = PygameConsole(
         width=width,
         height=height,
         font=font)
     #
-    ob = console_new(
+    ob = iconsole_new(
         keystream=window_console.get_keystream(),
         grid_display=window_console.get_grid_display(),
         width=width,

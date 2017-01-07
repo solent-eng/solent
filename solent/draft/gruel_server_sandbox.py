@@ -298,7 +298,7 @@ class CogDocReceiver:
     def on_doc_recv(self, doc):
         log('doc received {%s}'%(doc))
 
-class CogUplink:
+class CogBridge:
     def __init__(self, cog_h, orb, engine):
         self.cog_h = cog_h
         self.orb = orb
@@ -324,8 +324,8 @@ def main():
         orb.init_cog(CogGruelServer)
         orb.init_cog(CogDocReceiver)
         #
-        uplink = orb.init_cog(CogUplink)
-        uplink.nc_permit_client_ip(
+        bridge = orb.init_cog(CogBridge)
+        bridge.nc_permit_client_ip(
             ip='127.0.0.1')
         #
         engine.event_loop()

@@ -28,6 +28,7 @@
 from solent import e_colpair
 from solent import SolentQuitException
 from solent.console import cgrid_new
+from solent.console import console_new
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
 from solent.eng import orb_new
@@ -45,15 +46,6 @@ import random
 import sys
 import time
 import traceback
-
-# want this to work for people who do not have pygame installed
-if '--tty' in sys.argv:
-    from solent.console import curses_console_new as console_new
-else:
-    try:
-        from solent.winconsole import window_console_new as console_new
-    except:
-        from solent.console import curses_console_new as console_new
 
 I_NEARCAST_SCHEMA = '''
     i message h
@@ -505,8 +497,17 @@ def wrap_eng(console):
         engine.close()
 
 def main():
+    if '--curses' in sys.argv:
+        console_type = 'curses'
+    elif '--pygame' in sys.argv:
+        console_type = 'pygame'
+    else:
+        print('ERROR: specify a terminal type! (curses, pygame)')
+        sys.exit(1)
+    #
     try:
         console = console_new(
+            console_type=console_type,
             width=80,
             height=25)
         wrap_eng(

@@ -28,6 +28,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import e_colpair
+from solent.console import console_new
 from solent.draft.turnlib.algobunny_mind import algobunny_mind_new
 from solent.draft.turnlib.cursor import cursor_new
 from solent.draft.turnlib.menu import menu_new
@@ -39,7 +40,6 @@ from solent.exceptions import SolentQuitException
 from solent.console import e_boxtype
 from solent.console import cgrid_new
 from solent.util import uniq
-from solent.winconsole import window_console_new
 
 from collections import deque
 import os
@@ -419,9 +419,17 @@ def husk_new(console):
 #   :rest
 # --------------------------------------------------------
 def main():
-    console = None
+    if '--curses' in sys.argv:
+        console_type = 'curses'
+    elif '--pygame' in sys.argv:
+        console_type = 'pygame'
+    else:
+        print('ERROR: specify a terminal type! (curses, pygame)')
+        sys.exit(1)
+    #
     try:
-        console = window_console_new(
+        console = console_new(
+            console_type=console_type,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
         husk = husk_new(

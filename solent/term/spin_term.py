@@ -30,15 +30,11 @@ from solent import e_colpair
 from solent import e_keycode
 from solent import key
 from solent.console import cgrid_new
+from solent.console import console_new
 from solent.log import log
 from solent.util import uniq
 
 import time
-
-try:
-    from solent.winconsole import window_console_new as console_new
-except:
-    from solent.console import curses_console_new as console_new
 
 MODE_NONE = 0
 MODE_SELECT = 1
@@ -51,7 +47,8 @@ MOUSE_EVENTS = (
     e_keycode.rmouseup.value)
 
 class SpinTerm:
-    def __init__(self, cb_keycode, cb_select):
+    def __init__(self, console_type, cb_keycode, cb_select):
+        self.console_type = console_type
         self.cb_keycode = cb_keycode
         self.cb_select = cb_select
         #
@@ -109,6 +106,7 @@ class SpinTerm:
             width=width,
             height=height)
         self.console = console_new(
+            console_type=self.console_type,
             width=width,
             height=height)
         self.mode = MODE_STANDARD
@@ -237,7 +235,7 @@ class SpinTerm:
             self.console.screen_update(
                 cgrid=self.cgrid)
 
-def spin_term_new(cb_keycode, cb_select):
+def spin_term_new(console_type, cb_keycode, cb_select):
     '''
     cb_keycode(keycode)
     cb_select(drop, rest)
@@ -247,6 +245,7 @@ def spin_term_new(cb_keycode, cb_select):
         # later on.
     '''
     ob = SpinTerm(
+        console_type=console_type,
         cb_keycode=cb_keycode,
         cb_select=cb_select)
     return ob

@@ -25,22 +25,13 @@
 
 from solent import e_colpair
 from solent.console import cgrid_new
+from solent.console import console_new
 from solent.exceptions import SolentQuitException
 from solent.util import uniq
 
 import sys
 import time
 import traceback
-
-# This weirdness allows the tty version to run for people who do not have
-# pygame available.
-if '--win' in sys.argv:
-    from solent.winconsole.window_console import window_console_new as console_new
-elif '--tty' in sys.argv:
-    from solent.console.curses_console import curses_console_new as console_new
-else:
-    print('ERROR: specify --tty or --win')
-    sys.exit(1)
 
 ESC_KEY_ORD = 27
 
@@ -85,9 +76,18 @@ def event_loop(console):
         t += 1
 
 def main():
+    if '--pygame' in sys.argv:
+        console_type = 'pygame'
+    elif '--curses' in sys.argv:
+        console_type = 'curses'
+    else:
+        print('ERROR: specify --curses or --pygame')
+        sys.exit(1)
+    #
     console = None
     try:
         console = console_new(
+            console_type=console_type,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
         event_loop(

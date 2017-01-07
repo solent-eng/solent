@@ -1,9 +1,3 @@
-#
-# enumerations
-#
-# // overview
-# constants for the term package
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,12 +16,5 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-import enum
-
-class e_boxtype(enum.Enum):
-    line          = 2000
-    edge          = 2001
-    void          = 2002
-    hash          = 2003
-    stop          = 2004
+from .curses_console import curses_console_new
 

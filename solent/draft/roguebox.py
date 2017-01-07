@@ -51,6 +51,7 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
         i field h
 
     message init
+        field console_type
         field height
         field width
 
@@ -140,14 +141,22 @@ class CogTerm:
         self.engine = engine
         self.orb = orb
         #
-        self.spin_term = spin_term_new(
-            cb_keycode=self.term_on_keycode,
-            cb_select=self.term_on_select)
+        self.spin_term = None
     def close(self):
-        self.spin_term.close()
+        if None != self.spin_term:
+            self.spin_term.close()
     def at_turn(self, activity):
         self.spin_term.at_turn(
             activity=activity)
+    #
+    def on_init(self, console_type, height, width):
+        self.spin_term = spin_term_new(
+            console_type=console_type,
+            cb_keycode=self.term_on_keycode,
+            cb_select=self.term_on_select)
+        self.spin_term.open_console(
+            width=width,
+            height=height)
     def on_term_clear(self):
         self.spin_term.clear()
     def on_term_write(self, drop, rest, s, cpair):
@@ -164,10 +173,6 @@ class CogTerm:
         # user makes a selection
         log('xxx term_on_select drop %s rest %s'%(drop, rest))
     #
-    def on_init(self, height, width):
-        self.spin_term.open_console(
-            width=width,
-            height=height)
 
 class CogMenu:
     def __init__(self, cog_h, engine, orb):
@@ -178,7 +183,7 @@ class CogMenu:
         self.spin_menu = None
     def close(self):
         pass
-    def on_init(self, height, width):
+    def on_init(self, console_type, height, width):
         self.spin_menu = spin_menu_new(
             height=height,
             width=width,
@@ -264,7 +269,7 @@ class CogRoguebox:
         if not self.pin_containment_mode.is_focus_on_game():
             return
     #
-    def on_init(self, height, width):
+    def on_init(self, console_type, height, width):
         self.height = height
         self.width = width
     def on_game_new(self):
@@ -329,13 +334,22 @@ class CogBridge:
         self.cog_h = cog_h
         self.orb = orb
         self.engine = engine
-    def nc_init(self, height, width):
+    def nc_init(self, console_type, height, width):
         self.nearcast.init(
+            console_type=console_type,
             height=height,
             width=width)
 
 def main():
     init_logging()
+    #
+    if '--curses' in sys.argv:
+        console_type = 'curses'
+    elif '--pygame' in sys.argv:
+        console_type = 'pygame'
+    else:
+        print('ERROR: specify a terminal type! (curses, pygame)')
+        sys.exit(1)
     #
     engine = None
     try:
@@ -357,6 +371,7 @@ def main():
         #
         bridge = orb.init_cog(CogBridge)
         bridge.nc_init(
+            console_type=console_type,
             height=24,
             width=80)
         #

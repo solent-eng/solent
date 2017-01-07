@@ -99,6 +99,7 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
         i field h
 
     message init
+        field console_type
         field height
         field width
 
@@ -200,14 +201,20 @@ class CogTerm:
         self.engine = engine
         self.orb = orb
         #
-        self.spin_term = spin_term_new(
-            cb_keycode=self.term_on_keycode,
-            cb_select=self.term_on_select)
+        self.spin_term = None
     def close(self):
         self.spin_term.close()
     def at_turn(self, activity):
         self.spin_term.at_turn(
             activity=activity)
+    def on_init(self, console_type, height, width):
+        self.spin_term = spin_term_new(
+            console_type=console_type,
+            cb_keycode=self.term_on_keycode,
+            cb_select=self.term_on_select)
+        self.spin_term.open_console(
+            width=width,
+            height=height)
     def on_term_clear(self):
         self.spin_term.clear()
     def on_term_write(self, drop, rest, s, cpair):
@@ -225,11 +232,6 @@ class CogTerm:
         self.nearcast.tselect(
             drop=drop,
             rest=rest)
-    #
-    def on_init(self, height, width):
-        self.spin_term.open_console(
-            width=width,
-            height=height)
 
 class CogMenu:
     def __init__(self, cog_h, engine, orb):
@@ -240,7 +242,7 @@ class CogMenu:
         self.spin_menu = None
     def close(self):
         pass
-    def on_init(self, height, width):
+    def on_init(self, console_type, height, width):
         self.spin_menu = spin_menu_new(
             height=height,
             width=width,
@@ -318,7 +320,7 @@ class CogDrawGame:
         if self.spin_draw_game == None:
             return
     #
-    def on_init(self, height, width):
+    def on_init(self, console_type, height, width):
         self.height = height
         self.width = width
     def on_game_new(self):
@@ -351,8 +353,9 @@ class CogPrimer:
         self.cog_h = cog_h
         self.orb = orb
         self.engine = engine
-    def nc_init(self, height, width):
+    def nc_init(self, console_type, height, width):
         self.nearcast.init(
+            console_type=console_type,
             height=height,
             width=width)
 
@@ -378,6 +381,7 @@ def main():
         #
         primer = orb.init_cog(CogPrimer)
         primer.nc_init(
+            console_type='pygame',
             height=24,
             width=78)
         #

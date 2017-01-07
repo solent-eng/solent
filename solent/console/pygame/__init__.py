@@ -16,5 +16,5 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .window_console import window_console_new
+from .pygame_console import pygame_console_new
 
