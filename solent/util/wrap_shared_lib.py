@@ -1,5 +1,8 @@
 #
-# random utility functions and classes
+# wrap_shared_lib
+#
+# // overview
+# Tools for wrapping share library code so you can access it from python.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -19,11 +22,14 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .clock import clock_new
-from .interface_script import init_interface_script_parser
-from .interface_script import SignalConsumer
-from .line_finder import line_finder_new
-from .simple import ns as ns
-from .simple import uniq as uniq
-from .wrap_shared_lib import wrap_so_fn
+from .simple import ns
+
+def wrap_so_fn(so_fn, argtypes, restype):
+    '''
+    Useful for wrapping share library functions with ctypes.
+    '''
+    fn = so_fn
+    fn.argypes = argtypes
+    fn.restype = restype
+    return fn
 

@@ -24,7 +24,7 @@
 
 from solent import e_colpair
 from solent import e_keycode
-from solent import get_solent_root
+from solent import dget_static
 from solent.console import cgrid_new
 from solent.console import iconsole_new
 from solent.console import keystream_new
@@ -226,9 +226,8 @@ class PygameConsole:
                 u=ev.unicode)
             return c
 
-DIR_SOLENT_ROOT = get_solent_root()
-DIR_STATIC = os.sep.join( [DIR_SOLENT_ROOT, 'static'] )
-DIR_FONTS = os.sep.join( [DIR_STATIC, 'console_pygame_fonts'] )
+DIR_STATIC = dget_static()
+DIR_FONTS = os.sep.join( [DIR_STATIC, 'solent_console_pygame_fonts'] )
 PATH_TTF_FONT = os.sep.join( [DIR_FONTS, 'kongtext', 'kongtext.ttf'] )
 
 def pygame_console_new(width, height):

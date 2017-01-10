@@ -1,6 +1,24 @@
+# --------------------------------------------------------
+#   specific ignores
+# --------------------------------------------------------
+#
+# Handy: create your launcher during development
 app
-release_to_pypi
+#
+# Handy: symlink to run_tests_on_change
+watch
+#
+# We don't want to commit shared libraries to the tree. If you have particular
+# libraries that you do want in source control, stick them in the
+# artifact/[platform] directory. i.e. This would not be good for tools derived
+# from source mastered in src. But it could be good for something like
+# libsoundio. Put it in artifact.
+res/solent_*
 
+
+# --------------------------------------------------------
+#   default ignores
+# --------------------------------------------------------
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

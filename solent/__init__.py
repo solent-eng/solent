@@ -1,3 +1,21 @@
+# // license
+# Copyright 2016, Free Software Foundation.
+#
+# This file is part of Solent.
+#
+# Solent is free software: you can redistribute it and/or modify it under the
+# terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Solent is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Solent. If not, see <http://www.gnu.org/licenses/>.
+
 from .exceptions import SolentQuitException
 from .mempool import mempool_new
 
@@ -116,9 +134,19 @@ def key(name):
         raise Exception("e_keycode.%s does not exist"%(name))
     return getattr(e_keycode, name).value
 
-def get_solent_root():
-    solent = os.path.realpath(os.path.dirname(__file__))
-    parent = os.sep.join( solent.split(os.sep)[:-1] )
-    return parent
-    
+def dget_root(*args):
+    '''
+    '''
+    dir_here = os.path.realpath(os.path.dirname(__file__))
+    path = dir_here.split(os.sep)[:-1]
+    path.extend(args)
+    return os.sep.join(path)
+
+def dget_static(*args):
+    return dget_root('static', *args)
+
+def dget_res(*args):
+    return dget_root('res', *args)
+
+
 

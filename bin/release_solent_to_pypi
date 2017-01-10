@@ -1,0 +1,55 @@
+#!/bin/bash
+
+pause() {
+    echo '[Paused]'
+    read _
+}
+
+clear
+
+echo "Step: Basics"
+echo "  * You need \$HOME/.pypirc"
+echo "  * Has password details. Craig masters this on host memlab."
+echo ""
+
+echo ""
+echo "Step: Tweak the version in setup.py"
+echo '  * key version'
+echo "  * key download_url (do not forget this!)"
+echo ""
+pause
+
+echo ""
+echo "Step: Commit if you haven't already"
+echo '  * git add setup.py'
+echo '  * git status'
+echo '  * git push'
+echo ""
+pause
+
+echo ""
+echo "Step: Tag and push that version to github"
+echo '  * git tag 0.11 -m "text"'
+echo '  * git push --tags origin master'
+echo ""
+pause
+
+echo "Step: Register on pypi"
+#echo '  * python setup.py register -r pypitest'
+echo '  * python setup.py register -r pypi'
+echo ''
+pause
+
+echo ''
+echo 'Step: Upload to pypi'
+#echo '  * python setup.py sdist upload -r pypitest'
+echo '  * python setup.py sdist upload -r pypi'
+echo ''
+pause
+
+echo ''
+echo 'Step: Remove the cache directory'
+echo '  * Instructions omitted. Involves a powerful use of rm'
+echo ''
+pause
+
