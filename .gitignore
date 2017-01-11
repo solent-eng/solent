@@ -13,7 +13,7 @@ watch
 # artifact/[platform] directory. i.e. This would not be good for tools derived
 # from source mastered in src. But it could be good for something like
 # libsoundio. Put it in artifact.
-res/solent_*
+wres/[a-z]*
 
 
 # --------------------------------------------------------

@@ -19,14 +19,14 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import dget_res
+from solent import dget_wres
 from solent.log import log
 from solent.log import hexdump_bytes
 from solent.util import wrap_so_fn
 
 from ctypes import *
 
-PATH_SO = dget_res('solent_draft_wrap', 'api.so')
+PATH_SO = dget_wres('draft', 'wrap', 'api.so')
 
 class Wrap:
     def __init__(self):

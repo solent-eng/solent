@@ -145,8 +145,10 @@ def dget_root(*args):
 def dget_static(*args):
     return dget_root('static', *args)
 
-def dget_res(*args):
-    return dget_root('res', *args)
-
-
+def dget_wres(*args):
+    '''
+    Path into the wrap-resources directory. That is, native code in shared
+    libraries that we are accessing from python.
+    '''
+    return dget_root('wres', *args)
 
