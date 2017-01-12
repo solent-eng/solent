@@ -1,3 +1,6 @@
+#
+# chart
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -19,20 +22,45 @@
 from collections import OrderedDict as od
 
 class Chart:
+    '''
+    Simple mechanism for mapping a spot (tuple of drop and rest) to a sigil_h.
+    '''
     def __init__(self, height, width):
         self.height = height
         self.width = width
         #
         self.d = od()
-        for drop in range(self.height):
-            for rest in range(self.width):
-                spot = (drop, rest)
-                self.d[spot] = ' '
-    def put(self, spot, c):
-        self.d[spot] = c
-    def get(self):
-        'Returns [ (spot, c) ]'
+    def rm(self, spot):
+        del self.d[spot]
+    def put(self, spot, sigil_h):
+        if None == sigil_h:
+            del self.d[spot]
+        else:
+            self.d[spot] = sigil_h
+    def blit(self, chart):
+        '''
+        Copy all the non-void references of the supplied chart into our chart.
+        '''
+        for (spot, sigil_h) in chart.items():
+            self.d[spot] = sigil_h
+    def items(self):
+        'Returns [ (spot, sigil_h) ]'
         return self.d.items()
+    def __repr__(self):
+        grid = [[]]
+        drop = None
+        for (spot, sigil_h) in sorted(self.d.items()):
+            if drop == None:
+                drop = spot[0]
+            elif spot[0] != drop:
+                grid.append([])
+                drop = spot[0]
+            grid[-1].append(sigil_h)
+        #
+        sb = []
+        for row in grid:
+            sb.append(''.join(row))
+        return '\n'.join(sb)
 
 def chart_new(height, width):
     ob = Chart(
