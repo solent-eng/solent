@@ -88,12 +88,18 @@ Install python3.4 or later
 Install hg (we need it for pygame - ick)
 
 git clone github.com/cratuki/solent
-
 cd solent
-virtualenv -p python3
 
 #
-# activate the virtual environment
+# // Create the virtual environment
+#
+# on unix:
+    virtualenv -p python3 venv
+# on windows (?):
+    virtualenv /p python3 venv
+
+#
+# // Activate the virtual environment
 #
 # on unix:
     (cd venv; . bin/activate; cd ..)
