@@ -85,7 +85,9 @@ create a release distro on another platform.
 ```bash
 Install python3.4 or later
 
-Install hg (we need it for pygame - ick)
+Install SDL for your platform
+
+Install pygame for your platform (you can skip this, but if you skip it you need hg instead - see below).
 
 git clone github.com/cratuki/solent
 cd solent
@@ -108,19 +110,27 @@ cd solent
     bin\activate.bat
     cd ..
 
+#
+# // If you didn't install a system-wide pygame, you can install it via pip.
+#
 pip3 install "hg+https://bitbucket.org/pygame/pygame"
 
+#
+# // Install other libraries we need in the virtualenv
+#
 pip3 install -r requirements.txt
 
 #
-# On unix or mac os. This won't work on Windows
+# // Use pyinstaller to create the packages
+#
+# This works on unix, but won't work on Windows.
 pyinstaller solent/pyinstaller/snake_curses.spec
 #
-# This should work everywhere so long as pygame installed above.
+# This should work anywhere that pygame is installed
 pyinstaller solent/pyinstaller/snake_pygame.spec
 
 #
-# The resulting binaries are in the dist directory
+# // Look in the dist directory for the resulting binaries
 #
 ```
 
