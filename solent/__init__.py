@@ -26,6 +26,7 @@ from .ref import ref_release
 
 import enum
 import os
+import sys
 
 class e_colpair(enum.Enum):
     "colour pairs"
@@ -134,13 +135,25 @@ def key(name):
         raise Exception("e_keycode.%s does not exist"%(name))
     return getattr(e_keycode, name).value
 
+def are_we_in_a_pyinsaller_bundle():
+    # In pyinstaller bundles, there is a magic variable called frozen
+    # attached to sys.
+    if getattr(sys, 'frozen', False):
+        return True
+    else:
+        return False
+
 def dget_root(*args):
     '''
     '''
-    dir_here = os.path.realpath(os.path.dirname(__file__))
-    path = dir_here.split(os.sep)[:-1]
-    path.extend(args)
-    return os.sep.join(path)
+    if are_we_in_a_pyinsaller_bundle():
+        # This is a magic variable set by pyintsaller
+        path_nodes = sys._MEIPASS.split(os.sep)
+    else:
+        dir_here = os.path.realpath(os.path.dirname(__file__))
+        path_nodes = dir_here.split(os.sep)[:-1]
+    path_nodes.extend(args)
+    return os.sep.join(path_nodes)
 
 def dget_static(*args):
     return dget_root('static', *args)
