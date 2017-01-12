@@ -93,7 +93,9 @@ class PinContainmentMode:
     '''
     Tracks whether we are in the menu or not.
     '''
-    def __init__(self):
+    def __init__(self, orb):
+        self.orb = orb
+        #
         self.b_in_menu = True
     #
     def on_menu_focus(self):
@@ -340,16 +342,8 @@ class CogBridge:
             height=height,
             width=width)
 
-def main():
+def game(console_type):
     init_logging()
-    #
-    if '--curses' in sys.argv:
-        console_type = 'curses'
-    elif '--pygame' in sys.argv:
-        console_type = 'pygame'
-    else:
-        print('ERROR: specify a terminal type! (curses, pygame)')
-        sys.exit(1)
     #
     engine = None
     try:
@@ -383,6 +377,18 @@ def main():
     finally:
         if engine != None:
             engine.close()
+
+def main():
+    #
+    if '--curses' in sys.argv:
+        console_type = 'curses'
+    elif '--pygame' in sys.argv:
+        console_type = 'pygame'
+    else:
+        print('ERROR: specify a terminal type! (curses, pygame)')
+        sys.exit(1)
+    #
+    game(console_type)
 
 if __name__ == '__main__':
     main()

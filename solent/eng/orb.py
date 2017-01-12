@@ -250,11 +250,12 @@ class Orb:
     def init_pin(self, construct):
         '''
         construct must have no arguments, and will typically be the __init__
-        method of a pin class. (No arguments is deliberate. It discourages
-        abuse. Their purpose is to listen for things, not to act on
-        information. Acting is done by cogs.)
+        method of a pin class. (Limiting arguments to the orb is deliberate.
+        It discourages abuse. Their purpose is to listen for things, not to
+        act on information. Acting is done by cogs.)
         '''
-        pin = construct()
+        pin = construct(
+            orb=self)
         #
         # validate that the pin's on_methods match the schema
         on_methods = [m for m in dir(pin) if m.startswith('on_')]
@@ -273,7 +274,7 @@ class Orb:
             desired_args = self.nearcast_schema.get_args_for_message(
                 message_h=message_h)
             if desired_args != args:
-                sb = [ "Nearcast schema message %s"%(message_h)
+                sb = [ "Nearcast schema message [%s]"%(message_h)
                      , "defines these args: [%s]"%('|'.join(desired_args))
                      , "but %s.%s"%(pin.__class__.__name__, om_name)
                      , "params are inconsistent: [%s]"%('|'.join(args))
@@ -379,8 +380,8 @@ class Orb:
                         raise
                     except:
                         log('')
-                        log('!! breaking in pin, %s:%s'%(
-                            pin.__class__.__name__, rname))
+                        log('!! breaking in orb [%s], pin, %s:%s'%(
+                            self.orb_h, pin.__class__.__name__, rname))
                         log('')
                         raise
             for cog in self.cogs:
@@ -392,7 +393,8 @@ class Orb:
                         raise
                     except:
                         log('')
-                        log('!! breaking in cog, %s:%s'%(cog.cog_h, rname))
+                        log('!! breaking in orb[%s], cog, %s:%s'%(
+                            self.orb_h, cog.cog_h, rname))
                         log('')
                         raise
 

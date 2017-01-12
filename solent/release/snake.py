@@ -333,7 +333,9 @@ class PinContainmentMode:
     '''
     Tracks whether we are in the menu or not.
     '''
-    def __init__(self):
+    def __init__(self, orb):
+        self.orb = orb
+        #
         self.b_in_menu = True
     #
     def on_menu_focus(self):
