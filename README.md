@@ -90,9 +90,19 @@ Install hg (we need it for pygame - ick)
 git clone github.com/cratuki/solent
 
 cd solent
-(cd venv; . bin/activate; cd ..)
+virtualenv -p python3
 
-pip3 install hg+https://bitbucket.org/pygame/pygame
+#
+# activate the virtual environment
+#
+# on unix:
+    (cd venv; . bin/activate; cd ..)
+# on windows:
+    cd venv
+    bin\activate.bat
+    cd ..
+
+pip3 install "hg+https://bitbucket.org/pygame/pygame"
 
 pip3 install -r requirements.txt
 
