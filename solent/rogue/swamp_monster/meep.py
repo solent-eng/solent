@@ -35,6 +35,8 @@ class Meep:
         self.rest = rest
         self.sigil_h = sigil_h
         self.b_is_player = b_is_player
+    def spot(self):
+        return (self.drop, self.rest)
 
 def meep_new(h, drop, rest, sigil_h, b_is_player):
     ob = Meep(

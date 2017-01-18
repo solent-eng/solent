@@ -30,6 +30,10 @@ class Chart:
         self.width = width
         #
         self.d = od()
+    def clear(self):
+        spots = list(self.d.keys())
+        for spot in spots:
+            self.rm(spot)
     def rm(self, spot):
         del self.d[spot]
     def put(self, spot, sigil_h):
@@ -46,6 +50,30 @@ class Chart:
     def items(self):
         'Returns [ (spot, sigil_h) ]'
         return self.d.items()
+    def show_differences_to(self, chart):
+        '''
+        Returns [ (spot, sigil_h) ]
+
+        Wherever there is a difference between self and the supplied chart, this
+        returns self's value. i.e. you probably want to call along these lines:
+        now_chart.show_differences_to(past_chart)
+        '''
+        rlist = []
+        for drop in range(self.height):
+            for rest in range(self.width):
+                spot = (drop, rest)
+                if spot in self.d and spot not in chart.d:
+                    rlist.append( (spot, self.d[spot]) )
+                elif spot not in self.d and spot in chart.d:
+                    rlist.append( (spot, None) )
+                elif spot not in self.d and spot not in chart.d:
+                    pass
+                else:
+                    n = self.d[spot]
+                    p = chart.d[spot]
+                    if n != p:
+                        rlist.append( (spot, n) )
+        return rlist
     def __repr__(self):
         grid = [[]]
         drop = None
@@ -61,6 +89,8 @@ class Chart:
         for row in grid:
             sb.append(''.join(row))
         return '\n'.join(sb)
+    def __len__(self):
+        return len(self.d)
 
 def chart_new(height, width):
     ob = Chart(

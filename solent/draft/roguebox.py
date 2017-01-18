@@ -82,6 +82,9 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
         field menu_keycode
 '''
 
+ROGUEBOX_GAME_HEIGHT = 23
+ROGUEBOX_GAME_WIDTH = 23
+
 MENU_KEYCODE_NEW_GAME = key('n')
 MENU_KEYCODE_CONTINUE = key('c')
 MENU_KEYCODE_QUIT = key('q')
@@ -246,13 +249,11 @@ class CogMenu:
     def _mi_quit(self):
         raise SolentQuitException()
 
-ROGUEBOX_GAME_HEIGHT = 23
-ROGUEBOX_GAME_WIDTH = 23
-
 class CogRoguebox:
     '''
     Contains a roguelike game, and offers controls. The roguelike itself
     is contained to a 23x23 box in the top-left sector.
+    Logging is offered in a box next to that.
     '''
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
@@ -281,7 +282,7 @@ class CogRoguebox:
             width=ROGUEBOX_GAME_WIDTH,
             cb_cls=self.rl_cls,
             cb_put=self.rl_put,
-            cb_box=self.rl_box)
+            cb_log=self.rl_log)
     def on_game_input(self, keycode):
         if keycode in (key('q'), key('y'), key('n7')):
             self.spin_roguelike.input_nw()
@@ -315,6 +316,9 @@ class CogRoguebox:
             rest=rest,
             s=s,
             cpair=cpair)
+    def rl_log(self, message):
+        self.cb_log(
+            message=msg)
     def rl_box(self, message):
         self.nearcast.term_clear()
         lines = message.split('\n')
@@ -357,7 +361,7 @@ def game(console_type):
         orb = engine.init_orb(
             orb_h=__name__,
             nearcast_schema=nearcast_schema)
-        orb.add_log_snoop()
+        #orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)
         orb.init_cog(CogMenu)
