@@ -1,6 +1,5 @@
 all:
-	cd venv; . bin/activate; cd ..
-	python -m wsrc.build_all
+	cd venv && . bin/activate && cd .. && python -m wsrc.build_all
 
 init:
 	virtualenv -p python3 venv
