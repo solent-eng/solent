@@ -309,10 +309,10 @@ class Orb:
             desired_args = self.nearcast_schema.get_args_for_message(
                 message_h=message_h)
             if desired_args != args:
-                sb = [ "Nearcast schema message %s"%(message_h)
-                     , "defines these args: [%s]"%('|'.join(desired_args))
-                     , "but %s.%s"%(cog_h, om_name)
-                     , "params are inconsistent: [%s]"%('|'.join(args))
+                sb = [ "Nearcast schema message [%s]"%(message_h)
+                     , "has fields [%s]."%(', '.join(desired_args))
+                     , "%s:%s"%(cog_h, om_name)
+                     , "fields are inconsistent: [%s]"%(', '.join(args))
                      ]
                 raise Exception(' '.join(sb))
         #
