@@ -31,7 +31,7 @@ import types
 
 DEFAULT_CPAIR = e_colpair.white_t
 
-class Cell(object):
+class Spot(object):
     def __init__(self):
         self.c = ' '
         self.cpair = DEFAULT_CPAIR
@@ -45,7 +45,7 @@ class Cell(object):
         self.c = spot.c
         self.cpair = spot.cpair
     def __repr__(self):
-        return 'cell[%s/%s]'%(self.c, self.cpair)
+        return 'spot[%s/%s]'%(self.c, self.cpair)
 
 class CellGrid(object):
     def __init__(self, width, height):
@@ -60,13 +60,14 @@ class CellGrid(object):
     def set_dimensions(self, width, height):
         self.spots = []
         for idx in range(width*height):
-            self.spots.append(Cell())
+            self.spots.append(Spot())
     def clear(self):
         for spot in self.spots:
             spot.c = ' '
             spot.cpair = DEFAULT_CPAIR
     def get(self, drop, rest):
-        return self.spots[ (drop*self.width) + rest ]
+        spot = self.spots[ (drop*self.width) + rest ]
+        return (spot.c, spot.cpair)
     def put(self, drop, rest, s, cpair):
         if type(s) != str:
             s = str(s)

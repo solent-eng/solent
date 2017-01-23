@@ -25,14 +25,15 @@
 
 from solent import e_colpair
 from solent import key
-from solent.rogue.swamp_monster import spin_swamp_monster_new
+from solent.console import cgrid_new
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
-from solent.term import spin_term_new
 from solent.menu import spin_menu_new
+from solent.rogue.simple import spin_simple_new
+from solent.term import spin_term_new
 from solent.util import uniq
 
 from collections import deque
@@ -60,10 +61,10 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
     message keystroke
         field keycode
 
-    message game_focus
-    message game_new
-    message game_input
-        field keycode
+    message rl_ready_alert
+    message rl_grid_alert
+    message rl_mail_alert
+    message rl_over_alert
 
     message term_clear
     message term_write
@@ -80,6 +81,12 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
         field text
     message menu_select
         field menu_keycode
+
+    message game_focus
+    message game_new
+    message game_ready
+    message game_input
+        field keycode
 '''
 
 ROGUEBOX_GAME_HEIGHT = 23
@@ -110,6 +117,17 @@ class PinContainmentMode:
         return self.b_in_menu
     def is_focus_on_game(self):
         return not self.b_in_menu
+
+class CogBridge:
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+    def nc_init(self, console_type, height, width):
+        self.nearcast.init(
+            console_type=console_type,
+            height=height,
+            width=width)
 
 class CogInterpreter:
     '''
@@ -177,7 +195,6 @@ class CogTerm:
     def term_on_select(self, drop, rest):
         # user makes a selection
         log('xxx term_on_select drop %s rest %s'%(drop, rest))
-    #
 
 class CogMenu:
     def __init__(self, cog_h, engine, orb):
@@ -264,6 +281,8 @@ class CogRoguebox:
         self.height = None
         self.width = None
         self.spin_roguelike = None
+        self.cgrid_full = None
+        self.cgrid_next = None
     def close(self):
         pass
     def at_turn(self, activity):
@@ -275,76 +294,85 @@ class CogRoguebox:
     def on_init(self, console_type, height, width):
         self.height = height
         self.width = width
-    def on_game_new(self):
-        self.spin_roguelike = spin_swamp_monster_new(
+        #
+        self.spin_roguelike = spin_simple_new(
             engine=self.engine,
-            height=ROGUEBOX_GAME_HEIGHT,
-            width=ROGUEBOX_GAME_WIDTH,
-            cb_cls=self.rl_cls,
-            cb_put=self.rl_put,
-            cb_log=self.rl_log)
+            height=height,
+            width=width,
+            cb_ready_alert=self._rl_ready_alert,
+            cb_grid_alert=self._rl_grid_alert,
+            cb_mail_alert=self._rl_mail_alert,
+            cb_over_alert=self._rl_over_alert)
+        self.cgrid_full = cgrid_new(
+            width=width,
+            height=height)
+        self.cgrid_next = cgrid_new(
+            width=width,
+            height=height)
+    def on_rl_ready_alert(self):
+        self._full_refresh()
+    def on_game_new(self):
+        self.spin_roguelike.new_game()
     def on_game_input(self, keycode):
-        if keycode in (key('q'), key('y'), key('n7')):
-            self.spin_roguelike.input_nw()
-        elif keycode in (key('w'), key('k'), key('n8')):
-            self.spin_roguelike.input_nn()
-        elif keycode in (key('e'), key('u'), key('n9')):
-            self.spin_roguelike.input_ne()
-        elif keycode in (key('z'), key('b'), key('n1')):
-            self.spin_roguelike.input_sw()
-        elif keycode in (key('x'), key('j'), key('n2')):
-            self.spin_roguelike.input_ss()
-        elif keycode in (key('c'), key('n'), key('n3')):
-            self.spin_roguelike.input_se()
-        elif keycode in (key('a'), key('h'), key('n4')):
-            self.spin_roguelike.input_ww()
-        elif keycode in (key('d'), key('l'), key('n6')):
-            self.spin_roguelike.input_ee()
-        elif keycode in (key('s'), key('newline'), key('space'), key('n5')):
-            self.spin_roguelike.input_bump()
+        log('xxx game_input')
     def on_game_focus(self):
-        if self.spin_roguelike == None:
+        log('xxx game_focus')
+        if None == self.spin_roguelike:
             self.nearcast.menu_focus()
             return
-        self.spin_roguelike.full_refresh()
+        self._full_refresh()
     #
-    def rl_cls(self):
+    def _rl_ready_alert(self):
+        self.nearcast.rl_ready_alert()
+    def _rl_grid_alert(self):
+        self.nearcast.rl_grid_alert()
+    def _rl_mail_alert(self):
+        self.nearcast.rl_mail_alert()
+    def _rl_over_alert(self):
+        self.nearcast.rl_over_alert()
+    #
+    def _full_refresh(self):
+        self.spin_roguelike.get_cgrid(
+            cgrid=self.cgrid_full)
+        self.cgrid_next.blit(
+            src_cgrid=self.cgrid_full)
         self.nearcast.term_clear()
-    def rl_put(self, drop, rest, s, cpair):
-        self.nearcast.term_write(
-            drop=drop,
-            rest=rest,
-            s=s,
-            cpair=cpair)
-    def rl_log(self, message):
-        self.cb_log(
-            message=msg)
-    def rl_box(self, message):
-        self.nearcast.term_clear()
-        lines = message.split('\n')
-        #
-        height = len(lines)
-        width = max([len(l) for l in lines])
-        drop_offset = int( (self.height - height) / 2 )
-        rest_offset = int( (self.width - width) / 2 )
-        #
-        for idx, line in enumerate(lines):
-            self.nearcast.term_write(
-                drop=drop_offset+idx,
-                rest=rest_offset,
-                s=line,
-                cpair=e_colpair.white_t)
-
-class CogBridge:
-    def __init__(self, cog_h, orb, engine):
-        self.cog_h = cog_h
-        self.orb = orb
-        self.engine = engine
-    def nc_init(self, console_type, height, width):
-        self.nearcast.init(
-            console_type=console_type,
-            height=height,
-            width=width)
+        self._sequence_non_blank_grid_next()
+    def _sequence_all_grid_next(self):
+        '''
+        cgrid_next is a buffer into which you put the set of things you want
+        send to the core. In the case of a full refresh, you'd have the whole
+        screen in there. In the case of a blit, you'd have 
+        '''
+        for drop in range(self.height):
+            for rest in range(self.width):
+                spot = self.cgrid_next.get(
+                    drop=drop,
+                    rest=rest)
+                (c, cpair) = spot
+                self.nearcast.term_write(
+                    drop=drop,
+                    rest=rest,
+                    s=c,
+                    cpair=cpair)
+    def _sequence_non_blank_grid_next(self):
+        '''
+        cgrid_next is a buffer into which you put the set of things you want
+        send to the core. In the case of a full refresh, you'd have the whole
+        screen in there. In the case of a blit, you'd have 
+        '''
+        for drop in range(self.height):
+            for rest in range(self.width):
+                (c, cpair) = self.cgrid_next.get(
+                    drop=drop,
+                    rest=rest)
+                if c == ' ':
+                    continue
+                self.nearcast.term_write(
+                    drop=drop,
+                    rest=rest,
+                    s=c,
+                    cpair=cpair)
 
 def game(console_type):
     init_logging()
@@ -361,7 +389,7 @@ def game(console_type):
         orb = engine.init_orb(
             orb_h=__name__,
             nearcast_schema=nearcast_schema)
-        #orb.add_log_snoop()
+        orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)
         orb.init_cog(CogMenu)
