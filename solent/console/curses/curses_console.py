@@ -20,7 +20,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 
-from solent import e_colpair
+from solent import e_cpair
 from solent import e_keycode
 from solent.console import cgrid_new
 from solent.console import iconsole_new
@@ -142,20 +142,20 @@ PROFILE_WHITE_PURPLE = 15
 PROFILE_BLACK_CYAN = 16
 PROFILE_T_WHITE = 17
 
-MAP_CONST_COLOURS_TO_CPAIR = { e_colpair.red_t: PROFILE_RED_T
-                             , e_colpair.green_t: PROFILE_GREEN_T
-                             , e_colpair.yellow_t: PROFILE_YELLOW_T
-                             , e_colpair.blue_t: PROFILE_BLUE_T
-                             , e_colpair.purple_t: PROFILE_PURPLE_T
-                             , e_colpair.cyan_t: PROFILE_CYAN_T
-                             , e_colpair.white_t: PROFILE_WHITE_T
-                             , e_colpair.t_red: PROFILE_RED_T
-                             , e_colpair.t_green: PROFILE_T_GREEN
-                             , e_colpair.t_yellow: PROFILE_T_YELLOW
-                             , e_colpair.white_blue: PROFILE_WHITE_BLUE
-                             , e_colpair.white_purple: PROFILE_WHITE_PURPLE
-                             , e_colpair.black_cyan: PROFILE_BLACK_CYAN
-                             , e_colpair.t_white: PROFILE_T_WHITE
+MAP_CONST_COLOURS_TO_CPAIR = { e_cpair.red_t: PROFILE_RED_T
+                             , e_cpair.green_t: PROFILE_GREEN_T
+                             , e_cpair.yellow_t: PROFILE_YELLOW_T
+                             , e_cpair.blue_t: PROFILE_BLUE_T
+                             , e_cpair.purple_t: PROFILE_PURPLE_T
+                             , e_cpair.cyan_t: PROFILE_CYAN_T
+                             , e_cpair.white_t: PROFILE_WHITE_T
+                             , e_cpair.t_red: PROFILE_RED_T
+                             , e_cpair.t_green: PROFILE_T_GREEN
+                             , e_cpair.t_yellow: PROFILE_T_YELLOW
+                             , e_cpair.white_blue: PROFILE_WHITE_BLUE
+                             , e_cpair.white_purple: PROFILE_WHITE_PURPLE
+                             , e_cpair.black_cyan: PROFILE_BLACK_CYAN
+                             , e_cpair.t_white: PROFILE_T_WHITE
                              }
 
 class GridDisplay(object):

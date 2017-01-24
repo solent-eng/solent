@@ -80,10 +80,12 @@ class LogSnoop:
             return
         def format_message():
             sb = []
-            sb.append('[%s/%s] %s'%(self.orb.orb_h, cog_h, message_h))
-            for key in self.nearcast_schema[message_h]:
+            sb.append('[%s/%s/%s] '%(self.orb.orb_h, cog_h, message_h))
+            for idx, key in enumerate(self.nearcast_schema[message_h]):
+                if idx > 0:
+                    sb.append(', ')
                 sb.append('%s:%s'%(key, d_fields[key]))
-            return '/'.join(sb)
+            return ''.join(sb)
         nice = format_message()
         log(nice)
 

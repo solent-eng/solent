@@ -28,7 +28,7 @@ from .meep import meep_new
 from .sigil import sigil_new
 from .swamp_generator import swamp_generator_new
 
-from solent import e_colpair
+from solent import e_cpair
 from solent.eng import nearcast_schema_new
 from solent.log import log
 from solent.util import uniq
@@ -570,27 +570,27 @@ class SpinSwampMonster:
         self.bridge.nc_sigil(
             h=SIGIL_H_LAND,
             c='.',
-            cpair=e_colpair.white_t)
+            cpair=e_cpair.white_t)
         self.bridge.nc_sigil(
             h=SIGIL_H_MANGROVE,
             c='%',
-            cpair=e_colpair.green_t)
+            cpair=e_cpair.green_t)
         self.bridge.nc_sigil(
             h=SIGIL_H_MONSTER,
             c='Y',
-            cpair=e_colpair.red_t)
+            cpair=e_cpair.red_t)
         self.bridge.nc_sigil(
             h=SIGIL_H_PLAYER,
             c='@',
-            cpair=e_colpair.yellow_t)
+            cpair=e_cpair.yellow_t)
         self.bridge.nc_sigil(
             h=SIGIL_H_VOID,
             c=' ',
-            cpair=e_colpair.white_t)
+            cpair=e_cpair.white_t)
         self.bridge.nc_sigil(
             h=SIGIL_H_WATER,
             c='~',
-            cpair=e_colpair.blue_t)
+            cpair=e_cpair.blue_t)
         #
         # Hilarity. Due to an oversight in the way I've designed the current
         # interation of the rogue game, it is necessary to translate status bar
@@ -600,7 +600,7 @@ class SpinSwampMonster:
             self.bridge.nc_sigil(
                 h='char_%s'%i,
                 c=c,
-                cpair=e_colpair.cyan_t)
+                cpair=e_cpair.cyan_t)
     #
     def input_nw(self):
         self.bridge.nc_input(

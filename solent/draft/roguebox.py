@@ -23,7 +23,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_colpair
+from solent import e_cpair
+from solent import e_keycode
 from solent import key
 from solent.console import cgrid_new
 from solent.eng import engine_new
@@ -32,6 +33,7 @@ from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
 from solent.menu import spin_menu_new
+from solent.rogue import spin_message_feed_new
 from solent.rogue.simple import spin_simple_new
 from solent.term import spin_term_new
 from solent.util import uniq
@@ -61,11 +63,6 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
     message keystroke
         field keycode
 
-    message rl_ready_alert
-    message rl_grid_alert
-    message rl_mail_alert
-    message rl_over_alert
-
     message term_clear
     message term_write
         field drop
@@ -82,19 +79,47 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
     message menu_select
         field menu_keycode
 
-    message game_focus
-    message game_new
-    message game_ready
-    message game_input
+    message directive
+        field directive_h
+        field description
+    message keycode_to_directive
+        field control_scheme_h
+        field keycode
+        field directive_h
+
+    message o_game_new
+    message x_game_ready
+    message x_game_grid
+    message x_game_mail
+    message x_game_over
+    message o_game_focus
+    message o_game_keycode
         field keycode
 '''
 
-ROGUEBOX_GAME_HEIGHT = 23
-ROGUEBOX_GAME_WIDTH = 23
+CONTROL_SCHEME_H_GOLLOP = 'gollop'
+CONTROL_SCHEME_H_KEYPAD = 'keypad'
+CONTROL_SCHEME_H_VI = 'vi'
+
+CONSOLE_HEIGHT = 24
+CONSOLE_WIDTH = 80
 
 MENU_KEYCODE_NEW_GAME = key('n')
 MENU_KEYCODE_CONTINUE = key('c')
 MENU_KEYCODE_QUIT = key('q')
+
+ROGUEBOX_ORIGIN_DROP = 0
+ROGUEBOX_ORIGIN_REST = 0
+
+ROGUEBOX_GAMEBOX_HEIGHT = 23
+ROGUEBOX_GAMEBOX_WIDTH = 23
+ROGUEBOX_GAMEBOX_NAIL = (0, 0)
+ROGUEBOX_GAMEBOX_PERI = (23, 23)
+
+ROGUEBOX_MFEED_HEIGHT = CONSOLE_HEIGHT
+ROGUEBOX_MFEED_WIDTH = 57
+ROGUEBOX_MFEED_NAIL = (0, 23)
+ROGUEBOX_MFEED_PERI = (24, 80)
 
 def t100():
     return time.time() * 100
@@ -110,7 +135,7 @@ class PinContainmentMode:
     #
     def on_menu_focus(self):
         self.b_in_menu = True
-    def on_game_focus(self):
+    def on_o_game_focus(self):
         self.b_in_menu = False
     #
     def is_focus_on_menu(self):
@@ -140,13 +165,141 @@ class CogInterpreter:
         self.orb = orb
         #
         self.pin_containment_mode = orb.init_pin(PinContainmentMode)
+        self.d_directive = {}
     def on_quit(self):
         raise SolentQuitException('Quit message on stream')
+    def on_directive(self, directive_h, description):
+        self.d_directive[directive_h] = description
+        #
+        if directive_h == 'nw':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
+                keycode=e_keycode.q.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
+                keycode=e_keycode.n7.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=e_keycode.y.value,
+                directive_h=directive_h)
+        elif directive_h == 'nn':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
+                keycode=e_keycode.w.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
+                keycode=e_keycode.n8.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=e_keycode.k.value,
+                directive_h=directive_h)
+        elif directive_h == 'ne':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
+                keycode=e_keycode.e.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
+                keycode=e_keycode.n9.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=e_keycode.u.value,
+                directive_h=directive_h)
+        elif directive_h == 'sw':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
+                keycode=e_keycode.z.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
+                keycode=e_keycode.n1.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=e_keycode.b.value,
+                directive_h=directive_h)
+        elif directive_h == 'ss':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
+                keycode=e_keycode.x.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
+                keycode=e_keycode.n2.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=e_keycode.j.value,
+                directive_h=directive_h)
+        elif directive_h == 'se':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
+                keycode=e_keycode.c.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
+                keycode=e_keycode.n3.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=e_keycode.n.value,
+                directive_h=directive_h)
+        elif directive_h == 'ww':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
+                keycode=e_keycode.a.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
+                keycode=e_keycode.n4.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=e_keycode.h.value,
+                directive_h=directive_h)
+        elif directive_h == 'ee':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
+                keycode=e_keycode.d.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
+                keycode=e_keycode.n6.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=e_keycode.l.value,
+                directive_h=directive_h)
+        elif directive_h == 'bump':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
+                keycode=e_keycode.s.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
+                keycode=e_keycode.n5.value,
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=e_keycode.space.value,
+                directive_h=directive_h)
+        elif directive_h == 'help':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=key('qmark'),
+                directive_h=directive_h)
+        else:
+            raise Exception('Unhandled directive %s'%(directive.h))
     def on_keystroke(self, keycode):
         if self.pin_containment_mode.is_focus_on_menu():
             if keycode == key('tab'):
                 self.b_in_menu = False
-                self.nearcast.game_focus()
+                self.nearcast.o_game_focus()
             else:
                 self.nearcast.menu_select(
                     menu_keycode=keycode)
@@ -155,7 +308,7 @@ class CogInterpreter:
                 self.b_in_menu = True
                 self.nearcast.menu_focus()
             else:
-                self.nearcast.game_input(
+                self.nearcast.o_game_keycode(
                     keycode=keycode)
 
 class CogTerm:
@@ -193,8 +346,7 @@ class CogTerm:
         self.nearcast.keystroke(
             keycode=keycode)
     def term_on_select(self, drop, rest):
-        # user makes a selection
-        log('xxx term_on_select drop %s rest %s'%(drop, rest))
+        pass
 
 class CogMenu:
     def __init__(self, cog_h, engine, orb):
@@ -240,7 +392,7 @@ class CogMenu:
             return
         fn = d[menu_keycode]
         fn()
-    def on_game_new(self):
+    def on_o_game_new(self):
         if not self.spin_menu.has_menu_keycode(MENU_KEYCODE_CONTINUE):
             self.nearcast.menu_item(
                 menu_keycode=MENU_KEYCODE_CONTINUE,
@@ -256,13 +408,13 @@ class CogMenu:
             drop=drop,
             rest=rest,
             s=s,
-            cpair=e_colpair.blue_t)
+            cpair=e_cpair.blue_t)
     #
     def _mi_new_game(self):
-        self.nearcast.game_new()
-        self.nearcast.game_focus()
+        self.nearcast.o_game_new()
+        self.nearcast.o_game_focus()
     def _mi_continue(self):
-        self.nearcast.game_focus()
+        self.nearcast.o_game_focus()
     def _mi_quit(self):
         raise SolentQuitException()
 
@@ -281,8 +433,14 @@ class CogRoguebox:
         self.height = None
         self.width = None
         self.spin_roguelike = None
-        self.cgrid_full = None
+        self.spin_message_feed = None
+        self.cgrid_last = None
         self.cgrid_next = None
+        self.d_keycode_to_directive = {}
+        self.d_control_scheme = {} # (control_scheme_h, directive_h) = keycode
+        #
+        self.b_mail_waiting = False
+        self.b_refresh_needed = False
     def close(self):
         pass
     def at_turn(self, activity):
@@ -290,89 +448,125 @@ class CogRoguebox:
             return
         if not self.pin_containment_mode.is_focus_on_game():
             return
+        if self.b_mail_waiting:
+            activity.mark(
+                l=self,
+                s='mail processing')
+            for message in self.spin_roguelike.retrieve_mail():
+                self.spin_message_feed.accept(
+                    message=message,
+                    turn=self.spin_roguelike.get_turn())
+            self.b_mail_waiting = False
+            self.b_refresh_needed = True
+        #
+        if self.b_refresh_needed:
+            self._diff_display_refresh()
+            self.b_refresh_needed = False
     #
     def on_init(self, console_type, height, width):
         self.height = height
         self.width = width
         #
+        if self.height < ROGUEBOX_GAMEBOX_HEIGHT:
+            raise Exception("console height too small.")
+        if self.width < ROGUEBOX_GAMEBOX_WIDTH:
+            raise Exception("console width too small.")
         self.spin_roguelike = spin_simple_new(
             engine=self.engine,
-            height=height,
-            width=width,
+            height=ROGUEBOX_GAMEBOX_HEIGHT,
+            width=ROGUEBOX_GAMEBOX_WIDTH,
             cb_ready_alert=self._rl_ready_alert,
             cb_grid_alert=self._rl_grid_alert,
             cb_mail_alert=self._rl_mail_alert,
             cb_over_alert=self._rl_over_alert)
-        self.cgrid_full = cgrid_new(
+        self.spin_message_feed = spin_message_feed_new(
+            height=ROGUEBOX_MFEED_HEIGHT,
+            width=ROGUEBOX_MFEED_WIDTH,
+            cpair_new=e_cpair.cyan_t,
+            cpair_old=e_cpair.blue_t)
+        self.cgrid_last = cgrid_new(
             width=width,
             height=height)
         self.cgrid_next = cgrid_new(
             width=width,
             height=height)
-    def on_rl_ready_alert(self):
-        self._full_refresh()
-    def on_game_new(self):
+        #
+        # sequence the possible directives in the game to the core. this will
+        # give this outer core the opportunity to match directives it
+        # recognises to keycodes. in the future, you could imagine being able
+        # to configure user keystrokes using this data.
+        for directive in self.spin_roguelike.get_supported_directives():
+            self.nearcast.directive(
+                directive_h=directive.h,
+                description=directive.description)
+    def on_keycode_to_directive(self, control_scheme_h, keycode, directive_h):
+        self.d_keycode_to_directive[keycode] = directive_h
+        self.d_control_scheme[ (control_scheme_h, directive_h) ] = keycode
+    def on_x_game_ready(self):
+        pass
+    def on_o_game_new(self):
         self.spin_roguelike.new_game()
-    def on_game_input(self, keycode):
-        log('xxx game_input')
-    def on_game_focus(self):
-        log('xxx game_focus')
+    def on_x_game_mail(self):
+        self.b_mail_waiting = True
+    def on_x_game_grid(self):
+        self.b_refresh_needed = True
+    def on_o_game_keycode(self, keycode):
+        if keycode not in self.d_keycode_to_directive:
+            return
+        directive_h = self.d_keycode_to_directive[keycode]
+        self.spin_roguelike.directive(
+            directive_h=directive_h)
+        self.spin_message_feed.scroll_past(
+            turn=self.spin_roguelike.get_turn()-5)
+        self.b_refresh_needed = True
+    def on_o_game_focus(self):
         if None == self.spin_roguelike:
             self.nearcast.menu_focus()
             return
-        self._full_refresh()
+        self._full_display_refresh()
     #
     def _rl_ready_alert(self):
-        self.nearcast.rl_ready_alert()
+        self.nearcast.x_game_ready()
     def _rl_grid_alert(self):
-        self.nearcast.rl_grid_alert()
+        self.nearcast.x_game_grid()
     def _rl_mail_alert(self):
-        self.nearcast.rl_mail_alert()
+        self.nearcast.x_game_mail()
     def _rl_over_alert(self):
-        self.nearcast.rl_over_alert()
+        self.nearcast.x_game_over()
     #
-    def _full_refresh(self):
-        self.spin_roguelike.get_cgrid(
-            cgrid=self.cgrid_full)
-        self.cgrid_next.blit(
-            src_cgrid=self.cgrid_full)
+    def _full_display_refresh(self):
         self.nearcast.term_clear()
-        self._sequence_non_blank_grid_next()
-    def _sequence_all_grid_next(self):
-        '''
-        cgrid_next is a buffer into which you put the set of things you want
-        send to the core. In the case of a full refresh, you'd have the whole
-        screen in there. In the case of a blit, you'd have 
-        '''
+        self.cgrid_last.clear()
+        self._diff_display_refresh()
+    def _diff_display_refresh(self):
+        self.spin_roguelike.get_cgrid(
+            cgrid=self.cgrid_next,
+            nail=ROGUEBOX_GAMEBOX_NAIL,
+            peri=ROGUEBOX_GAMEBOX_PERI)
+        self.spin_message_feed.get_cgrid(
+            cgrid=self.cgrid_next,
+            nail=ROGUEBOX_MFEED_NAIL,
+            peri=ROGUEBOX_MFEED_PERI,
+            turn=self.spin_roguelike.get_turn())
+        #
         for drop in range(self.height):
             for rest in range(self.width):
-                spot = self.cgrid_next.get(
+                (old_c, old_cpair) = self.cgrid_last.get(
                     drop=drop,
                     rest=rest)
-                (c, cpair) = spot
-                self.nearcast.term_write(
-                    drop=drop,
-                    rest=rest,
-                    s=c,
-                    cpair=cpair)
-    def _sequence_non_blank_grid_next(self):
-        '''
-        cgrid_next is a buffer into which you put the set of things you want
-        send to the core. In the case of a full refresh, you'd have the whole
-        screen in there. In the case of a blit, you'd have 
-        '''
-        for drop in range(self.height):
-            for rest in range(self.width):
                 (c, cpair) = self.cgrid_next.get(
                     drop=drop,
                     rest=rest)
-                if c == ' ':
+                if c == old_c and cpair == old_cpair:
                     continue
                 self.nearcast.term_write(
                     drop=drop,
                     rest=rest,
                     s=c,
                     cpair=cpair)
+        #
+        self.cgrid_last.blit(
+            src_cgrid=self.cgrid_next)
 
 def game(console_type):
     init_logging()
@@ -382,14 +576,14 @@ def game(console_type):
         engine = engine_new(
             mtu=MTU)
         engine.set_default_timeout(0.04)
-        engine.debug_eloop_on() # xxx
+        #engine.debug_eloop_on()
         #
         nearcast_schema = nearcast_schema_new(
             i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         orb = engine.init_orb(
             orb_h=__name__,
             nearcast_schema=nearcast_schema)
-        orb.add_log_snoop()
+        #orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)
         orb.init_cog(CogMenu)
@@ -398,8 +592,8 @@ def game(console_type):
         bridge = orb.init_cog(CogBridge)
         bridge.nc_init(
             console_type=console_type,
-            height=24,
-            width=80)
+            height=CONSOLE_HEIGHT,
+            width=CONSOLE_WIDTH)
         #
         engine.event_loop()
     except SolentQuitException:

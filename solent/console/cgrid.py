@@ -24,12 +24,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_colpair
+from solent import e_cpair
 
 import sys
 import types
 
-DEFAULT_CPAIR = e_colpair.white_t
+DEFAULT_CPAIR = e_cpair.white_t
 
 class Spot(object):
     def __init__(self):
@@ -57,6 +57,16 @@ class CellGrid(object):
         self.set_dimensions(
             width=width,
             height=height)
+    def __repr__(self):
+        sb = []
+        for idx, spot in enumerate(self.spots):
+            c = spot.c
+            if c == ' ':
+                c = '.'
+            sb.append(c)
+            if 0 == (idx+1) % self.width:
+                sb.append('\n')
+        return ''.join(sb)
     def set_dimensions(self, width, height):
         self.spots = []
         for idx in range(width*height):

@@ -22,12 +22,15 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_colpair
+from solent import e_cpair
 from solent.console import cgrid_new
 from solent.eng import nearcast_schema_new
+from solent.log import log
 from solent.rogue import directive_new
 
 from collections import deque
+import random
+import time
 
 I_NEARCAST = '''
     i message h
@@ -38,6 +41,8 @@ I_NEARCAST = '''
         field width
 '''
 
+DIRECTIVE_HELP = directive_new('help', 'show help message')
+DIRECTIVE_BUMP = directive_new('bump', 'bring up a menu')
 DIRECTIVE_NW = directive_new('nw', 'move/act in this direction')
 DIRECTIVE_NN = directive_new('nn', 'move/act in this direction')
 DIRECTIVE_NE = directive_new('ne', 'move/act in this direction')
@@ -46,6 +51,23 @@ DIRECTIVE_SS = directive_new('ss', 'move/act in this direction')
 DIRECTIVE_SE = directive_new('se', 'move/act in this direction')
 DIRECTIVE_WW = directive_new('ww', 'move/act in this direction')
 DIRECTIVE_EE = directive_new('ee', 'move/act in this direction')
+
+HELP = '''Hit things with your crowbar. Survive.
+
+Movement:
+ q w e      7 8 9       y k u
+ a   d      4   6       h   l
+ z x d      1 2 3       b j n
+
+Command:
+   s          5         space
+
+Tab returns to the main menu.
+'''
+
+PAIR_WALL = ('.', e_cpair.blue_t)
+PAIR_PLAYER = ('@', e_cpair.yellow_t)
+PAIR_ZOMBIE = ('z', e_cpair.red_t)
 
 class CogBridge:
     def __init__(self, cog_h, orb, engine):
@@ -69,8 +91,18 @@ class SpinSimple:
         self.cb_ready_alert = cb_ready_alert
         self.cb_over_alert = cb_over_alert
 
-        self.directives = None
-        self._init_directives()
+        self.turn = 0
+
+        #
+        # coordinate pools
+        self.cpool_spare = None
+        self._init_coord_pool_spare()
+        self.cpool_wall = []
+        self.cpool_player = []
+        self.cpool_zombie = []
+
+        self.supported_directives = None
+        self._init_supported_directives()
 
         self.cgrid = cgrid_new(
             height=height,
@@ -90,8 +122,14 @@ class SpinSimple:
             height=self.height,
             width=self.width)
 
-    def _init_directives(self):
-        self.directives = [
+    def _init_coord_pool_spare(self):
+        self.cpool_spare = []
+        for drop in range(self.height):
+            for rest in range(self.width):
+                self.cpool_spare.append( (drop, rest) )
+
+    def _init_supported_directives(self):
+        self.supported_directives = [
             globals()[key] for key
             in globals().keys()
             if key.startswith('DIRECTIVE_')]
@@ -106,7 +144,7 @@ class SpinSimple:
             nearcast_schema=self.nearcast)
         self.orb.add_log_snoop()
 
-    def get_directives(self):
+    def get_supported_directives(self):
         '''
         Returns list of instances of solent.rogue.directive representing
         the directives that this instance cares about. The reason for this
@@ -115,39 +153,119 @@ class SpinSimple:
         want to be able to configure that. And it would be a distraction from
         the game engine itself.
         '''
-        return self.directives[:]
+        return self.supported_directives[:]
 
     def new_game(self):
-        #
-        # xxx
-        self.cgrid.put(
-            drop=0,
-            rest=2,
-            s='@',
-            cpair=e_colpair.white_t)
-        self.cgrid.put(
-            drop=3,
-            rest=1,
-            s='t',
-            cpair=e_colpair.white_t)
+        self.turn = 0
+        self._create_board()
         # At the moment, there's nothing to be done, so we just call this.
         # In future, this function will move away from here.
         self.cb_ready_alert()
+        self._queue_mail("[Press ? for help]")
 
-    def get_cgrid(self, cgrid):
-        '''
-        Copies internal cgrid into the supplied cgrid.
-        '''
-        cgrid.blit(self.cgrid)
+    def get_turn(self):
+        return self.turn
 
-    def get_mail(self):
+    def get_cgrid(self, cgrid, nail, peri):
+        self._render_cgrid()
+        cgrid.blit(
+            src_cgrid=self.cgrid,
+            nail=nail,
+            peri=peri)
+
+    def retrieve_mail(self):
         l = []
         while self.q_mail_messages:
             l.append(self.q_mail_messages.popleft())
         return l
 
     def directive(self, directive_h):
-        log('xxx directive %s'%(directive_h))
+        if directive_h == 'help':
+            for line in HELP.split('\n'):
+                self._queue_mail(line)
+        elif directive_h == 'bump':
+            pass
+        else:
+            self.turn += 1
+
+            player_spot = self.cpool_player[0]
+            target_spot = list(player_spot)
+            if directive_h in 'nw|ww|sw'.split('|'):
+                target_spot[1] -= 1
+            if directive_h in 'ne|ee|se'.split('|'):
+                target_spot[1] += 1
+            if directive_h in 'nw|nn|ne'.split('|'):
+                target_spot[0] -= 1
+            if directive_h in 'sw|ss|se'.split('|'):
+                target_spot[0] += 1
+            self._move_player(
+                player_spot=player_spot,
+                target_spot=tuple(target_spot))
+
+    def _move_player(self, player_spot, target_spot):
+        if target_spot not in self.cpool_spare:
+            return
+        self.cpool_player.remove(player_spot)
+        self.cpool_spare.append(player_spot)
+        self.cpool_spare.remove(target_spot)
+        self.cpool_player.append(target_spot)
+        self.cb_grid_alert()
+
+    def _queue_mail(self, message):
+        self.q_mail_messages.append(message)
+        self.cb_mail_alert()
+
+    def _create_board(self):
+        coord = ( int(self.height/2), int(self.width/2) )
+        self.cpool_spare.remove(coord)
+        self.cpool_player.append(coord)
+
+        for rest in range(self.width):
+            coord = (0, rest)
+            self.cpool_spare.remove(coord)
+            self.cpool_wall.append(coord)
+            coord = (self.height-1, rest)
+            self.cpool_spare.remove(coord)
+            self.cpool_wall.append(coord)
+        for drop in range(1, self.height-1):
+            coord = (drop, 0)
+            self.cpool_spare.remove(coord)
+            self.cpool_wall.append(coord)
+            coord = (drop, self.width-1)
+            self.cpool_spare.remove(coord)
+            self.cpool_wall.append(coord)
+
+        for coord in self.cpool_spare:
+            if random.random() > 0.95:
+                self.cpool_spare.remove(coord)
+                self.cpool_zombie.append(coord)
+
+    def _render_cgrid(self):
+        self.cgrid.clear()
+        for coord in self.cpool_wall:
+            (drop, rest) = coord
+            (c, cpair) = PAIR_WALL
+            self.cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=c,
+                cpair=cpair)
+        for coord in self.cpool_player:
+            (drop, rest) = coord
+            (c, cpair) = PAIR_PLAYER
+            self.cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=c,
+                cpair=cpair)
+        for coord in self.cpool_zombie:
+            (drop, rest) = coord
+            (c, cpair) = PAIR_ZOMBIE
+            self.cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=c,
+                cpair=cpair)
 
 def spin_simple_new(engine, height, width, cb_ready_alert, cb_grid_alert, cb_mail_alert, cb_over_alert):
     '''

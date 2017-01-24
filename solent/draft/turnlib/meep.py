@@ -23,9 +23,9 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 # .
 
-from solent import e_colpair
+from solent import e_cpair
 
-DEFAULT_CPAIR = e_colpair.t_red
+DEFAULT_CPAIR = e_cpair.t_red
 
 class Meep(object):
     def __init__(self, overhead, mind, plane, coords, c, cpair):

@@ -28,7 +28,7 @@ import enum
 import os
 import sys
 
-class e_colpair(enum.Enum):
+class e_cpair(enum.Enum):
     "colour pairs"
     red_t         = 1000
     green_t       = 1001
@@ -70,6 +70,7 @@ class e_keycode(enum.Enum):
     n7            = 0x37
     n8            = 0x38
     n9            = 0x39
+    qmark         = 0x3f
     #
     a             = 0x61
     b             = 0x62

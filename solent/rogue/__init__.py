@@ -17,4 +17,5 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from .directive import directive_new
+from .spin_message_feed import spin_message_feed_new
 

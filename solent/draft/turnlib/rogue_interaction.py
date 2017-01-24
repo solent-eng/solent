@@ -26,14 +26,14 @@ from .logbook import logbook_new
 from .glyph import glyph_new
 from .scope import scope_new
 
-from solent import e_colpair
+from solent import e_cpair
 from solent.console import cgrid_new
 from solent.exceptions import SolentQuitException
 
 from collections import deque
 
-STATUS_NEW_CPAIR = e_colpair.yellow_t
-STATUS_OLD_CPAIR = e_colpair.white_t
+STATUS_NEW_CPAIR = e_cpair.yellow_t
+STATUS_OLD_CPAIR = e_cpair.white_t
 
 class StatusEntry(object):
     def __init__(self, s):
