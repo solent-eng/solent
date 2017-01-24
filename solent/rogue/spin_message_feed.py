@@ -5,6 +5,10 @@
 # This accepts text messages, and then renders them to a cgrid. Imagine text
 # as it is coming out of an old-fashioned printer, on a feed of paper.
 #
+# There are two general use-cases for retrieving data from this:
+# * You can call list_messages, and get back a list of current messages
+# * You can call get_cgrid, and it will populate your supplied grid
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -39,6 +43,9 @@ class SpinMessageFeed:
             height=height,
             width=width)
         self.q_lines = deque()
+    def clear(self):
+        while self.q_lines:
+            self.scroll()
     def accept(self, message, turn):
         nail = 0
         peri = nail+self.width
@@ -61,6 +68,13 @@ class SpinMessageFeed:
                 self.scroll()
             else:
                 break
+    def get_height(self):
+        return len(self.q_lines)
+    def list_messages(self):
+        sb = []
+        for (message, turn) in self.q_lines:
+            sb.append(message)
+        return sb
     def get_cgrid(self, cgrid, nail, peri, turn):
         self.cgrid.clear()
         for idx, (line, mturn) in enumerate(self.q_lines):

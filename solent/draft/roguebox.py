@@ -111,10 +111,10 @@ MENU_KEYCODE_QUIT = key('q')
 ROGUEBOX_ORIGIN_DROP = 0
 ROGUEBOX_ORIGIN_REST = 0
 
-ROGUEBOX_GAMEBOX_HEIGHT = 23
-ROGUEBOX_GAMEBOX_WIDTH = 23
+ROGUEBOX_GAMEBOX_HEIGHT = 24
+ROGUEBOX_GAMEBOX_WIDTH = 80
 ROGUEBOX_GAMEBOX_NAIL = (0, 0)
-ROGUEBOX_GAMEBOX_PERI = (23, 23)
+ROGUEBOX_GAMEBOX_PERI = (24, 80)
 
 ROGUEBOX_MFEED_HEIGHT = CONSOLE_HEIGHT
 ROGUEBOX_MFEED_WIDTH = 57
@@ -473,8 +473,8 @@ class CogRoguebox:
             raise Exception("console width too small.")
         self.spin_roguelike = spin_simple_new(
             engine=self.engine,
-            height=ROGUEBOX_GAMEBOX_HEIGHT,
-            width=ROGUEBOX_GAMEBOX_WIDTH,
+            grid_height=ROGUEBOX_GAMEBOX_HEIGHT,
+            grid_width=ROGUEBOX_GAMEBOX_WIDTH,
             cb_ready_alert=self._rl_ready_alert,
             cb_grid_alert=self._rl_grid_alert,
             cb_mail_alert=self._rl_mail_alert,
@@ -505,6 +505,7 @@ class CogRoguebox:
     def on_x_game_ready(self):
         pass
     def on_o_game_new(self):
+        self.spin_message_feed.clear()
         self.spin_roguelike.new_game()
     def on_x_game_mail(self):
         self.b_mail_waiting = True
@@ -517,7 +518,7 @@ class CogRoguebox:
         self.spin_roguelike.directive(
             directive_h=directive_h)
         self.spin_message_feed.scroll_past(
-            turn=self.spin_roguelike.get_turn()-5)
+            turn=self.spin_roguelike.get_turn()-3)
         self.b_refresh_needed = True
     def on_o_game_focus(self):
         if None == self.spin_roguelike:
@@ -543,11 +544,19 @@ class CogRoguebox:
             cgrid=self.cgrid_next,
             nail=ROGUEBOX_GAMEBOX_NAIL,
             peri=ROGUEBOX_GAMEBOX_PERI)
+        for idx, message in enumerate(self.spin_message_feed.list_messages()):
+            self.cgrid_next.put(
+                drop=idx,
+                rest=0,
+                s=message,
+                cpair=e_cpair.white_t)
+        '''
         self.spin_message_feed.get_cgrid(
             cgrid=self.cgrid_next,
             nail=ROGUEBOX_MFEED_NAIL,
             peri=ROGUEBOX_MFEED_PERI,
             turn=self.spin_roguelike.get_turn())
+        '''
         #
         for drop in range(self.height):
             for rest in range(self.width):

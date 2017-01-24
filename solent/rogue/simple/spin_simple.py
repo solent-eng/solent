@@ -37,8 +37,8 @@ I_NEARCAST = '''
         i field h
 
     message init
-        field height
-        field width
+        field grid_height
+        field grid_width
 '''
 
 DIRECTIVE_HELP = directive_new('help', 'show help message')
@@ -67,7 +67,7 @@ Tab returns to the main menu.
 
 PAIR_WALL = ('.', e_cpair.blue_t)
 PAIR_PLAYER = ('@', e_cpair.yellow_t)
-PAIR_ZOMBIE = ('z', e_cpair.red_t)
+PAIR_WEED = ('t', e_cpair.red_t)
 
 class CogBridge:
     def __init__(self, cog_h, orb, engine):
@@ -76,37 +76,37 @@ class CogBridge:
         self.engine = engine
     def set_callbacks(self):
         pass
-    def nc_init(self, height, width):
+    def nc_init(self, grid_height, grid_width):
         self.nearcast.init(
-            height=height,
-            width=width)
+            grid_height=grid_height,
+            grid_width=grid_width)
 
 class SpinSimple:
-    def __init__(self, engine, height, width, cb_ready_alert, cb_grid_alert, cb_mail_alert, cb_over_alert):
+    def __init__(self, engine, grid_height, grid_width, cb_ready_alert, cb_grid_alert, cb_mail_alert, cb_over_alert):
         self.engine = engine
-        self.height = height
-        self.width = width
+        self.grid_height = grid_height
+        self.grid_width = grid_width
         self.cb_grid_alert = cb_grid_alert
         self.cb_mail_alert = cb_mail_alert
         self.cb_ready_alert = cb_ready_alert
         self.cb_over_alert = cb_over_alert
 
         self.turn = 0
+        self.b_game_alive = False
 
         #
         # coordinate pools
         self.cpool_spare = None
-        self._init_coord_pool_spare()
-        self.cpool_wall = []
-        self.cpool_player = []
-        self.cpool_zombie = []
+        self.cpool_wall = None
+        self.cpool_player = None
+        self.cpool_weed = None
 
         self.supported_directives = None
         self._init_supported_directives()
 
         self.cgrid = cgrid_new(
-            height=height,
-            width=width)
+            height=grid_height,
+            width=grid_width)
         self.q_mail_messages = deque()
 
         self.nearcast = None
@@ -119,14 +119,8 @@ class SpinSimple:
         self.bridge.set_callbacks()
 
         self.bridge.nc_init(
-            height=self.height,
-            width=self.width)
-
-    def _init_coord_pool_spare(self):
-        self.cpool_spare = []
-        for drop in range(self.height):
-            for rest in range(self.width):
-                self.cpool_spare.append( (drop, rest) )
+            grid_height=self.grid_height,
+            grid_width=self.grid_width)
 
     def _init_supported_directives(self):
         self.supported_directives = [
@@ -157,11 +151,24 @@ class SpinSimple:
 
     def new_game(self):
         self.turn = 0
+        self.b_game_alive = True
+
+        self._zero_coord_pools()
         self._create_board()
-        # At the moment, there's nothing to be done, so we just call this.
-        # In future, this function will move away from here.
+
         self.cb_ready_alert()
-        self._queue_mail("[Press ? for help]")
+
+        self._announce("You are in the garden. Eliminate those evil weeds!")
+        self._announce("[Press ? for help]")
+
+    def _zero_coord_pools(self):
+        self.cpool_spare = []
+        self.cpool_wall = []
+        self.cpool_player = []
+        self.cpool_weed = []
+        for drop in range(self.grid_height):
+            for rest in range(self.grid_width):
+                self.cpool_spare.append( (drop, rest) )
 
     def get_turn(self):
         return self.turn
@@ -182,8 +189,11 @@ class SpinSimple:
     def directive(self, directive_h):
         if directive_h == 'help':
             for line in HELP.split('\n'):
-                self._queue_mail(line)
-        elif directive_h == 'bump':
+                self._announce(line)
+            return
+        if False == self.b_game_alive:
+            return
+        if directive_h == 'bump':
             pass
         else:
             self.turn += 1
@@ -198,47 +208,71 @@ class SpinSimple:
                 target_spot[0] -= 1
             if directive_h in 'sw|ss|se'.split('|'):
                 target_spot[0] += 1
-            self._move_player(
+            self._player_move(
                 player_spot=player_spot,
                 target_spot=tuple(target_spot))
+            if 0 == len(self.cpool_weed):
+                self._announce('You win!')
+                self._game_over()
 
-    def _move_player(self, player_spot, target_spot):
-        if target_spot not in self.cpool_spare:
+    def _player_move(self, player_spot, target_spot):
+        if target_spot in self.cpool_spare:
+            self.cpool_player.remove(player_spot)
+            self.cpool_spare.append(player_spot)
+            self.cpool_spare.remove(target_spot)
+            self.cpool_player.append(target_spot)
+            self.cb_grid_alert()
             return
-        self.cpool_player.remove(player_spot)
-        self.cpool_spare.append(player_spot)
-        self.cpool_spare.remove(target_spot)
-        self.cpool_player.append(target_spot)
-        self.cb_grid_alert()
+        elif target_spot in self.cpool_weed:
+            self._announce(
+                message='You slash angrily at the weed!')
+            self.cpool_player.remove(player_spot)
+            self.cpool_spare.append(player_spot)
+            self.cpool_weed.remove(target_spot)
+            self.cpool_player.append(target_spot)
+            self.cb_grid_alert()
 
-    def _queue_mail(self, message):
+    def _announce(self, message):
         self.q_mail_messages.append(message)
         self.cb_mail_alert()
 
+    def _game_over(self):
+        self.b_game_alive = False
+        self.cb_over_alert()
+
     def _create_board(self):
-        coord = ( int(self.height/2), int(self.width/2) )
+        coord = ( int(self.grid_height/2), int(self.grid_width/2) )
         self.cpool_spare.remove(coord)
         self.cpool_player.append(coord)
 
-        for rest in range(self.width):
-            coord = (0, rest)
+        # place walls
+        for rest in range(32, 48):
+            coord = (6, rest)
             self.cpool_spare.remove(coord)
             self.cpool_wall.append(coord)
-            coord = (self.height-1, rest)
+            coord = (18, rest)
             self.cpool_spare.remove(coord)
             self.cpool_wall.append(coord)
-        for drop in range(1, self.height-1):
-            coord = (drop, 0)
+        for drop in range(7, 18):
+            coord = (drop, 32)
+            log('coord %s'%(str(coord)))
             self.cpool_spare.remove(coord)
             self.cpool_wall.append(coord)
-            coord = (drop, self.width-1)
+            coord = (drop, 47)
             self.cpool_spare.remove(coord)
             self.cpool_wall.append(coord)
 
-        for coord in self.cpool_spare:
-            if random.random() > 0.95:
-                self.cpool_spare.remove(coord)
-                self.cpool_zombie.append(coord)
+        # place weeds. we need at least one.
+        while not self.cpool_weed:
+            for coord in self.cpool_spare:
+                (drop, rest) = coord
+                if drop < 8 or drop > 16:
+                    continue
+                if rest < 34 or rest > 46:
+                    continue
+                if random.random() > 0.98:
+                    self.cpool_spare.remove(coord)
+                    self.cpool_weed.append(coord)
 
     def _render_cgrid(self):
         self.cgrid.clear()
@@ -253,21 +287,23 @@ class SpinSimple:
         for coord in self.cpool_player:
             (drop, rest) = coord
             (c, cpair) = PAIR_PLAYER
+            if not self.b_game_alive:
+                cpair = e_cpair.purple_t
             self.cgrid.put(
                 drop=drop,
                 rest=rest,
                 s=c,
                 cpair=cpair)
-        for coord in self.cpool_zombie:
+        for coord in self.cpool_weed:
             (drop, rest) = coord
-            (c, cpair) = PAIR_ZOMBIE
+            (c, cpair) = PAIR_WEED
             self.cgrid.put(
                 drop=drop,
                 rest=rest,
                 s=c,
                 cpair=cpair)
 
-def spin_simple_new(engine, height, width, cb_ready_alert, cb_grid_alert, cb_mail_alert, cb_over_alert):
+def spin_simple_new(engine, grid_height, grid_width, cb_ready_alert, cb_grid_alert, cb_mail_alert, cb_over_alert):
     '''
     cb_grid_alert. No arguments. This is called whenver the grid has been
     updated. The container will probably want to know the difference between
@@ -288,8 +324,8 @@ def spin_simple_new(engine, height, width, cb_ready_alert, cb_grid_alert, cb_mai
     '''
     ob = SpinSimple(
         engine=engine,
-        height=height,
-        width=width,
+        grid_height=grid_height,
+        grid_width=grid_width,
         cb_ready_alert=cb_ready_alert,
         cb_grid_alert=cb_grid_alert,
         cb_mail_alert=cb_mail_alert,
