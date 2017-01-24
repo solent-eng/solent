@@ -424,7 +424,7 @@ def main():
     elif '--pygame' in sys.argv:
         console_type = 'pygame'
     else:
-        print('ERROR: specify a terminal type! (curses, pygame)')
+        print('ERROR: specify either --curses or --pygame')
         sys.exit(1)
     #
     try:
