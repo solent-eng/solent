@@ -32,6 +32,7 @@ from .turnlib.rogue_plane import rogue_plane_new
 from .turnlib.initiative import initiative_new
 
 from solent import e_cpair
+from solent import solent_keycode
 from solent.console import e_boxtype
 from solent.console import cgrid_new
 from solent.console import console_new
@@ -418,36 +419,36 @@ class Husk(object):
             #
             # Input
             if self.b_menu_active:
-                key = self.console.block_getc()
+                keycode = self.console.block_get_keycode()
             elif self.game != None and self.game.player_mind.is_blocking():
-                key = self.console.block_getc()
+                keycode = self.console.block_get_keycode()
             else:
-                key = self.console.async_getc()
+                keycode = self.console.async_get_keycode()
             b_key = True
-            if key in (None, ''):
+            if keycode == None:
                 b_key = False
             #
             # Menu
             if self.b_menu_active:
                 if b_key:
-                    if ord(key) == ESC_KEY_ORD and self.game != None:
+                    if keycode == solent_keycode('tab') and self.game != None:
                         self.b_menu_active = False
-                        key = None
-                    elif self.menu.has_key(key):
-                        fn = self.menu.get_callback(key)
+                        keycode = None
+                    elif self.menu.has_key(chr(keycode)):
+                        fn = self.menu.get_callback(chr(keycode))
                         fn()
-                        key = None
+                        keycode = None
             else:
                 if b_key:
-                    if ord(key) == ESC_KEY_ORD:
+                    if keycode == solent_keycode('tab'):
                         self.b_menu_active = True
-                        key = None
+                        keycode = None
                         self._render()
                         continue
                     else:
                         self.game.accept_key(
-                            key=key)
-                        key = None
+                            key=chr(keycode))
+                        keycode = None
             #
             # Update display.
             if self.b_menu_active:

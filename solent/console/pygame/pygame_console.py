@@ -23,7 +23,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import e_cpair
-from solent import e_keycode
+from solent import solent_keycode
 from solent import dget_static
 from solent.console import cgrid_new
 from solent.console import iconsole_new
@@ -67,12 +67,13 @@ MAP_CONST_COLOURS_TO_CPAIR = { e_cpair.red_t: PROFILE_RED_T
                              , e_cpair.t_white: PROFILE_T_WHITE
                              }
 
-def _window_console_translate_key(u):
+def _sanitise_input(u):
     if 0 == len(u):
         return None
-    if u == u'\r':
-        return u'\n'
-    return u
+    first_byte = u.encode('latin-1')[0]
+    if first_byte == 0x0d:
+        return 0x0a
+    return first_byte
 
 class GridDisplay(object):
     def __init__(self, width, height, font):
@@ -131,8 +132,8 @@ class PygameConsole:
             font=font)
         #
         self.keystream = keystream_new(
-            cb_async_getc=self.async_getc,
-            cb_block_getc=self.block_getc)
+            cb_async_get_keycode=self.async_get_keycode,
+            cb_block_get_keycode=self.block_get_keycode)
         #
         self.event_queue = deque()
         #
@@ -155,13 +156,13 @@ class PygameConsole:
         return self.grid_display
     def get_keystream(self):
         return self.keystream
-    def async_getc(self):
+    def async_get_keycode(self):
         for itm in pygame.event.get():
             self.event_queue.append(itm)
         # The reason this is a while loop is to get through event characters
         # we don't care about. i.e. it's a different reason for a while loop
-        # in the same position in block_getc. (At first glance, it looks
-        # trivial to merge them, but it's not)
+        # in the same position in block_get_keycode. (At first glance, it
+        # looks trivial to merge them, but it's not)
         while True:
             if not self.event_queue:
                 return None
@@ -174,31 +175,31 @@ class PygameConsole:
                     self.last_lmousedown = self.grid_display.coords_from_mousepos(
                         xpos=xpos,
                         ypos=ypos)
-                    return e_keycode.lmousedown
+                    return solent_keycode('lmousedown')
                 if ev.button == 3:
                     self.last_rmousedown = self.grid_display.coords_from_mousepos(
                         xpos=xpos,
                         ypos=ypos)
-                    return e_keycode.rmousedown
+                    return solent_keycode('rmousedown')
             if ev.type == pygame.MOUSEBUTTONUP:
                 (xpos, ypos) = ev.pos
                 if ev.button == 1:
                     self.last_lmouseup = self.grid_display.coords_from_mousepos(
                         xpos=xpos,
                         ypos=ypos)
-                    return e_keycode.lmouseup
+                    return solent_keycode('lmouseup')
                 if ev.button == 3:
                     self.last_rmouseup = self.grid_display.coords_from_mousepos(
                         xpos=xpos,
                         ypos=ypos)
-                    return e_keycode.rmouseup
+                    return solent_keycode('rmouseup')
             if not ev.type == pygame.KEYDOWN:
                 continue
             #
-            c = _window_console_translate_key(
+            c = _sanitise_input(
                 u=ev.unicode)
             return c
-    def block_getc(self):
+    def block_get_keycode(self):
         while True:
             if self.event_queue:
                 ev = self.event_queue.popleft()
@@ -212,17 +213,17 @@ class PygameConsole:
                 self.last_mousedown = self.grid_display.coords_from_mousepos(
                     xpos=xpos,
                     ypos=ypos)
-                return e_keycode.mousedown
+                return solent_keycode('mousedown')
             if ev.type == pygame.MOUSEBUTTONUP:
                 (xpos, ypos) = ev.pos
                 self.last_mouseup = self.grid_display.coords_from_mousepos(
                     xpos=xpos,
                     ypos=ypos)
-                return e_keycode.mouseup
+                return solent_keycode('mouseup')
             if not ev.type == pygame.KEYDOWN:
                 continue
             #
-            c = _window_console_translate_key(
+            c = _sanitise_input(
                 u=ev.unicode)
             return c
 

@@ -24,6 +24,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import e_cpair
+from solent import solent_keycode
 from solent.console import cgrid_new
 from solent.console import console_new
 from solent.exceptions import SolentQuitException
@@ -52,18 +53,15 @@ def event_loop(console):
     #
     t = 0
     while True:
-        k = console.async_getc()
-        if k != None:
-            for idx, k in enumerate(k):
-                if len(k) == 0:
-                    continue
-                if ord(k) == ESC_KEY_ORD:
-                    raise SolentQuitException()
-                cgrid.put(
-                    drop=3+idx,
-                    rest=1,
-                    s='key %s (%s)  '%(str(k), ord(k)),
-                    cpair=e_cpair.red_t)
+        keycode = console.async_get_keycode()
+        if keycode != None:
+            if keycode == solent_keycode('esc'):
+                raise SolentQuitException()
+            cgrid.put(
+                drop=3,
+                rest=1,
+                s='key %s (%s)  '%(hex(keycode), chr(keycode)),
+                cpair=e_cpair.red_t)
         else:
             time.sleep(0.05)
         cgrid.put(

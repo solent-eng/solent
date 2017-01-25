@@ -21,7 +21,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import e_cpair
-from solent import key
+from solent import solent_keycode
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
 from solent.exceptions import SolentQuitException
@@ -322,9 +322,9 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
         field menu_keycode
 '''
 
-MENU_KEYCODE_NEW_GAME = key('n')
-MENU_KEYCODE_CONTINUE = key('c')
-MENU_KEYCODE_QUIT = key('q')
+MENU_KEYCODE_NEW_GAME = solent_keycode('n')
+MENU_KEYCODE_CONTINUE = solent_keycode('c')
+MENU_KEYCODE_QUIT = solent_keycode('q')
 
 def t100():
     return time.time() * 100
@@ -363,14 +363,14 @@ class CogInterpreter:
         raise SolentQuitException('Quit message on stream')
     def on_keystroke(self, keycode):
         if self.pin_containment_mode.is_focus_on_menu():
-            if keycode == key('tab'):
+            if keycode == solent_keycode('tab'):
                 self.b_in_menu = False
                 self.nearcast.game_focus()
             else:
                 self.nearcast.menu_select(
                     menu_keycode=keycode)
         else:
-            if keycode == key('tab'):
+            if keycode == solent_keycode('tab'):
                 self.b_in_menu = True
                 self.nearcast.menu_focus()
             else:
@@ -522,16 +522,16 @@ class CogSnakeGame:
             cb_display_clear=self.game_display_clear,
             cb_display_write=self.game_display_write)
     def on_game_input(self, keycode):
-        if keycode == key('a'):
+        if keycode == solent_keycode('a'):
             self.spin_snake_game.steer(
                 cardinal='w')
-        elif keycode == key('w'):
+        elif keycode == solent_keycode('w'):
             self.spin_snake_game.steer(
                 cardinal='n')
-        elif keycode == key('d'):
+        elif keycode == solent_keycode('d'):
             self.spin_snake_game.steer(
                 cardinal='e')
-        elif keycode == key('x'):
+        elif keycode == solent_keycode('x'):
             self.spin_snake_game.steer(
                 cardinal='s')
     def on_game_focus(self):

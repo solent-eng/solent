@@ -20,7 +20,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import e_cpair
-from solent import e_keycode
+from solent import solent_keycode
 from solent.console import cgrid_new
 from solent.console import iconsole_new
 from solent.console import keystream_new
@@ -83,43 +83,49 @@ def screen_curses_exit():
     curses.nocbreak()
     curses.endwin()
 
-def _curses_translate_key(k):
+def _sanitise_key(k):
     if k in (127, curses.KEY_BACKSPACE, curses.KEY_DC):
-        k = 0x8
-    c = chr(k)
-    return c
+        k = solent_keycode('backspace')
+    return k
 
-Q_ASYNC_GETC = deque()
-def curses_async_getc():
+Q_ASYNC_GET_KEYCODE = deque()
+def curses_async_get_keycode():
     '''
     xxx this doesn't handle escaped characters very well at the moment. could
     create an issue to get that fixed.
     '''
     global STDSCR
-    global Q_ASYNC_GETC
+    global Q_ASYNC_GET_KEYCODE
     #
     STDSCR.nodelay(1)
     try:
         c = STDSCR.getch()
         while c != -1:
-            Q_ASYNC_GETC.append(c)
+            Q_ASYNC_GET_KEYCODE.append(c)
             c = STDSCR.getch()
     finally:
         STDSCR.nodelay(0)
     #
-    if Q_ASYNC_GETC:
-        return _curses_translate_key(
-            k=Q_ASYNC_GETC.popleft())
+    if Q_ASYNC_GET_KEYCODE:
+        k = _sanitise_key(
+            k=Q_ASYNC_GET_KEYCODE.popleft())
+        return k
 
-def curses_block_getc():
+def curses_block_get_keycode():
+    global Q_ASYNC_GET_KEYCODE
+    if Q_ASYNC_GET_KEYCODE:
+        k = _sanitise_key(
+            k=Q_ASYNC_GET_KEYCODE.popleft())
+        return k
+    #
     global STDSCR
     k = STDSCR.getch()
     if None == k:
         return None
-    if k < 0 or k >= 256:
+    if k < 0x00 or k > 0xff:
         return None
-    return _curses_translate_key(
-        k=k)
+    k = _sanitise_key(k)
+    return k
 
 #
 # These are not the names of colours. Rather, they are the names of colour
@@ -231,8 +237,8 @@ def curses_console_new(width, height):
     # solve the nasty problem, and then facade things so your user doesn't
     # have to think about it.
     keystream = keystream_new(
-        cb_async_getc=curses_async_getc,
-        cb_block_getc=curses_block_getc)
+        cb_async_get_keycode=curses_async_get_keycode,
+        cb_block_get_keycode=curses_block_get_keycode)
     grid_display = GridDisplay(
         internal_cgrid=cgrid)
     #

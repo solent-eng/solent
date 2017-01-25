@@ -38,10 +38,10 @@ class IConsole(object):
         self.cb_close = cb_close
     def close(self):
         self.cb_close()
-    def async_getc(self):
-        return self.keystream.async_getc()
-    def block_getc(self):
-        return self.keystream.block_getc()
+    def async_get_keycode(self):
+        return self.keystream.async_get_keycode()
+    def block_get_keycode(self):
+        return self.keystream.block_get_keycode()
     def get_last_lmouseup(self):
         return self.cb_last_lmouseup()
     def get_last_lmousedown(self):

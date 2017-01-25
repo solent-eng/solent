@@ -27,8 +27,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import e_cpair
-from solent import e_keycode
-from solent import key
+from solent import solent_keycode
 from solent.console import cgrid_new
 from solent.console import console_new
 from solent.log import log
@@ -41,10 +40,10 @@ MODE_SELECT = 1
 MODE_STANDARD = 2
 
 MOUSE_EVENTS = (
-    e_keycode.lmousedown.value,
-    e_keycode.lmouseup.value,
-    e_keycode.rmousedown.value,
-    e_keycode.rmouseup.value)
+    solent_keycode('lmousedown'),
+    solent_keycode('lmouseup'),
+    solent_keycode('rmousedown'),
+    solent_keycode('rmouseup'))
 
 class SpinTerm:
     def __init__(self, console_type, cb_keycode, cb_select):
@@ -72,25 +71,19 @@ class SpinTerm:
         if self.mode == MODE_NONE:
             return
         #
-        key = self.console.async_getc()
-        if key:
+        keycode = self.console.async_get_keycode()
+        if keycode:
             activity.mark(
                 l=self,
-                s='received keystroke %s'%key)
-            if key == e_keycode.lmousedown:
-                keycode = e_keycode.lmousedown.value
+                s='received keystroke %s'%keycode)
+            if keycode == solent_keycode('lmousedown'):
                 self.lmousedown_coords = self.console.get_last_lmousedown()
-            elif key == e_keycode.lmouseup:
-                keycode = e_keycode.lmouseup.value
+            elif keycode == solent_keycode('lmouseup'):
                 self.lmouseup_coords = self.console.get_last_lmouseup()
-            elif key == e_keycode.rmousedown:
-                keycode = e_keycode.rmousedown.value
+            elif keycode == solent_keycode('rmousedown'):
                 self.rmousedown_coords = self.console.get_last_rmousedown()
-            elif key == e_keycode.rmouseup:
-                keycode = e_keycode.rmouseup.value
+            elif keycode == solent_keycode('rmouseup'):
                 self.rmouseup_coords = self.console.get_last_rmouseup()
-            else:
-                keycode = ord(key)
             self.accept_key(
                 keycode=keycode)
         #
@@ -141,9 +134,9 @@ class SpinTerm:
         as a display with input coming from elsewhere.
         '''
         if self.mode == MODE_SELECT:
-            if keycode == key('esc'):
+            if keycode == solent_keycode('esc'):
                 self.to_mode_standard()
-            elif keycode in (key('newline'), key('s')):
+            elif keycode in (solent_keycode('newline'), solent_keycode('s')):
                 self.cb_select(
                     drop=self.select_drop,
                     rest=self.select_rest)
@@ -153,33 +146,33 @@ class SpinTerm:
                 # keys, gollop keys.
                 b_moved = False
                 # standard navigation
-                if keycode in (key('q'), key('a'), key('z'), key('y'), key('h'), key('b')):
+                if keycode in (solent_keycode('q'), solent_keycode('a'), solent_keycode('z'), solent_keycode('y'), solent_keycode('h'), solent_keycode('b')):
                     if self.select_rest > 0:
                         self.select_rest -= 1
                     b_moved = True
-                if keycode in (key('e'), key('d'), key('c'), key('u'), key('l'), key('n')):
+                if keycode in (solent_keycode('e'), solent_keycode('d'), solent_keycode('c'), solent_keycode('u'), solent_keycode('l'), solent_keycode('n')):
                     if self.select_rest < self.width-1:
                         self.select_rest += 1
                     b_moved = True
-                if keycode in (key('q'), key('w'), key('e'), key('y'), key('k'), key('u')):
+                if keycode in (solent_keycode('q'), solent_keycode('w'), solent_keycode('e'), solent_keycode('y'), solent_keycode('k'), solent_keycode('u')):
                     if self.select_drop > 0:
                         self.select_drop -= 1
                     b_moved = True
-                if keycode in (key('z'), key('x'), key('c'), key('b'), key('j'), key('n')):
+                if keycode in (solent_keycode('z'), solent_keycode('x'), solent_keycode('c'), solent_keycode('b'), solent_keycode('j'), solent_keycode('n')):
                     if self.select_drop < self.height-1:
                         self.select_drop += 1
                     b_moved = True
                 # shift navigation
-                if keycode in (key('Q'), key('A'), key('Z'), key('Y'), key('H'), key('B')):
+                if keycode in (solent_keycode('Q'), solent_keycode('A'), solent_keycode('Z'), solent_keycode('Y'), solent_keycode('H'), solent_keycode('B')):
                     self.select_rest = 0
                     b_moved = True
-                if keycode in (key('E'), key('D'), key('C'), key('U'), key('L'), key('N')):
+                if keycode in (solent_keycode('E'), solent_keycode('D'), solent_keycode('C'), solent_keycode('U'), solent_keycode('L'), solent_keycode('N')):
                     self.select_rest = self.width-1
                     b_moved = True
-                if keycode in (key('Q'), key('W'), key('E'), key('Y'), key('K'), key('U')):
+                if keycode in (solent_keycode('Q'), solent_keycode('W'), solent_keycode('E'), solent_keycode('Y'), solent_keycode('K'), solent_keycode('U')):
                     self.select_drop = 0
                     b_moved = True
-                if keycode in (key('Z'), key('X'), key('C'), key('B'), key('J'), key('N')):
+                if keycode in (solent_keycode('Z'), solent_keycode('X'), solent_keycode('C'), solent_keycode('B'), solent_keycode('J'), solent_keycode('N')):
                     self.select_drop = self.height-1
                     b_moved = True
                 #
@@ -187,10 +180,10 @@ class SpinTerm:
                     self.select_cursor_on = True
                     self.select_cursor_t100 = time.time() * 100
         elif self.mode == MODE_STANDARD:
-            if keycode == key('esc'):
+            if keycode == solent_keycode('esc'):
                 self.to_mode_select()
             else:
-                if keycode == e_keycode.lmouseup.value:
+                if keycode == solent_keycode('lmouseup'):
                     # We check to see that the coords were the same as
                     # when the mouse was depressed. If they weren't, this
                     # usually implies the user has rethought their

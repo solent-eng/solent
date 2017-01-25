@@ -26,6 +26,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import e_cpair
+from solent import solent_keycode
 from solent import SolentQuitException
 from solent.console import cgrid_new
 from solent.console import console_new
@@ -64,8 +65,8 @@ I_NEARCAST_SCHEMA = '''
     message instruct_gruel_send
         field doc
 
-    message client_keystroke
-        field u
+    message client_keycode
+        field keycode
 
     message term_announce
         field s
@@ -338,13 +339,13 @@ class CogTerminal:
         self.pane_announce = None
     #
     def at_turn(self, activity):
-        k = self.console.async_getc()
-        if k not in ('', None):
+        k = self.console.async_get_keycode()
+        if k != None:
             activity.mark(
                 l=self,
                 s='key received')
-            self.nearcast.client_keystroke(
-                u=k)
+            self.nearcast.client_keycode(
+                keycode=k)
     def on_def_console(self, console):
         self.console = console
         self.cgrid = cgrid_new(
@@ -353,16 +354,16 @@ class CogTerminal:
         self.pane_plot = PanePlot()
         self.pane_console = PaneConsole()
         self.pane_announce = PaneAnnounce()
-    def on_client_keystroke(self, u):
+    def on_client_keycode(self, keycode):
         self.nearcast.term_plot(
             drop=0,
             rest=79,
-            c=u,
+            c=chr(keycode),
             cpair=e_cpair.yellow_t)
         self.nearcast.term_plot(
             drop=1,
             rest=77,
-            c='%3s'%(str(ord(u))),
+            c='%3s'%(str(keycode)),
             cpair=e_cpair.yellow_t)
         self._console_update()
     def on_term_announce(self, s):
@@ -425,17 +426,16 @@ class CogShell:
             self._console_announce(
                 s='Type "quit" to quit')
             self.b_first = False
-    def on_client_keystroke(self, u):
+    def on_client_keycode(self, keycode):
         self.line_finder.accept_string(
-            s=u)
-        o = ord(u)
-        if o == KEY_ORD_ENTER:
+            s=chr(keycode))
+        if keycode == solent_keycode('newline'):
             self.nearcast.term_console_newline()
-        elif o == KEY_ORD_BACKSPACE:
+        elif keycode == KEY_ORD_BACKSPACE:
             self.nearcast.term_console_backspace()
         else:
             self.nearcast.term_console_send_c(
-                c=u)
+                c=chr(keycode))
     #
     def _console_announce(self, s):
         self.nearcast.term_announce(

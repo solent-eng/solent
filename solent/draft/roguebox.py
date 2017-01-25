@@ -24,8 +24,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import e_cpair
-from solent import e_keycode
-from solent import key
+from solent import solent_keycode
 from solent.console import cgrid_new
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
@@ -104,9 +103,9 @@ CONTROL_SCHEME_H_VI = 'vi'
 CONSOLE_HEIGHT = 24
 CONSOLE_WIDTH = 78
 
-MENU_KEYCODE_NEW_GAME = key('n')
-MENU_KEYCODE_CONTINUE = key('c')
-MENU_KEYCODE_QUIT = key('q')
+MENU_KEYCODE_NEW_GAME = solent_keycode('n')
+MENU_KEYCODE_CONTINUE = solent_keycode('c')
+MENU_KEYCODE_QUIT = solent_keycode('q')
 
 ROGUEBOX_ORIGIN_DROP = 0
 ROGUEBOX_ORIGIN_REST = 0
@@ -174,150 +173,150 @@ class CogInterpreter:
         if directive_h == 'nw':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=e_keycode.q.value,
+                keycode=solent_keycode('q'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=e_keycode.n7.value,
+                keycode=solent_keycode('n7'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=e_keycode.y.value,
+                keycode=solent_keycode('y'),
                 directive_h=directive_h)
         elif directive_h == 'nn':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=e_keycode.w.value,
+                keycode=solent_keycode('w'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=e_keycode.n8.value,
+                keycode=solent_keycode('n8'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=e_keycode.k.value,
+                keycode=solent_keycode('k'),
                 directive_h=directive_h)
         elif directive_h == 'ne':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=e_keycode.e.value,
+                keycode=solent_keycode('e'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=e_keycode.n9.value,
+                keycode=solent_keycode('n9'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=e_keycode.u.value,
+                keycode=solent_keycode('u'),
                 directive_h=directive_h)
         elif directive_h == 'sw':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=e_keycode.z.value,
+                keycode=solent_keycode('z'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=e_keycode.n1.value,
+                keycode=solent_keycode('n1'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=e_keycode.b.value,
+                keycode=solent_keycode('b'),
                 directive_h=directive_h)
         elif directive_h == 'ss':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=e_keycode.x.value,
+                keycode=solent_keycode('x'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=e_keycode.n2.value,
+                keycode=solent_keycode('n2'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=e_keycode.j.value,
+                keycode=solent_keycode('j'),
                 directive_h=directive_h)
         elif directive_h == 'se':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=e_keycode.c.value,
+                keycode=solent_keycode('c'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=e_keycode.n3.value,
+                keycode=solent_keycode('n3'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=e_keycode.n.value,
+                keycode=solent_keycode('n'),
                 directive_h=directive_h)
         elif directive_h == 'ww':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=e_keycode.a.value,
+                keycode=solent_keycode('a'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=e_keycode.n4.value,
+                keycode=solent_keycode('n4'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=e_keycode.h.value,
+                keycode=solent_keycode('h'),
                 directive_h=directive_h)
         elif directive_h == 'ee':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=e_keycode.d.value,
+                keycode=solent_keycode('d'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=e_keycode.n6.value,
+                keycode=solent_keycode('n6'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=e_keycode.l.value,
+                keycode=solent_keycode('l'),
                 directive_h=directive_h)
         elif directive_h == 'a':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=e_keycode.s.value,
+                keycode=solent_keycode('s'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=e_keycode.n5.value,
+                keycode=solent_keycode('n5'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=e_keycode.space.value,
+                keycode=solent_keycode('space'),
                 directive_h=directive_h)
         elif directive_h == 'b':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=key('r'),
+                keycode=solent_keycode('r'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=key('n0'),
+                keycode=solent_keycode('n0'),
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=key('slash'),
+                keycode=solent_keycode('slash'),
                 directive_h=directive_h)
         elif directive_h == 'help':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=key('qmark'),
+                keycode=solent_keycode('qmark'),
                 directive_h=directive_h)
         else:
             raise Exception('Unhandled directive %s'%(directive.h))
     def on_keystroke(self, keycode):
         if self.pin_containment_mode.is_focus_on_menu():
-            if keycode == key('tab'):
+            if keycode == solent_keycode('tab'):
                 self.b_in_menu = False
                 self.nearcast.o_game_focus()
             else:
                 self.nearcast.menu_select(
                     menu_keycode=keycode)
         else:
-            if keycode == key('tab'):
+            if keycode == solent_keycode('tab'):
                 self.b_in_menu = True
                 self.nearcast.menu_focus()
             else:

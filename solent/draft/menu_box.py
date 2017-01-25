@@ -24,7 +24,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import e_cpair
-from solent import key
+from solent import solent_keycode
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
 from solent.exceptions import SolentQuitException
@@ -87,9 +87,9 @@ I_NEARCAST_SCHEMA = '''
         field s
 '''
 
-MENU_KEYCODE_NEW_GAME = key('n')
-MENU_KEYCODE_CONTINUE = key('c')
-MENU_KEYCODE_QUIT = key('q')
+MENU_KEYCODE_NEW_GAME = solent_keycode('n')
+MENU_KEYCODE_CONTINUE = solent_keycode('c')
+MENU_KEYCODE_QUIT = solent_keycode('q')
 
 class CogInterpreter(object):
     '''
@@ -106,10 +106,10 @@ class CogInterpreter(object):
         self.is_in_menu = True
     def on_keystroke(self, keycode):
         log('key received %s'%(hex(keycode)))
-        if keycode == key('Q'):
+        if keycode == solent_keycode('Q'):
             raise SolentQuitException()
         if self.is_in_menu:
-            if keycode == key('tab'):
+            if keycode == solent_keycode('tab'):
                 self.is_in_menu = False
             self.nearcast.menu_select(
                 menu_keycode=keycode)
