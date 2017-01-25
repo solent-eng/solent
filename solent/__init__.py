@@ -59,6 +59,8 @@ class e_keycode(enum.Enum):
     esc           = 0x1b
     space         = 0x20
     star          = 0x2a
+    plus          = 0x2b
+    slash         = 0x2f
     #
     n0            = 0x30
     n1            = 0x31

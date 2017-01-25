@@ -42,7 +42,8 @@ I_NEARCAST = '''
 '''
 
 DIRECTIVE_HELP = directive_new('help', 'show help message')
-DIRECTIVE_BUMP = directive_new('bump', 'bring up a menu')
+DIRECTIVE_BX = directive_new('a', 'button')
+DIRECTIVE_BY = directive_new('b', 'button')
 DIRECTIVE_NW = directive_new('nw', 'move/act in this direction')
 DIRECTIVE_NN = directive_new('nn', 'move/act in this direction')
 DIRECTIVE_NE = directive_new('ne', 'move/act in this direction')
@@ -59,10 +60,11 @@ Movement:
  a   d      4   6       h   l
  z x d      1 2 3       b j n
 
-Command:
-   s          5         space
+Buttons
+a:  s          5           space
+b:  r          plus        slash
 
-Tab returns to the main menu.
+(Tab returns to the main menu.)
 '''
 
 PAIR_WALL = ('.', e_cpair.blue_t)
@@ -136,7 +138,7 @@ class SpinSimple:
         self.orb = self.engine.init_orb(
             orb_h='swamp_monster_orb',
             nearcast_schema=self.nearcast)
-        self.orb.add_log_snoop()
+        #self.orb.add_log_snoop()
 
     def get_supported_directives(self):
         '''
@@ -193,8 +195,6 @@ class SpinSimple:
             return
         if False == self.b_game_alive:
             return
-        if directive_h == 'bump':
-            pass
         else:
             self.turn += 1
 
@@ -255,7 +255,6 @@ class SpinSimple:
             self.cpool_wall.append(coord)
         for drop in range(7, 18):
             coord = (drop, 32)
-            log('coord %s'%(str(coord)))
             self.cpool_spare.remove(coord)
             self.cpool_wall.append(coord)
             coord = (drop, 47)

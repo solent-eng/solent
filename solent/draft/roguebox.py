@@ -102,7 +102,7 @@ CONTROL_SCHEME_H_KEYPAD = 'keypad'
 CONTROL_SCHEME_H_VI = 'vi'
 
 CONSOLE_HEIGHT = 24
-CONSOLE_WIDTH = 80
+CONSOLE_WIDTH = 78
 
 MENU_KEYCODE_NEW_GAME = key('n')
 MENU_KEYCODE_CONTINUE = key('c')
@@ -112,7 +112,7 @@ ROGUEBOX_ORIGIN_DROP = 0
 ROGUEBOX_ORIGIN_REST = 0
 
 ROGUEBOX_GAMEBOX_HEIGHT = 24
-ROGUEBOX_GAMEBOX_WIDTH = 80
+ROGUEBOX_GAMEBOX_WIDTH = 78
 ROGUEBOX_GAMEBOX_NAIL = (0, 0)
 ROGUEBOX_GAMEBOX_PERI = (24, 80)
 
@@ -275,7 +275,7 @@ class CogInterpreter:
                 control_scheme_h=CONTROL_SCHEME_H_VI,
                 keycode=e_keycode.l.value,
                 directive_h=directive_h)
-        elif directive_h == 'bump':
+        elif directive_h == 'a':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
                 keycode=e_keycode.s.value,
@@ -287,6 +287,19 @@ class CogInterpreter:
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
                 keycode=e_keycode.space.value,
+                directive_h=directive_h)
+        elif directive_h == 'b':
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
+                keycode=key('r'),
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
+                keycode=key('n0'),
+                directive_h=directive_h)
+            self.nearcast.keycode_to_directive(
+                control_scheme_h=CONTROL_SCHEME_H_VI,
+                keycode=key('slash'),
                 directive_h=directive_h)
         elif directive_h == 'help':
             self.nearcast.keycode_to_directive(

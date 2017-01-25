@@ -19,7 +19,6 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-
 from solent import e_cpair
 from solent import e_keycode
 from solent.console import cgrid_new
