@@ -27,7 +27,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent import solent_keycode
 from solent.console import console_new
 from solent.draft.turnlib.algobunny_mind import algobunny_mind_new
@@ -59,7 +59,9 @@ TITLE = sys.argv[0].split(os.sep)[-1]
 # --------------------------------------------------------
 #   :game
 # --------------------------------------------------------
-def make_box(rogue_plane, se_nail, width, height, cpair=e_cpair.white_t, box_type=e_boxtype.line):
+CPAIR_DEFAULT = solent_cpair('white_t')
+
+def make_box(rogue_plane, se_nail, width, height, cpair=CPAIR_DEFAULT, box_type=e_boxtype.line):
     '''
     Box type indicates the kind of corners the box should have.
     '''
@@ -142,32 +144,32 @@ def create_origin_plane():
         s=2,
         e=-5,
         c='o',
-        cpair=e_cpair.green_t)
+        cpair=solent_cpair('green_t'))
     rogue_plane.create_meep(
         s=3,
         e=-4,
         c='o',
-        cpair=e_cpair.green_t)
+        cpair=solent_cpair('green_t'))
     rogue_plane.create_meep(
         s=3,
         e=-5,
         c='o',
-        cpair=e_cpair.green_t)
+        cpair=solent_cpair('green_t'))
     rogue_plane.create_meep(
         s=4,
         e=-6,
         c='o',
-        cpair=e_cpair.green_t)
+        cpair=solent_cpair('green_t'))
     rogue_plane.create_meep(
         s=4,
         e=-4,
         c='o',
-        cpair=e_cpair.green_t)
+        cpair=solent_cpair('green_t'))
     rogue_plane.create_meep(
         s=4,
         e=-5,
         c='o',
-        cpair=e_cpair.green_t)
+        cpair=solent_cpair('green_t'))
     return rogue_plane
 
 class Game(object):
@@ -180,7 +182,7 @@ class Game(object):
             s=0,
             e=0,
             c='@',
-            cpair=e_cpair.red_t)
+            cpair=solent_cpair('red_t'))
         #
         self.rogue_interaction = rogue_interaction_new(
             console=console,
@@ -197,7 +199,7 @@ class Game(object):
             s=3,
             e=3,
             c='"',
-            cpair=e_cpair.white_t)
+            cpair=solent_cpair('white_t'))
         self.initiative.add_meep(
             meep=self.algobunny_meep)
         #
@@ -245,9 +247,9 @@ def game_new(console):
 # The husk is the thing that contains the game. The husk exposes new game and
 # load game and save game.
 #
-CPAIR_MENU_BORDER = e_cpair.black_cyan
-CPAIR_MENU_TEXT = e_cpair.t_white
-CPAIR_TITLE = e_cpair.t_white
+CPAIR_MENU_BORDER = solent_cpair('black_cyan')
+CPAIR_MENU_TEXT = solent_cpair('t_white')
+CPAIR_TITLE = solent_cpair('t_white')
 
 class Husk(object):
     def __init__(self, console, cgrid, title):

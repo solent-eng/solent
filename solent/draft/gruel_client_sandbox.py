@@ -25,7 +25,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
 from solent.console import cgrid_new
@@ -285,7 +285,7 @@ class PaneConsole:
                 drop=drop,
                 rest=rest,
                 s=c,
-                cpair=e_cpair.white_t)
+                cpair=solent_cpair('white_t'))
             idx += 1
         drop = 1 + (idx / 40)
         rest = idx % 40
@@ -293,7 +293,7 @@ class PaneConsole:
             drop=drop,
             rest=rest,
             s='_',
-            cpair=e_cpair.green_t)
+            cpair=solent_cpair('green_t'))
         idx += 1
         while 0 != idx % 40:
             rest = idx % 40
@@ -301,13 +301,13 @@ class PaneConsole:
                 drop=drop,
                 rest=rest,
                 s=' ',
-                cpair=e_cpair.white_t)
+                cpair=solent_cpair('white_t'))
             idx += 1
         cgrid.put(
             drop=drop+1,
             rest=0,
             s=' ',
-            cpair=e_cpair.white_t)
+            cpair=solent_cpair('white_t'))
 
 class PaneAnnounce:
     def __init__(self):
@@ -319,12 +319,12 @@ class PaneAnnounce:
             drop=0,
             rest=0,
             s=self.s,
-            cpair=e_cpair.red_t)
+            cpair=solent_cpair('red_t'))
         cgrid.put(
             drop=0,
             rest=len(self.s),
             s=' '*(79-len(self.s)),
-            cpair=e_cpair.red_t)
+            cpair=solent_cpair('red_t'))
 
 class CogTerminal:
     def __init__(self, cog_h, orb, engine):
@@ -359,12 +359,12 @@ class CogTerminal:
             drop=0,
             rest=79,
             c=chr(keycode),
-            cpair=e_cpair.yellow_t)
+            cpair=solent_cpair('yellow_t'))
         self.nearcast.term_plot(
             drop=1,
             rest=77,
             c='%3s'%(str(keycode)),
-            cpair=e_cpair.yellow_t)
+            cpair=solent_cpair('yellow_t'))
         self._console_update()
     def on_term_announce(self, s):
         self.pane_announce.set_text(
@@ -400,7 +400,7 @@ class CogTerminal:
             drop=self.tcurs_drop,
             rest=self.tcurs_rest,
             s=' ',
-            cpair=e_cpair.white_t)
+            cpair=solent_cpair('white_t'))
         self._console_update()
     def _console_update(self):
         self.pane_plot.light(self.cgrid)

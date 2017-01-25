@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent import solent_keycode
 from solent.console import cgrid_new
 from solent.eng import engine_new
@@ -66,7 +66,7 @@ class SpinDrawGame:
                 drop=drop,
                 rest=rest,
                 s='@',
-                cpair=e_cpair.yellow_t)
+                cpair=solent_cpair('yellow_t'))
     def flip(self, drop, rest):
         spot = create_spot(drop, rest)
         if spot in self.spots:
@@ -295,7 +295,7 @@ class CogMenu:
             drop=drop,
             rest=rest,
             s=s,
-            cpair=e_cpair.blue_t)
+            cpair=solent_cpair('blue_t'))
     #
     def _mi_new_game(self):
         self.nearcast.game_new()

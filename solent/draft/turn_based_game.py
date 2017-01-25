@@ -31,7 +31,7 @@ from .turnlib.rogue_interaction import rogue_interaction_new
 from .turnlib.rogue_plane import rogue_plane_new
 from .turnlib.initiative import initiative_new
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent import solent_keycode
 from solent.console import e_boxtype
 from solent.console import cgrid_new
@@ -56,7 +56,9 @@ TITLE = 'sample game (solent.client)'
 # --------------------------------------------------------
 #   :game
 # --------------------------------------------------------
-def make_box(rogue_plane, se_nail, width, height, cpair=e_cpair.white_t, box_type=e_boxtype.line):
+T_WHITE = solent_cpair('white_t')
+
+def make_box(rogue_plane, se_nail, width, height, cpair=T_WHITE, box_type=e_boxtype.line):
     '''
     Box type indicates the kind of corners the box should have.
     '''
@@ -140,21 +142,21 @@ def create_origin_plane():
         se_nail=(-2, -17),
         width=3,
         height=3,
-        cpair=e_cpair.cyan_t,
+        cpair=solent_cpair('cyan_t'),
         box_type=e_boxtype.edge)
     make_box(
         rogue_plane=rogue_plane,
         se_nail=(-2, 10),
         width=3,
         height=3,
-        cpair=e_cpair.cyan_t,
+        cpair=solent_cpair('cyan_t'),
         box_type=e_boxtype.void)
     make_box(
         rogue_plane=rogue_plane,
         se_nail=(4, 10),
         width=3,
         height=3,
-        cpair=e_cpair.cyan_t,
+        cpair=solent_cpair('cyan_t'),
         box_type=e_boxtype.stop)
     make_box(
         rogue_plane=rogue_plane,
@@ -180,49 +182,49 @@ def create_origin_plane():
         s=-2,
         e=-2,
         c='i',
-        cpair=e_cpair.white_t)
+        cpair=solent_cpair('white_t'))
     rogue_plane.create_terrain(
         s=-3,
         e=0,
         c='i',
-        cpair=e_cpair.white_t)
+        cpair=solent_cpair('white_t'))
     rogue_plane.create_terrain(
         s=-2,
         e=2,
         c='i',
-        cpair=e_cpair.white_t)
+        cpair=solent_cpair('white_t'))
     rogue_plane.create_terrain(
         s=0,
         e=-3,
         c='i',
-        cpair=e_cpair.white_t)
+        cpair=solent_cpair('white_t'))
     rogue_plane.create_terrain(
         s=0,
         e=3,
         c='i',
-        cpair=e_cpair.white_t)
+        cpair=solent_cpair('white_t'))
     rogue_plane.create_terrain(
         s=2,
         e=-2,
         c='i',
-        cpair=e_cpair.white_t)
+        cpair=solent_cpair('white_t'))
     rogue_plane.create_terrain(
         s=3,
         e=0,
         c='i',
-        cpair=e_cpair.white_t)
+        cpair=solent_cpair('white_t'))
     rogue_plane.create_terrain(
         s=2,
         e=2,
         c='i',
-        cpair=e_cpair.white_t)
+        cpair=solent_cpair('white_t'))
     #
     # // scrap
     rogue_plane.create_meep(
         s=3,
         e=-4,
         c=':',
-        cpair=e_cpair.yellow_t)
+        cpair=solent_cpair('yellow_t'))
     return rogue_plane
 
 class Game(object):
@@ -235,7 +237,7 @@ class Game(object):
             s=0,
             e=0,
             c='@',
-            cpair=e_cpair.red_t)
+            cpair=solent_cpair('red_t'))
         #
         self.rogue_interaction = rogue_interaction_new(
             console=console,
@@ -252,7 +254,7 @@ class Game(object):
             s=3,
             e=3,
             c='"',
-            cpair=e_cpair.white_t)
+            cpair=solent_cpair('white_t'))
         self.initiative.add_meep(
             meep=self.algobunny_meep)
         #
@@ -300,9 +302,9 @@ def game_new(console):
 # The husk is the thing that contains the game. The husk exposes new game and
 # load game and save game.
 #
-CPAIR_MENU_BORDER = e_cpair.black_cyan
-CPAIR_MENU_TEXT = e_cpair.t_white
-CPAIR_TITLE = e_cpair.t_white
+CPAIR_MENU_BORDER = solent_cpair('black_cyan')
+CPAIR_MENU_TEXT = solent_cpair('t_white')
+CPAIR_TITLE = solent_cpair('t_white')
 
 class Husk(object):
     def __init__(self, console, cgrid, title):

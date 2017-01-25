@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent.console import cgrid_new
 from solent.eng import nearcast_schema_new
 from solent.log import log
@@ -67,9 +67,9 @@ b:  r          plus        slash
 (Tab returns to the main menu.)
 '''
 
-PAIR_WALL = ('.', e_cpair.blue_t)
-PAIR_PLAYER = ('@', e_cpair.yellow_t)
-PAIR_WEED = ('t', e_cpair.red_t)
+PAIR_WALL = ('.', solent_cpair('blue_t'))
+PAIR_PLAYER = ('@', solent_cpair('yellow_t'))
+PAIR_WEED = ('t', solent_cpair('red_t'))
 
 class CogBridge:
     def __init__(self, cog_h, orb, engine):
@@ -287,7 +287,7 @@ class SpinSimple:
             (drop, rest) = coord
             (c, cpair) = PAIR_PLAYER
             if not self.b_game_alive:
-                cpair = e_cpair.purple_t
+                cpair = solent_cpair('purple_t')
             self.cgrid.put(
                 drop=drop,
                 rest=rest,

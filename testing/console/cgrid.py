@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent.console import cgrid_new
 
 from testing import run_tests
@@ -31,7 +31,7 @@ from solent.eng import ip_validator_new
 
 import sys
 
-DEFAULT_CPAIR = e_cpair.white_t
+DEFAULT_CPAIR = solent_cpair('white_t')
 
 def cgrid_console_print(cgrid):
     for h in range(cgrid.height):

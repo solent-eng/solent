@@ -26,7 +26,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent import solent_keycode
 from solent.console import cgrid_new
 from solent.console import console_new
@@ -221,7 +221,7 @@ class SpinTerm:
                     drop=self.select_drop,
                     rest=self.select_rest,
                     s='@',
-                    cpair=e_cpair.red_t)
+                    cpair=solent_cpair('red_t'))
             self.console.screen_update(
                 cgrid=self.select_cgrid)
         elif self.mode == MODE_STANDARD:

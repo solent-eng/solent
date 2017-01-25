@@ -106,8 +106,9 @@ class e_keycode(enum.Enum):
 
 def solent_keycode(name):
     '''
-    Convenience function. Pass in the name of a member of e_keycode. This uses
-    reflection to look it up, and returns the value.
+    Pass in the name of a member of e_keycode. This uses reflection to look it
+    up from the enumeration itself, and returns the value of the selected
+    item.
     '''
     l = dir(e_keycode)
     if name not in l:

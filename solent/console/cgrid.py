@@ -24,12 +24,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 
 import sys
 import types
 
-DEFAULT_CPAIR = e_cpair.white_t
+DEFAULT_CPAIR = solent_cpair('white_t')
 
 class Spot(object):
     def __init__(self):

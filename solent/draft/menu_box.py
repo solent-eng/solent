@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent import solent_keycode
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
@@ -145,7 +145,7 @@ class CogTerm(object):
             drop=drop,
             rest=rest,
             s=s,
-            cpair=e_cpair.white_t)
+            cpair=solent_cpair('white_t'))
     #
     def term_on_keycode(self, keycode):
         self.nearcast.keystroke(

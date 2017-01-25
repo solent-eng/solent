@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
 from solent.exceptions import SolentQuitException
@@ -79,7 +79,7 @@ class CogTerm(object):
             drop=6,
             rest=2,
             s=self.counter,
-            cpair=e_cpair.blue_t)
+            cpair=solent_cpair('blue_t'))
         self.counter += 1
         #
         self.spin_term.at_turn(

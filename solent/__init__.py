@@ -31,24 +31,7 @@ import enum
 import os
 import sys
 
-class e_cpair(enum.Enum):
-    "colour pairs"
-    red_t         = 0
-    green_t       = 1
-    yellow_t      = 2
-    blue_t        = 3
-    purple_t      = 4
-    cyan_t        = 5
-    white_t       = 6
-    t_red         = 7
-    t_green       = 8
-    t_yellow      = 9
-    white_blue    = 10
-    white_purple  = 11
-    black_cyan    = 12
-    t_white       = 13
-
-def are_we_in_a_pyinsaller_bundle():
+def are_we_in_a_pyinstaller_bundle():
     # In pyinstaller bundles, there is a magic variable called frozen
     # attached to sys.
     if getattr(sys, 'frozen', False):
@@ -58,8 +41,11 @@ def are_we_in_a_pyinsaller_bundle():
 
 def dget_root(*args):
     '''
+    Retrieve the root directory for the project. This requires different
+    handling for development than runtime, where we might be inside a code
+    bundle.
     '''
-    if are_we_in_a_pyinsaller_bundle():
+    if are_we_in_a_pyinstaller_bundle():
         # This is a magic variable set by pyintsaller
         path_nodes = sys._MEIPASS.split(os.sep)
     else:
@@ -69,6 +55,11 @@ def dget_root(*args):
     return os.sep.join(path_nodes)
 
 def dget_static(*args):
+    '''
+    Retrieve the root directory for the project. This requires different
+    handling for development than runtime, where we might be inside a code
+    bundle.
+    '''
     return dget_root('static', *args)
 
 def dget_wres(*args):

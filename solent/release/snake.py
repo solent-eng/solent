@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent import solent_keycode
 from solent.eng import engine_new
 from solent.eng import nearcast_schema_new
@@ -238,19 +238,19 @@ class SpinSnakeGame:
                 drop=drop,
                 rest=rest,
                 s='#',
-                cpair=e_cpair.purple_t)
+                cpair=solent_cpair('purple_t'))
         for spot in self.board.egg_spots:
             (drop, rest) = spot
             self.cb_display_write(
                 drop=drop,
                 rest=rest,
                 s='O',
-                cpair=e_cpair.yellow_t)
+                cpair=solent_cpair('yellow_t'))
         #
         if self.board.is_game_over():
-            cpair = e_cpair.red_t
+            cpair = solent_cpair('red_t')
         else:
-            cpair = e_cpair.green_t
+            cpair = solent_cpair('green_t')
         #
         for spot in self.board.snake_spots:
             (drop, rest) = spot
@@ -478,7 +478,7 @@ class CogMenu:
             drop=drop,
             rest=rest,
             s=s,
-            cpair=e_cpair.blue_t)
+            cpair=solent_cpair('blue_t'))
     #
     def _mi_new_game(self):
         self.nearcast.game_new()

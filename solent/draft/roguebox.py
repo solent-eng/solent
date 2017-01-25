@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent import solent_keycode
 from solent.console import cgrid_new
 from solent.eng import engine_new
@@ -420,7 +420,7 @@ class CogMenu:
             drop=drop,
             rest=rest,
             s=s,
-            cpair=e_cpair.blue_t)
+            cpair=solent_cpair('blue_t'))
     #
     def _mi_new_game(self):
         self.nearcast.o_game_new()
@@ -494,8 +494,8 @@ class CogRoguebox:
         self.spin_message_feed = spin_message_feed_new(
             height=ROGUEBOX_MFEED_HEIGHT,
             width=ROGUEBOX_MFEED_WIDTH,
-            cpair_new=e_cpair.cyan_t,
-            cpair_old=e_cpair.blue_t)
+            cpair_new=solent_cpair('cyan_t'),
+            cpair_old=solent_cpair('blue_t'))
         self.cgrid_last = cgrid_new(
             width=width,
             height=height)
@@ -561,7 +561,7 @@ class CogRoguebox:
                 drop=idx,
                 rest=0,
                 s=message,
-                cpair=e_cpair.white_t)
+                cpair=solent_cpair('white_t'))
         '''
         self.spin_message_feed.get_cgrid(
             cgrid=self.cgrid_next,

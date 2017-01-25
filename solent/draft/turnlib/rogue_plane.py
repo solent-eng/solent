@@ -33,9 +33,11 @@
 
 from .meep import meep_new
 
-from solent import e_cpair
+from solent import solent_cpair
 
 import types
+
+TERRAIN_DEFAULT_COL = solent_cpair('purple_t')
 
 class RoguePlane(object):
     def __init__(self):
@@ -48,7 +50,7 @@ class RoguePlane(object):
     # terrain: architecture of the plane
     def get_terrain(self):
         return self._terrain
-    def create_terrain(self, s, e, c, cpair=e_cpair.purple_t):
+    def create_terrain(self, s, e, c, cpair=TERRAIN_DEFAULT_COL):
         t = meep_new(
             mind=None,
             coords=rogue_plane_coords(

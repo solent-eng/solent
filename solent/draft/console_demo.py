@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import e_cpair
+from solent import solent_cpair
 from solent import solent_keycode
 from solent.console import cgrid_new
 from solent.console import console_new
@@ -47,7 +47,7 @@ def event_loop(console):
         drop=console.height-3,
         rest=1,
         s='(Escape to quit)',
-        cpair=e_cpair.white_t)
+        cpair=solent_cpair('white_t'))
     console.screen_update(
         cgrid=cgrid)
     #
@@ -61,14 +61,14 @@ def event_loop(console):
                 drop=3,
                 rest=1,
                 s='key %s (%s)  '%(hex(keycode), chr(keycode)),
-                cpair=e_cpair.red_t)
+                cpair=solent_cpair('red_t'))
         else:
             time.sleep(0.05)
         cgrid.put(
             drop=1,
             rest=1,
             s='loop counter: %s'%(t),
-            cpair=e_cpair.green_t)
+            cpair=solent_cpair('green_t'))
         console.screen_update(
             cgrid=cgrid)
         t += 1
