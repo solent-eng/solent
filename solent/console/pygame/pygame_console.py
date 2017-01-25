@@ -250,10 +250,11 @@ class PygameConsole:
 DIR_STATIC = dget_static()
 DIR_FONTS = os.sep.join( [DIR_STATIC, 'solent_console_pygame_fonts'] )
 PATH_TTF_FONT = os.sep.join( [DIR_FONTS, 'kongtext', 'kongtext.ttf'] )
+PYGAME_FONT_SIZE = 16
 
 def pygame_console_new(width, height):
     pygame.font.init()
-    font = pygame.font.Font(PATH_TTF_FONT, 16)
+    font = pygame.font.Font(PATH_TTF_FONT, PYGAME_FONT_SIZE)
     window_console = PygameConsole(
         width=width,
         height=height,

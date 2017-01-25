@@ -68,7 +68,7 @@ b:  r          plus        slash
 '''
 
 PAIR_WALL = ('.', solent_cpair('blue'))
-PAIR_PLAYER = ('@', solent_cpair('orange'))
+PAIR_PLAYER = ('@', solent_cpair('green'))
 PAIR_WEED = ('t', solent_cpair('red'))
 
 class CogBridge:
@@ -168,8 +168,15 @@ class SpinSimple:
         self.cpool_wall = []
         self.cpool_player = []
         self.cpool_weed = []
-        for drop in range(self.grid_height):
-            for rest in range(self.grid_width):
+
+        room_width = 10
+        room_height = 10
+        nail_drop = int( (self.grid_height / 2) - (room_height / 2) )
+        nail_rest = int( (self.grid_width / 2) - (room_width / 2) )
+        peri_drop = nail_drop + room_width + 1
+        peri_rest = nail_rest + room_height + 1
+        for drop in range(nail_drop, peri_drop):
+            for rest in range(nail_rest, peri_rest):
                 self.cpool_spare.append( (drop, rest) )
 
     def get_turn(self):
@@ -244,24 +251,33 @@ class SpinSimple:
         coord = ( int(self.grid_height/2), int(self.grid_width/2) )
         self.cpool_spare.remove(coord)
         self.cpool_player.append(coord)
-
-        # place walls
-        for rest in range(32, 48):
-            coord = (6, rest)
+        #
+        # create the walls
+        room_width = 10
+        room_height = 10
+        nail_drop = int( (self.grid_height / 2) - (room_height / 2) )
+        nail_rest = int( (self.grid_width / 2) - (room_width / 2) )
+        peri_drop = nail_drop + room_width + 1
+        peri_rest = nail_rest + room_height + 1
+        # horizontal walls, including corners
+        for rest in range(nail_rest, peri_rest):
+            coord = (nail_drop, rest)
             self.cpool_spare.remove(coord)
             self.cpool_wall.append(coord)
-            coord = (18, rest)
+            coord = (nail_drop+room_height, rest)
             self.cpool_spare.remove(coord)
             self.cpool_wall.append(coord)
-        for drop in range(7, 18):
-            coord = (drop, 32)
+        # vertical walls, except corners
+        for drop in range(nail_drop+1, peri_drop-1):
+            coord = (drop, nail_rest)
             self.cpool_spare.remove(coord)
             self.cpool_wall.append(coord)
-            coord = (drop, 47)
+            coord = (drop, nail_rest+room_width)
             self.cpool_spare.remove(coord)
             self.cpool_wall.append(coord)
-
-        # place weeds. we need at least one.
+        #
+        # place weeds
+        # (we need at least one.)
         while not self.cpool_weed:
             for coord in self.cpool_spare:
                 (drop, rest) = coord
@@ -275,6 +291,14 @@ class SpinSimple:
 
     def _render_cgrid(self):
         self.cgrid.clear()
+        for coord in self.cpool_spare:
+            (drop, rest) = coord
+            (c, cpair) = (' ', solent_cpair('teal'))
+            self.cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=c,
+                cpair=cpair)
         for coord in self.cpool_wall:
             (drop, rest) = coord
             (c, cpair) = PAIR_WALL
@@ -287,7 +311,7 @@ class SpinSimple:
             (drop, rest) = coord
             (c, cpair) = PAIR_PLAYER
             if not self.b_game_alive:
-                cpair = solent_cpair('yellow')
+                cpair = solent_cpair('blue')
             self.cgrid.put(
                 drop=drop,
                 rest=rest,

@@ -100,8 +100,10 @@ CONTROL_SCHEME_H_GOLLOP = 'gollop'
 CONTROL_SCHEME_H_KEYPAD = 'keypad'
 CONTROL_SCHEME_H_VI = 'vi'
 
-CONSOLE_HEIGHT = 24
-CONSOLE_WIDTH = 78
+CONSOLE_HEIGHT = 28
+CONSOLE_WIDTH = 76
+
+GAME_NAME = 'simple roguelike'
 
 MENU_KEYCODE_NEW_GAME = solent_keycode('n')
 MENU_KEYCODE_CONTINUE = solent_keycode('c')
@@ -110,10 +112,10 @@ MENU_KEYCODE_QUIT = solent_keycode('q')
 ROGUEBOX_ORIGIN_DROP = 0
 ROGUEBOX_ORIGIN_REST = 0
 
-ROGUEBOX_GAMEBOX_HEIGHT = 24
-ROGUEBOX_GAMEBOX_WIDTH = 78
+ROGUEBOX_GAMEBOX_HEIGHT = CONSOLE_HEIGHT
+ROGUEBOX_GAMEBOX_WIDTH = CONSOLE_WIDTH
 ROGUEBOX_GAMEBOX_NAIL = (0, 0)
-ROGUEBOX_GAMEBOX_PERI = (24, 80)
+ROGUEBOX_GAMEBOX_PERI = (CONSOLE_HEIGHT, CONSOLE_WIDTH)
 
 ROGUEBOX_MFEED_HEIGHT = CONSOLE_HEIGHT
 ROGUEBOX_MFEED_WIDTH = 57
@@ -376,7 +378,7 @@ class CogMenu:
             cb_display_clear=self.menu_display_clear,
             cb_display_write=self.menu_display_write)
         self.nearcast.menu_title(
-            text=__name__)
+            text=GAME_NAME)
         self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_NEW_GAME,
             text='new game')
@@ -562,13 +564,6 @@ class CogRoguebox:
                 rest=0,
                 s=message,
                 cpair=solent_cpair('white'))
-        '''
-        self.spin_message_feed.get_cgrid(
-            cgrid=self.cgrid_next,
-            nail=ROGUEBOX_MFEED_NAIL,
-            peri=ROGUEBOX_MFEED_PERI,
-            turn=self.spin_roguelike.get_turn())
-        '''
         #
         for drop in range(self.height):
             for rest in range(self.width):
