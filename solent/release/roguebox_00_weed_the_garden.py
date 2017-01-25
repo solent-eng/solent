@@ -33,7 +33,7 @@ from solent.log import init_logging
 from solent.log import log
 from solent.menu import spin_menu_new
 from solent.rogue import spin_message_feed_new
-from solent.rogue.simple_01_coordinates_and_ecs import spin_simple_new
+from solent.rogue.simple_00_weed_the_garden import spin_simple_new
 from solent.term import spin_term_new
 from solent.util import uniq
 
@@ -103,7 +103,7 @@ CONTROL_SCHEME_H_VI = 'vi'
 CONSOLE_HEIGHT = 28
 CONSOLE_WIDTH = 76
 
-GAME_NAME = 'simple roguelike'
+GAME_NAME = 'Weed the Garden'
 
 MENU_KEYCODE_NEW_GAME = solent_keycode('n')
 MENU_KEYCODE_CONTINUE = solent_keycode('c')
@@ -444,34 +444,20 @@ class CogRoguebox:
         self.orb = orb
         #
         self.pin_containment_mode = orb.init_pin(PinContainmentMode)
-        self.console_height = None
-        self.console_width = None
+        self.spin_roguelike = None
+        self.spin_message_feed = None
         self.cgrid_last = None
         self.cgrid_next = None
         self.d_keycode_to_directive = {}
         self.d_control_scheme = {} # (control_scheme_h, directive_h) = keycode
         #
-        self.b_first_game_ready = False
+        self.b_game_started = False
         self.b_mail_waiting = False
         self.b_refresh_needed = False
-        #
-        self.spin_roguelike = spin_simple_new(
-            engine=self.engine,
-            grid_height=ROGUEBOX_GAMEBOX_HEIGHT,
-            grid_width=ROGUEBOX_GAMEBOX_WIDTH,
-            cb_ready_alert=self._rl_ready_alert,
-            cb_grid_alert=self._rl_grid_alert,
-            cb_mail_alert=self._rl_mail_alert,
-            cb_over_alert=self._rl_over_alert)
-        self.spin_message_feed = spin_message_feed_new(
-            height=ROGUEBOX_MFEED_HEIGHT,
-            width=ROGUEBOX_MFEED_WIDTH,
-            cpair_new=solent_cpair('teal'),
-            cpair_old=solent_cpair('blue'))
     def close(self):
         pass
     def at_turn(self, activity):
-        if not self.b_first_game_ready:
+        if None == self.spin_roguelike:
             return
         if not self.pin_containment_mode.is_focus_on_game():
             return
@@ -500,6 +486,19 @@ class CogRoguebox:
         if console_width < ROGUEBOX_GAMEBOX_WIDTH:
             raise Exception("console width %s too small for game width %s."%(
                 console_width, ROGUEBOX_GAMEBOX_WIDTH))
+        self.spin_roguelike = spin_simple_new(
+            engine=self.engine,
+            grid_height=ROGUEBOX_GAMEBOX_HEIGHT,
+            grid_width=ROGUEBOX_GAMEBOX_WIDTH,
+            cb_ready_alert=self._rl_ready_alert,
+            cb_grid_alert=self._rl_grid_alert,
+            cb_mail_alert=self._rl_mail_alert,
+            cb_over_alert=self._rl_over_alert)
+        self.spin_message_feed = spin_message_feed_new(
+            height=ROGUEBOX_MFEED_HEIGHT,
+            width=ROGUEBOX_MFEED_WIDTH,
+            cpair_new=solent_cpair('teal'),
+            cpair_old=solent_cpair('blue'))
         self.cgrid_last = cgrid_new(
             width=console_width,
             height=console_height)
@@ -519,7 +518,7 @@ class CogRoguebox:
         self.d_keycode_to_directive[keycode] = directive_h
         self.d_control_scheme[ (control_scheme_h, directive_h) ] = keycode
     def on_x_game_ready(self):
-        self.b_first_game_ready = True
+        self.b_game_started = True
         self.nearcast.o_game_focus()
     def on_o_game_new(self):
         self.spin_message_feed.clear()
@@ -538,7 +537,7 @@ class CogRoguebox:
             turn=self.spin_roguelike.get_turn()-3)
         self.b_refresh_needed = True
     def on_o_game_focus(self):
-        if not self.b_first_game_ready:
+        if not self.b_game_started:
             self.nearcast.menu_focus()
             return
         self._full_display_refresh()
