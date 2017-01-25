@@ -36,6 +36,9 @@ from collections import deque
 import os
 import pygame
 
+KEY_REPEAT_DELAY = 170
+KEY_REPEAT_INTERVAL = 180
+
 PROFILE_RED_T = ((255, 0, 0), (0, 0, 0))
 PROFILE_GREEN_T = ((0, 255, 0), (0, 0, 0))
 PROFILE_YELLOW_T = ((255, 255, 0), (0, 0, 0))
@@ -238,6 +241,9 @@ def pygame_console_new(width, height):
         width=width,
         height=height,
         font=font)
+    pygame.key.set_repeat(
+        KEY_REPEAT_DELAY,
+        KEY_REPEAT_INTERVAL)
     #
     ob = iconsole_new(
         keystream=window_console.get_keystream(),
