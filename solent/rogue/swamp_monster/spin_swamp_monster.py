@@ -570,27 +570,27 @@ class SpinSwampMonster:
         self.bridge.nc_sigil(
             h=SIGIL_H_LAND,
             c='.',
-            cpair=solent_cpair('white_t'))
+            cpair=solent_cpair('white'))
         self.bridge.nc_sigil(
             h=SIGIL_H_MANGROVE,
             c='%',
-            cpair=solent_cpair('green_t'))
+            cpair=solent_cpair('green'))
         self.bridge.nc_sigil(
             h=SIGIL_H_MONSTER,
             c='Y',
-            cpair=solent_cpair('red_t'))
+            cpair=solent_cpair('red'))
         self.bridge.nc_sigil(
             h=SIGIL_H_PLAYER,
             c='@',
-            cpair=solent_cpair('yellow_t'))
+            cpair=solent_cpair('yellow'))
         self.bridge.nc_sigil(
             h=SIGIL_H_VOID,
             c=' ',
-            cpair=solent_cpair('white_t'))
+            cpair=solent_cpair('white'))
         self.bridge.nc_sigil(
             h=SIGIL_H_WATER,
             c='~',
-            cpair=solent_cpair('blue_t'))
+            cpair=solent_cpair('blue'))
         #
         # Hilarity. Due to an oversight in the way I've designed the current
         # interation of the rogue game, it is necessary to translate status bar
@@ -600,7 +600,7 @@ class SpinSwampMonster:
             self.bridge.nc_sigil(
                 h='char_%s'%i,
                 c=c,
-                cpair=solent_cpair('cyan_t'))
+                cpair=solent_cpair('teal'))
     #
     def input_nw(self):
         self.bridge.nc_input(

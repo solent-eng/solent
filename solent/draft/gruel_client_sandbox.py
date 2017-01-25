@@ -285,7 +285,7 @@ class PaneConsole:
                 drop=drop,
                 rest=rest,
                 s=c,
-                cpair=solent_cpair('white_t'))
+                cpair=solent_cpair('white'))
             idx += 1
         drop = 1 + (idx / 40)
         rest = idx % 40
@@ -293,7 +293,7 @@ class PaneConsole:
             drop=drop,
             rest=rest,
             s='_',
-            cpair=solent_cpair('green_t'))
+            cpair=solent_cpair('green'))
         idx += 1
         while 0 != idx % 40:
             rest = idx % 40
@@ -301,13 +301,13 @@ class PaneConsole:
                 drop=drop,
                 rest=rest,
                 s=' ',
-                cpair=solent_cpair('white_t'))
+                cpair=solent_cpair('white'))
             idx += 1
         cgrid.put(
             drop=drop+1,
             rest=0,
             s=' ',
-            cpair=solent_cpair('white_t'))
+            cpair=solent_cpair('white'))
 
 class PaneAnnounce:
     def __init__(self):
@@ -319,12 +319,12 @@ class PaneAnnounce:
             drop=0,
             rest=0,
             s=self.s,
-            cpair=solent_cpair('red_t'))
+            cpair=solent_cpair('red'))
         cgrid.put(
             drop=0,
             rest=len(self.s),
             s=' '*(79-len(self.s)),
-            cpair=solent_cpair('red_t'))
+            cpair=solent_cpair('red'))
 
 class CogTerminal:
     def __init__(self, cog_h, orb, engine):
@@ -359,12 +359,12 @@ class CogTerminal:
             drop=0,
             rest=79,
             c=chr(keycode),
-            cpair=solent_cpair('yellow_t'))
+            cpair=solent_cpair('yellow'))
         self.nearcast.term_plot(
             drop=1,
             rest=77,
             c='%3s'%(str(keycode)),
-            cpair=solent_cpair('yellow_t'))
+            cpair=solent_cpair('yellow'))
         self._console_update()
     def on_term_announce(self, s):
         self.pane_announce.set_text(
@@ -400,7 +400,7 @@ class CogTerminal:
             drop=self.tcurs_drop,
             rest=self.tcurs_rest,
             s=' ',
-            cpair=solent_cpair('white_t'))
+            cpair=solent_cpair('white'))
         self._console_update()
     def _console_update(self):
         self.pane_plot.light(self.cgrid)

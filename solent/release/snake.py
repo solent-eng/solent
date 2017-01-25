@@ -237,20 +237,20 @@ class SpinSnakeGame:
             self.cb_display_write(
                 drop=drop,
                 rest=rest,
-                s='#',
-                cpair=solent_cpair('purple_t'))
+                s='.',
+                cpair=solent_cpair('orange'))
         for spot in self.board.egg_spots:
             (drop, rest) = spot
             self.cb_display_write(
                 drop=drop,
                 rest=rest,
                 s='O',
-                cpair=solent_cpair('yellow_t'))
+                cpair=solent_cpair('yellow'))
         #
         if self.board.is_game_over():
-            cpair = solent_cpair('red_t')
+            cpair = solent_cpair('red')
         else:
-            cpair = solent_cpair('green_t')
+            cpair = solent_cpair('green')
         #
         for spot in self.board.snake_spots:
             (drop, rest) = spot
@@ -478,7 +478,7 @@ class CogMenu:
             drop=drop,
             rest=rest,
             s=s,
-            cpair=solent_cpair('blue_t'))
+            cpair=solent_cpair('blue'))
     #
     def _mi_new_game(self):
         self.nearcast.game_new()

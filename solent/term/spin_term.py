@@ -221,7 +221,7 @@ class SpinTerm:
                     drop=self.select_drop,
                     rest=self.select_rest,
                     s='@',
-                    cpair=solent_cpair('red_t'))
+                    cpair=solent_cpair('red'))
             self.console.screen_update(
                 cgrid=self.select_cgrid)
         elif self.mode == MODE_STANDARD:

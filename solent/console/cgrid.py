@@ -29,7 +29,7 @@ from solent import solent_cpair
 import sys
 import types
 
-DEFAULT_CPAIR = solent_cpair('white_t')
+DEFAULT_CPAIR = solent_cpair('grey')
 
 class Spot(object):
     def __init__(self):

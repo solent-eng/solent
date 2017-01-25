@@ -39,35 +39,52 @@ import pygame
 KEY_REPEAT_DELAY = 170
 KEY_REPEAT_INTERVAL = 180
 
-PROFILE_RED_T = ((255, 0, 0), (0, 0, 0))
-PROFILE_GREEN_T = ((0, 255, 0), (0, 0, 0))
-PROFILE_YELLOW_T = ((255, 255, 0), (0, 0, 0))
-PROFILE_BLUE_T = ((0, 0, 255), (0, 0, 0))
-PROFILE_PURPLE_T = ((255, 0, 255), (0, 0, 0))
-PROFILE_CYAN_T = ((0, 255, 255), (0, 0, 0))
-PROFILE_WHITE_T = ((255, 255, 255), (0, 0, 0))
-PROFILE_T_RED = ((0, 0, 0), (255, 0, 0))
-PROFILE_T_GREEN = ((0, 0, 0), (0, 255, 0))
-PROFILE_T_YELLOW = ((0, 0, 0), (255, 255, 0))
-PROFILE_WHITE_BLUE = ((255, 255, 255), (255, 255, 128))
-PROFILE_WHITE_PURPLE = ((255, 255, 255), (255, 0, 255))
-PROFILE_BLACK_CYAN = ((0, 0, 0), (0, 255, 255))
-PROFILE_T_WHITE = ((0, 0, 0), (255, 255, 255))
+def rgb(s):
+    return (
+        eval('0x%s'%(s[:2])),
+        eval('0x%s'%(s[2:4])),
+        eval('0x%s'%(s[4:6])))
 
-MAP_CONST_COLOURS_TO_CPAIR = { solent_cpair('red_t'): PROFILE_RED_T
-                             , solent_cpair('green_t'): PROFILE_GREEN_T
-                             , solent_cpair('yellow_t'): PROFILE_YELLOW_T
-                             , solent_cpair('blue_t'): PROFILE_BLUE_T
-                             , solent_cpair('purple_t'): PROFILE_PURPLE_T
-                             , solent_cpair('cyan_t'): PROFILE_CYAN_T
-                             , solent_cpair('white_t'): PROFILE_WHITE_T
-                             , solent_cpair('t_red'): PROFILE_RED_T
-                             , solent_cpair('t_green'): PROFILE_T_GREEN
-                             , solent_cpair('t_yellow'): PROFILE_T_YELLOW
-                             , solent_cpair('white_blue'): PROFILE_WHITE_BLUE
-                             , solent_cpair('white_purple'): PROFILE_WHITE_PURPLE
-                             , solent_cpair('black_cyan'): PROFILE_BLACK_CYAN
-                             , solent_cpair('t_white'): PROFILE_T_WHITE
+# foreground triplet on background triplet
+PROFILE_GREY        = (rgb('aaaaaa')    , (0, 0, 0))
+PROFILE_WHITE       = ((255, 255, 255)  , (0, 0, 0))
+PROFILE_RED         = ((255, 0, 0)      , (0, 0, 0))
+PROFILE_VERMILION   = ((255, 70, 0)     , (0, 0, 0))
+PROFILE_ORANGE      = ((255, 118, 0)    , (0, 0, 0))
+PROFILE_AMBER       = ((255, 172, 0)    , (0, 0, 0)) 
+PROFILE_YELLOW      = ((255, 255, 0)    , (0, 0, 0))
+PROFILE_CHARTREUSE  = (rgb('7FFF00')    , (0, 0, 0))
+PROFILE_GREEN       = ((0, 255, 0)      , (0, 0, 0))
+PROFILE_TEAL        = ((0, 128, 128)    , (0, 0, 0))
+PROFILE_BLUE        = ((0, 0, 255)      , (0, 0, 0))
+PROFILE_VIOLET      = ((128, 0, 255)    , (0, 0, 0))
+PROFILE_PURPLE      = ((255, 0, 255)    , (0, 0, 0))
+PROFILE_MAGENTA     = ((255, 127, 255)  , (0, 0, 0))
+
+PROFILE_BLACK_INFO  = ((0, 0, 0)        , (0, 255, 255))
+PROFILE_GREY_INFO   = ((127, 127, 127)  , (0, 255, 255))
+
+PROFILE_GREEN_INFO  = ((0, 255, 0)      , (0, 255, 255))
+PROFILE_ALARM       = ((255, 64, 0)     , (0, 255, 255))
+
+MAP_CONST_COLOURS_TO_CPAIR = { solent_cpair('grey'): PROFILE_GREY
+                             , solent_cpair('white'): PROFILE_WHITE
+                             , solent_cpair('red'): PROFILE_RED
+                             , solent_cpair('vermilion'): PROFILE_VERMILION
+                             , solent_cpair('orange'): PROFILE_ORANGE
+                             , solent_cpair('amber'): PROFILE_AMBER
+                             , solent_cpair('yellow'): PROFILE_YELLOW
+                             , solent_cpair('chartreuse'): PROFILE_CHARTREUSE
+                             , solent_cpair('green'): PROFILE_GREEN
+                             , solent_cpair('teal'): PROFILE_TEAL
+                             , solent_cpair('blue'): PROFILE_BLUE
+                             , solent_cpair('violet'): PROFILE_VIOLET
+                             , solent_cpair('purple'): PROFILE_PURPLE
+                             , solent_cpair('magenta'): PROFILE_MAGENTA
+                             , solent_cpair('black_info'): PROFILE_BLACK_INFO
+                             , solent_cpair('grey_info'): PROFILE_GREY_INFO
+                             , solent_cpair('green_info'): PROFILE_GREEN_INFO
+                             , solent_cpair('alarm'): PROFILE_ALARM
                              }
 
 def _sanitise_input(u):

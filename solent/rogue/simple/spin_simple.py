@@ -67,9 +67,9 @@ b:  r          plus        slash
 (Tab returns to the main menu.)
 '''
 
-PAIR_WALL = ('.', solent_cpair('blue_t'))
-PAIR_PLAYER = ('@', solent_cpair('yellow_t'))
-PAIR_WEED = ('t', solent_cpair('red_t'))
+PAIR_WALL = ('.', solent_cpair('blue'))
+PAIR_PLAYER = ('@', solent_cpair('orange'))
+PAIR_WEED = ('t', solent_cpair('red'))
 
 class CogBridge:
     def __init__(self, cog_h, orb, engine):
@@ -287,7 +287,7 @@ class SpinSimple:
             (drop, rest) = coord
             (c, cpair) = PAIR_PLAYER
             if not self.b_game_alive:
-                cpair = solent_cpair('purple_t')
+                cpair = solent_cpair('yellow')
             self.cgrid.put(
                 drop=drop,
                 rest=rest,

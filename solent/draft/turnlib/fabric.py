@@ -27,9 +27,9 @@ from solent import solent_cpair
 
 class GridFabric(object):
     def __init__(self):
-        self.cross = ('+', solent_cpair('blue_t'))
-        self.horiz = ('-', solent_cpair('blue_t'))
-        self.vert = ('|', solent_cpair('blue_t'))
+        self.cross = ('+', solent_cpair('blue'))
+        self.horiz = ('-', solent_cpair('blue'))
+        self.vert = ('|', solent_cpair('blue'))
     def get_sigil(self, s, e):
         seven = (s%8 == 0)
         eeven = (e%8 == 0)
@@ -43,7 +43,7 @@ class GridFabric(object):
 
 class TerminalFabric(object):
     def __init__(self):
-        self.dot = ('.', solent_cpair('blue_t'))
+        self.dot = ('.', solent_cpair('blue'))
     def get_sigil(self, s, e):
         return self.dot
 
@@ -52,9 +52,9 @@ class DraughtsFabric(object):
         pass
     def get_sigil(self, s, e):
         if s % 2 == 0 and e % 2 == 0:
-            return ('.', solent_cpair('blue_t'))
+            return ('.', solent_cpair('blue'))
         if s % 2 == 1 and e % 2 == 1:
-            return ('.', solent_cpair('blue_t'))
+            return ('.', solent_cpair('blue'))
         return None
 
 class GreenFabric(object):
@@ -92,17 +92,17 @@ class GreenFabric(object):
         #
         # entry box
         if s in (2, 4) and -1 <= e <= 1:
-            return ('-', solent_cpair('green_t'))
+            return ('-', solent_cpair('green'))
         if s == 3 and e in (-2, 2):
-            return ('|', solent_cpair('green_t'))
+            return ('|', solent_cpair('green'))
         if se in ((2, -2), (4, 2)):
-            return ('\\', solent_cpair('green_t'))
+            return ('\\', solent_cpair('green'))
         if se in ((4, -2), (2, 2)):
-            return ('/', solent_cpair('green_t'))
+            return ('/', solent_cpair('green'))
         #
         # dots around the entry box
         if se in ((1, -3), (5, -3), (1, 3), (5, 3)):
-            return ('.', solent_cpair('green_t'))
+            return ('.', solent_cpair('green'))
         #
         # don't draw bars at the entrypoint
         if 1 <= s <= 5 and e in (4, -4):
@@ -110,14 +110,14 @@ class GreenFabric(object):
         #
         # mobius strip bars
         if se in ((0, -4), (0, 4), (6, -4), (6, 4)):
-            return ('-', solent_cpair('green_t'))
+            return ('-', solent_cpair('green'))
         #
         # texture dots
         #if s
         #
         # bars
         if (e-4) % 8 == 0:
-            return ('|', solent_cpair('green_t'))
+            return ('|', solent_cpair('green'))
         return None
 
 def fabric_new_grid():

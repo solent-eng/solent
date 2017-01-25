@@ -61,20 +61,22 @@ def screen_curses_init():
     # the pairs
     curses.use_default_colors()
     #
-    curses.init_pair(PROFILE_RED_T, curses.COLOR_RED, -1)
-    curses.init_pair(PROFILE_GREEN_T, curses.COLOR_GREEN, -1)
-    curses.init_pair(PROFILE_YELLOW_T, curses.COLOR_YELLOW, -1)
-    curses.init_pair(PROFILE_BLUE_T, curses.COLOR_BLUE, -1)
-    curses.init_pair(PROFILE_PURPLE_T, curses.COLOR_MAGENTA, -1)
-    curses.init_pair(PROFILE_CYAN_T, curses.COLOR_CYAN, -1)
-    curses.init_pair(PROFILE_WHITE_T, curses.COLOR_WHITE, -1)
-    curses.init_pair(PROFILE_T_RED, -1, curses.COLOR_RED)
-    curses.init_pair(PROFILE_T_GREEN, -1, curses.COLOR_GREEN)
-    curses.init_pair(PROFILE_T_YELLOW, -1, curses.COLOR_YELLOW)
-    curses.init_pair(PROFILE_WHITE_BLUE, curses.COLOR_WHITE, curses.COLOR_BLUE)
-    curses.init_pair(PROFILE_WHITE_PURPLE, curses.COLOR_WHITE, curses.COLOR_MAGENTA)
-    curses.init_pair(PROFILE_BLACK_CYAN, curses.COLOR_BLACK, curses.COLOR_CYAN)
-    curses.init_pair(PROFILE_T_WHITE, -1, curses.COLOR_WHITE)
+    curses.init_pair(PROFILE_GREY       , curses.COLOR_WHITE    , -1)
+    curses.init_pair(PROFILE_WHITE      , curses.COLOR_WHITE    , -1)
+    curses.init_pair(PROFILE_RED        , curses.COLOR_RED      , -1)
+    curses.init_pair(PROFILE_VERMILION  , curses.COLOR_RED      , -1)
+    curses.init_pair(PROFILE_ORANGE     , curses.COLOR_RED      , -1)
+    curses.init_pair(PROFILE_AMBER      , curses.COLOR_YELLOW   , -1)
+    curses.init_pair(PROFILE_YELLOW     , curses.COLOR_YELLOW   , -1)
+    curses.init_pair(PROFILE_CHARTREUSE , curses.COLOR_GREEN    , -1)
+    curses.init_pair(PROFILE_GREEN      , curses.COLOR_GREEN    , -1)
+    curses.init_pair(PROFILE_TEAL       , curses.COLOR_CYAN     , -1)
+    curses.init_pair(PROFILE_BLUE       , curses.COLOR_BLUE     , -1)
+    curses.init_pair(PROFILE_VIOLET     , curses.COLOR_MAGENTA  , -1)
+    curses.init_pair(PROFILE_PURPLE     , curses.COLOR_MAGENTA  , -1)
+    curses.init_pair(PROFILE_MAGENTA    , curses.COLOR_MAGENTA  , -1)
+    curses.init_pair(PROFILE_BLACK_INFO , curses.COLOR_BLACK    , curses.COLOR_WHITE)
+    curses.init_pair(PROFILE_ALARM,       curses.COLOR_RED      , curses.COLOR_WHITE)
 
 def screen_curses_exit():
     global STDSCR
@@ -132,36 +134,57 @@ def curses_block_get_keycode():
 # profiles, each of represents attributes. Here, we will have foreground and
 # background. But you could potentially have underling and blinking and that
 # sort of thing as well.
-PROFILE_RED_T = 1
-PROFILE_GREEN_T = 2
-PROFILE_YELLOW_T = 3
-PROFILE_BLUE_T = 4
-PROFILE_PURPLE_T = 5
-PROFILE_CYAN_T = 6
-PROFILE_WHITE_T = 7
-PROFILE_T_RED = 11
-PROFILE_T_GREEN = 12
-PROFILE_T_YELLOW = 13
-PROFILE_WHITE_BLUE = 14
-PROFILE_WHITE_PURPLE = 15
-PROFILE_BLACK_CYAN = 16
-PROFILE_T_WHITE = 17
+PROFILE_GREY = 0
+PROFILE_WHITE = 1
+PROFILE_RED = 2
+PROFILE_VERMILION = 3
+PROFILE_ORANGE = 4
+PROFILE_AMBER = 5
+PROFILE_YELLOW = 6
+PROFILE_CHARTREUSE = 7
+PROFILE_GREEN = 8
+PROFILE_TEAL = 9
+PROFILE_BLUE = 10
+PROFILE_VIOLET = 11
+PROFILE_PURPLE = 12
+PROFILE_MAGENTA = 13
+PROFILE_BLACK_INFO = 14
+PROFILE_ALARM = 15
 
-MAP_CONST_COLOURS_TO_CPAIR = { solent_cpair('red_t'): PROFILE_RED_T
-                             , solent_cpair('green_t'): PROFILE_GREEN_T
-                             , solent_cpair('yellow_t'): PROFILE_YELLOW_T
-                             , solent_cpair('blue_t'): PROFILE_BLUE_T
-                             , solent_cpair('purple_t'): PROFILE_PURPLE_T
-                             , solent_cpair('cyan_t'): PROFILE_CYAN_T
-                             , solent_cpair('white_t'): PROFILE_WHITE_T
-                             , solent_cpair('t_red'): PROFILE_RED_T
-                             , solent_cpair('t_green'): PROFILE_T_GREEN
-                             , solent_cpair('t_yellow'): PROFILE_T_YELLOW
-                             , solent_cpair('white_blue'): PROFILE_WHITE_BLUE
-                             , solent_cpair('white_purple'): PROFILE_WHITE_PURPLE
-                             , solent_cpair('black_cyan'): PROFILE_BLACK_CYAN
-                             , solent_cpair('t_white'): PROFILE_T_WHITE
+MAP_CONST_COLOURS_TO_CPAIR = { solent_cpair('grey'): PROFILE_GREY
+                             , solent_cpair('white'): PROFILE_WHITE
+                             , solent_cpair('red'): PROFILE_RED
+                             , solent_cpair('vermilion'): PROFILE_VERMILION
+                             , solent_cpair('orange'): PROFILE_ORANGE
+                             , solent_cpair('amber'): PROFILE_AMBER
+                             , solent_cpair('yellow'): PROFILE_YELLOW
+                             , solent_cpair('chartreuse'): PROFILE_CHARTREUSE
+                             , solent_cpair('green'): PROFILE_GREEN
+                             , solent_cpair('teal'): PROFILE_TEAL
+                             , solent_cpair('blue'): PROFILE_BLUE
+                             , solent_cpair('violet'): PROFILE_VIOLET
+                             , solent_cpair('purple'): PROFILE_PURPLE
+                             , solent_cpair('magenta'): PROFILE_MAGENTA
+                             , solent_cpair('black_info'): PROFILE_BLACK_INFO
+                             , solent_cpair('alarm'): PROFILE_ALARM
                              }
+
+def get_curses_colour_enum_closest_to_cpair(cpair):
+    if cpair in MAP_CONST_COLOURS_TO_CPAIR:
+        return curses.color_pair(MAP_CONST_COLOURS_TO_CPAIR[cpair])|curses.A_BOLD
+    else:
+        choice_cpair = None
+        for (avail_cpair, curses_pair_id) in MAP_CONST_COLOURS_TO_CPAIR.items():
+            if choice_cpair == None:
+                choice_cpair = avail_cpair
+                continue
+            # Locate the closest to the desired cpair that is not larger than
+            # it
+            if avail_cpair > cpair:
+                continue
+            elif avail_cpair > choice_cpair:
+                choice_cpair = avail_cpair
+        return avail_cpair|curses.A_BOLD
 
 class GridDisplay(object):
     def __init__(self, internal_cgrid):
@@ -190,7 +213,8 @@ class GridDisplay(object):
                     o_spot.mimic(n_spot)
             for idx in updates:
                 spot = self.internal_cgrid.spots[idx]
-                pair = curses.color_pair(MAP_CONST_COLOURS_TO_CPAIR[spot.cpair])
+                pair = get_curses_colour_enum_closest_to_cpair(
+                    cpair=spot.cpair)
                 STDSCR.addstr(
                     int(idx/self.internal_cgrid.width),
                     int(idx%self.internal_cgrid.width),
@@ -198,7 +222,8 @@ class GridDisplay(object):
                     pair)
             # consistent cursor position
             spot = self.internal_cgrid.spots[-1]
-            pair = curses.color_pair(MAP_CONST_COLOURS_TO_CPAIR[spot.cpair])
+            pair = get_curses_colour_enum_closest_to_cpair(
+                cpair=spot.cpair)
             STDSCR.addstr(
                 self.internal_cgrid.height-1,
                 self.internal_cgrid.width-1,
@@ -207,6 +232,8 @@ class GridDisplay(object):
             #
             STDSCR.refresh()
         except:
+            # xxx
+            raise
             self.internal_cgrid.clear()
             try:
                 STDSCR.clear()

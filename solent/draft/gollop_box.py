@@ -79,7 +79,7 @@ class CogTerm(object):
             drop=6,
             rest=2,
             s=self.counter,
-            cpair=solent_cpair('blue_t'))
+            cpair=solent_cpair('blue'))
         self.counter += 1
         #
         self.spin_term.at_turn(

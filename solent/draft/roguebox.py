@@ -420,7 +420,7 @@ class CogMenu:
             drop=drop,
             rest=rest,
             s=s,
-            cpair=solent_cpair('blue_t'))
+            cpair=solent_cpair('blue'))
     #
     def _mi_new_game(self):
         self.nearcast.o_game_new()
@@ -494,8 +494,8 @@ class CogRoguebox:
         self.spin_message_feed = spin_message_feed_new(
             height=ROGUEBOX_MFEED_HEIGHT,
             width=ROGUEBOX_MFEED_WIDTH,
-            cpair_new=solent_cpair('cyan_t'),
-            cpair_old=solent_cpair('blue_t'))
+            cpair_new=solent_cpair('teal'),
+            cpair_old=solent_cpair('blue'))
         self.cgrid_last = cgrid_new(
             width=width,
             height=height)
@@ -561,7 +561,7 @@ class CogRoguebox:
                 drop=idx,
                 rest=0,
                 s=message,
-                cpair=solent_cpair('white_t'))
+                cpair=solent_cpair('white'))
         '''
         self.spin_message_feed.get_cgrid(
             cgrid=self.cgrid_next,

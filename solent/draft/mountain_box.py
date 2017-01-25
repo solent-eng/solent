@@ -59,7 +59,7 @@ TITLE = sys.argv[0].split(os.sep)[-1]
 # --------------------------------------------------------
 #   :game
 # --------------------------------------------------------
-CPAIR_DEFAULT = solent_cpair('white_t')
+CPAIR_DEFAULT = solent_cpair('white')
 
 def make_box(rogue_plane, se_nail, width, height, cpair=CPAIR_DEFAULT, box_type=e_boxtype.line):
     '''
@@ -144,32 +144,32 @@ def create_origin_plane():
         s=2,
         e=-5,
         c='o',
-        cpair=solent_cpair('green_t'))
+        cpair=solent_cpair('green'))
     rogue_plane.create_meep(
         s=3,
         e=-4,
         c='o',
-        cpair=solent_cpair('green_t'))
+        cpair=solent_cpair('green'))
     rogue_plane.create_meep(
         s=3,
         e=-5,
         c='o',
-        cpair=solent_cpair('green_t'))
+        cpair=solent_cpair('green'))
     rogue_plane.create_meep(
         s=4,
         e=-6,
         c='o',
-        cpair=solent_cpair('green_t'))
+        cpair=solent_cpair('green'))
     rogue_plane.create_meep(
         s=4,
         e=-4,
         c='o',
-        cpair=solent_cpair('green_t'))
+        cpair=solent_cpair('green'))
     rogue_plane.create_meep(
         s=4,
         e=-5,
         c='o',
-        cpair=solent_cpair('green_t'))
+        cpair=solent_cpair('green'))
     return rogue_plane
 
 class Game(object):
@@ -182,7 +182,7 @@ class Game(object):
             s=0,
             e=0,
             c='@',
-            cpair=solent_cpair('red_t'))
+            cpair=solent_cpair('red'))
         #
         self.rogue_interaction = rogue_interaction_new(
             console=console,
@@ -199,7 +199,7 @@ class Game(object):
             s=3,
             e=3,
             c='"',
-            cpair=solent_cpair('white_t'))
+            cpair=solent_cpair('white'))
         self.initiative.add_meep(
             meep=self.algobunny_meep)
         #
@@ -247,9 +247,9 @@ def game_new(console):
 # The husk is the thing that contains the game. The husk exposes new game and
 # load game and save game.
 #
-CPAIR_MENU_BORDER = solent_cpair('black_cyan')
-CPAIR_MENU_TEXT = solent_cpair('t_white')
-CPAIR_TITLE = solent_cpair('t_white')
+CPAIR_MENU_BORDER = solent_cpair('black_info')
+CPAIR_MENU_TEXT = solent_cpair('white')
+CPAIR_TITLE = solent_cpair('white')
 
 class Husk(object):
     def __init__(self, console, cgrid, title):

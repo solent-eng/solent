@@ -145,7 +145,7 @@ class CogTerm(object):
             drop=drop,
             rest=rest,
             s=s,
-            cpair=solent_cpair('white_t'))
+            cpair=solent_cpair('white'))
     #
     def term_on_keycode(self, keycode):
         self.nearcast.keystroke(

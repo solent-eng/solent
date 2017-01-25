@@ -32,8 +32,8 @@ from solent.exceptions import SolentQuitException
 
 from collections import deque
 
-STATUS_NEW_CPAIR = solent_cpair('yellow_t')
-STATUS_OLD_CPAIR = solent_cpair('white_t')
+STATUS_NEW_CPAIR = solent_cpair('yellow')
+STATUS_OLD_CPAIR = solent_cpair('white')
 
 class StatusEntry(object):
     def __init__(self, s):

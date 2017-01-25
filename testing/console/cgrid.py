@@ -31,7 +31,7 @@ from solent.eng import ip_validator_new
 
 import sys
 
-DEFAULT_CPAIR = solent_cpair('white_t')
+DEFAULT_CPAIR = solent_cpair('white')
 
 def cgrid_console_print(cgrid):
     for h in range(cgrid.height):

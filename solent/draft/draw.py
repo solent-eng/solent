@@ -66,7 +66,7 @@ class SpinDrawGame:
                 drop=drop,
                 rest=rest,
                 s='@',
-                cpair=solent_cpair('yellow_t'))
+                cpair=solent_cpair('yellow'))
     def flip(self, drop, rest):
         spot = create_spot(drop, rest)
         if spot in self.spots:

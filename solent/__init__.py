@@ -21,6 +21,7 @@ from .mempool import mempool_new
 
 from .keycode import solent_keycode
 from .cpair import solent_cpair
+from .cpair import solent_cpair_pairs
 
 from .ref import ref_create
 from .ref import ref_lookup

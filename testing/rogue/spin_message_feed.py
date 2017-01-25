@@ -36,8 +36,8 @@ def should_construct():
     mfeed = spin_message_feed_new(
         height=HEIGHT,
         width=WIDTH,
-        cpair_new=solent_cpair('white_t'),
-        cpair_old=solent_cpair('blue_t'))
+        cpair_new=solent_cpair('white'),
+        cpair_old=solent_cpair('blue'))
     return True
 
 @test
@@ -48,8 +48,8 @@ def should_handle_simple_prints():
     mfeed = spin_message_feed_new(
         height=HEIGHT,
         width=WIDTH,
-        cpair_new=solent_cpair('white_t'),
-        cpair_old=solent_cpair('blue_t'))
+        cpair_new=solent_cpair('white'),
+        cpair_old=solent_cpair('blue'))
     mfeed.accept('abc', 0)
     mfeed.accept('def', 0)
     mfeed.accept('ghi', 0)
@@ -84,8 +84,8 @@ def should_handle_long_lines():
     mfeed = spin_message_feed_new(
         height=HEIGHT,
         width=WIDTH,
-        cpair_new=solent_cpair('white_t'),
-        cpair_old=solent_cpair('blue_t'))
+        cpair_new=solent_cpair('white'),
+        cpair_old=solent_cpair('blue'))
     mfeed.accept('zbcdxefghxwjklx', 0)
     mfeed.accept('ybcdxefghxvjklx', 0)
     #
@@ -118,8 +118,8 @@ def should_scroll():
     mfeed = spin_message_feed_new(
         height=HEIGHT,
         width=WIDTH,
-        cpair_new=solent_cpair('white_t'),
-        cpair_old=solent_cpair('blue_t'))
+        cpair_new=solent_cpair('white'),
+        cpair_old=solent_cpair('blue'))
     mfeed.accept('zbcdxefghxwjklx', 0)
     mfeed.accept('ybcdxefghxvjklx', 0)
     mfeed.scroll()
@@ -153,8 +153,8 @@ def should_scroll_past_old_messages():
     mfeed = spin_message_feed_new(
         height=HEIGHT,
         width=WIDTH,
-        cpair_new=solent_cpair('white_t'),
-        cpair_old=solent_cpair('blue_t'))
+        cpair_new=solent_cpair('white'),
+        cpair_old=solent_cpair('blue'))
     mfeed.accept('abc', 2)
     mfeed.accept('def', 3)
     mfeed.accept('ghi', 4)
