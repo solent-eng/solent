@@ -25,7 +25,7 @@ We aim for this system to be multi-platform with no dependencies on other
 libraries.
 
 
-# Quickstart
+# Quickstart (unix systems)
 
 This will get you seeing some basic stuff
 
@@ -43,81 +43,77 @@ bin/arrange_dependencies
 # Demo of the solent.eng concurrency system
 python -m solent.eng.scenarios
 
-# Demo of the snake game (skip this on windows)
-python -m solent.draft.snake --curses
-
-# Demo of a turn-based game (skip this on windows)
-python -m solent.draft.turn_based_game --curses
-
-# Install pygame, and see those same games now in a pygame window
+# Install pygame (if you want - you can use curses instead), and see those
+# same games now in a pygame window
 pip3 install hg+https://bitbucket.org/pygame/pygame
-python -m solent.draft.turn_based_game --snake
-python -m solent.draft.turn_based_game --pygame
+
+python -m solent.release.snake --curses
+python -m solent.release.snake --pygame
+
+python -m solent.release.roguebox_00_weed_the_garden --curses
+python -m solent.release.roguebox_00_weed_the_garden --pygame
 ```
 
-Things to try,
+If you want to understand the network layer, look at solent.eng.scenarios.
+
+
+# Quickstart (Windows)
+
+Install git for windows (from https://git-for-windows.github.io).
+
+Install python 3.6 (other versions of python3 may work). On the launch screen,
+select the option to add it to your PATH. Virtual env comes bundled in recent
+releases of python.
+
+Once you are in your git-for-windows shell, you can clone the repository,
+create a virtual environment, and activate it. In these steps, be sure to use
+the package virtualenv and not the reduced version of it that bundles with
+recent versions of python (venv), as they behave differently. For example, you
+don't get a unixy activate script with the venv module.
 
 ```bash
-(cd venv; . bin/activate; cd ..)
+git clone https://github.com/cratuki/solent
 
-// Network stuff
+cd solent
 
-Have a look at the main function of solent.eng.scenarios, then try running one
-like this:
+python -m virtualenv venv
 
-    python3 -m solent.eng.scenarios
+. venv/bin/activate
 
-// Games as tech-demos
+pip install pygame
 
-    python3 -m solent.draft.snake --pygame
+python -m solent.release.snake --pygame
 
-(Use awdx, and tab to switch out to menu)
-
-    python3 -m solent.draft.turn_based_game --pygame
-
-(Use qweadzxc to move the @ around. There is not much here at the moment)
-
+python -m solent.release.roguebox_00_weed_the_garden --pygame
 ```
+
+# Creating an installer/distribution
 
 Here's how you create a distribution. This could be useful if you're trying to
 create a release distro on another platform.
 
 ```bash
-Install python3.4 or later
+(Install python3.4 or later)
 
-Install SDL for your platform
-
-Install pygame for your platform (you can skip this, but if you skip it you need hg instead - see below).
+(Install SDL for your platform)
 
 git clone github.com/cratuki/solent
 cd solent
 
 #
 # // Create the virtual environment
-#
-# on unix:
-    virtualenv -p python3 venv
-# on windows (?):
-    virtualenv /p python3 venv
+python -m virtualenv venv
 
 #
 # // Activate the virtual environment
-#
-# on unix:
-    (cd venv; . bin/activate; cd ..)
-# on windows:
-    cd venv
-    bin\activate.bat
-    cd ..
+(cd venv; . bin/activate; cd ..)
 
 #
 # // If you didn't install a system-wide pygame, you can install it via pip.
-#
 pip3 install "hg+https://bitbucket.org/pygame/pygame"
 
 #
 # // Install other libraries we need in the virtualenv
-#
 pip3 install -r requirements.txt
 
 #
@@ -133,5 +129,4 @@ pyinstaller solent/pyinstaller/snake_pygame.spec
 # // Look in the dist directory for the resulting binaries
 #
 ```
-
 

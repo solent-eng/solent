@@ -52,6 +52,7 @@ from solent.util.clock import clock_new
 import errno
 import select
 import socket
+import time
 import traceback
 
 class QuitEvent(Exception):
@@ -219,6 +220,16 @@ class Engine(object):
             sip=sip)
     def _call_select(self, timeout=0):
         "Return True or False depending on whether or not there was activity."
+        #
+        # Windows gives an OS error when you make a call to select with all
+        # arguments being empty sets. We avoid this scenario by detecting if
+        # there is no networking being done. In this case, we honour the
+        # timeout with a short sleep.
+        if 0 == len(self.sid_to_metasock):
+            time.sleep(timeout)
+            return False
+        #
+        # Convenience for further down
         sock_to_metasock = {}
         def create_lookup_for_metasock(ms):
             sock_to_metasock[ms.sock] = ms
@@ -268,6 +279,7 @@ class Engine(object):
                         reason=r)
         #
         # Groundwork for the select
+        are_there_any_sockets_at_all = False
         rlst = []
         wlst = []
         elst = []
