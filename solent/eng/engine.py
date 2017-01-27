@@ -224,7 +224,10 @@ class Engine(object):
         # Windows gives an OS error when you make a call to select with all
         # arguments being empty sets. We avoid this scenario by detecting if
         # there is no networking being done. In this case, we honour the
-        # timeout with a short sleep.
+        # timeout with a short sleep. [Emphasis: in the current logic below,
+        # elst gets every socket in it. So if we get past this conditional,
+        # there should not be further circumstances in which the Windows error
+        # circumstance can be triggered.]
         if 0 == len(self.sid_to_metasock):
             time.sleep(timeout)
             return False
@@ -279,7 +282,6 @@ class Engine(object):
                         reason=r)
         #
         # Groundwork for the select
-        are_there_any_sockets_at_all = False
         rlst = []
         wlst = []
         elst = []
