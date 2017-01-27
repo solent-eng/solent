@@ -18,10 +18,14 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+# Not sure why this happens. But when running pyinstaller on Windows, solent
+# had trouble importing. Hacking the path like this gets past the issue.
+import os
+import sys
+sys.path.append(os.getcwd())
+
 from solent import dget_root
 from solent.pyinstaller import add_resource_from_relpath
-
-import os
 
 DIST_NAME = 'snake_pygame'
 LAUNCH_RELPATH = 'solent/pyinstaller/launch/snake/snake_pygame.py'
