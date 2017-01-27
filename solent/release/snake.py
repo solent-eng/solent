@@ -38,6 +38,8 @@ import sys
 import time
 import traceback
 
+GAME_NAME = 'snake'
+
 MTU = 1500
 
 
@@ -434,7 +436,7 @@ class CogMenu:
             cb_display_clear=self.menu_display_clear,
             cb_display_write=self.menu_display_write)
         self.nearcast.menu_title(
-            text=__name__)
+            text=GAME_NAME)
         self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_NEW_GAME,
             text='new game')
