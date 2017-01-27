@@ -191,6 +191,9 @@ class Orb:
         self.engine = engine
         self.nearcast_schema = nearcast_schema
         #
+        if type(nearcast_schema) == str:
+            raise Exception('need a nearcast_schema object, not string.')
+        #
         self.snoops = []
         self.pins = []
         self.cogs = []
