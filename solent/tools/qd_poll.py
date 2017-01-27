@@ -72,7 +72,7 @@ class CogUdpSender:
             self.t_last = now
             self.engine.send(
                 sid=self.sid_broadcast_sender,
-                payload=bytes('message at [%s]'%now, 'utf8'))
+                payload=bytes('message at [%s]\n'%now, 'utf8'))
 
 class CogBridge:
     def __init__(self, cog_h, orb, engine):
