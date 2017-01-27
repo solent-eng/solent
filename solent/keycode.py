@@ -23,7 +23,7 @@ import enum
 
 class e_keycode(enum.Enum):
     # repurposing these values for mouse events
-    none          = 0x00
+    nul           = 0x00
     lmousedown    = 0x01  # in ascii this is start-of-heading
     lmouseup      = 0x02  # in ascii this is end-of-heading
     rmousedown    = 0x03  # in ascii this is end-of-text
