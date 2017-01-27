@@ -193,7 +193,7 @@ def hexdump_bytes(arr, title='hexdump'):
     idx += 1
     #
     # Cleanup on the final line
-    if (idx+1) % 16 != 0:
+    if idx % 16 != 0:
         while (idx+1) % 16 != 0:
             print('..', end=' ')
             append_space()
