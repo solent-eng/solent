@@ -50,6 +50,15 @@ class LineFinder:
                 self.sb = []
             else:
                 self.sb.append(c)
+    def get(self):
+        '''There are situations where it can be useful to get an incomplete
+        line. For example, when you are buffering data, and plotting it to
+        a terminal while you do.'''
+        return ''.join(self.sb)
+    def backspace(self):
+        'useful for backspace'
+        if self.sb:
+            self.sb.pop()
 
 def line_finder_new(cb_line):
     ob = LineFinder(
