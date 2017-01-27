@@ -33,6 +33,11 @@ DEFAULT_CPAIR = solent_cpair('grey')
 
 class Spot(object):
     def __init__(self):
+        self.c = None
+        self.cpair = None
+        #
+        self.zero()
+    def zero(self):
         self.c = ' '
         self.cpair = DEFAULT_CPAIR
     def compare(self, spot):
@@ -75,6 +80,15 @@ class CellGrid(object):
         for spot in self.spots:
             spot.c = ' '
             spot.cpair = DEFAULT_CPAIR
+    def scroll(self):
+        new_spots = []
+        for spot in self.spots[self.width:]:
+            new_spots.append(spot)
+        spare = self.spots[:self.width]
+        for spot in spare:
+            spot.zero()
+            new_spots.append(spot)
+        self.spots = new_spots
     def get(self, drop, rest):
         spot = self.spots[ (drop*self.width) + rest ]
         return (spot.c, spot.cpair)
