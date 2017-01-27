@@ -120,6 +120,8 @@ class SpinTerm:
         self.mode = MODE_SELECT
         self.select_cursor_on = True
         self.select_cursor_t100 = time.time() * 100
+    def scroll(self):
+        self.cgrid.scroll()
     def clear(self):
         self.cgrid.clear()
     def write(self, drop, rest, s, cpair):
