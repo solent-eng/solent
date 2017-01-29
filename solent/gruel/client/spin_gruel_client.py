@@ -182,7 +182,7 @@ class SpinGruelClient:
             data = d_message['data']
             b_complete = d_message['b_complete']
             #
-            log('received %s %s [%s]'%(len(data), b_complete, data)) # xxx
+            log('gruel_client received %s %s [%s]'%(len(data), b_complete, data)) # xxx
             #
             self.doc_accumulator.append(data)
             if b_complete == 1:
