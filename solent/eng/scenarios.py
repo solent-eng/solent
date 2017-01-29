@@ -14,8 +14,10 @@
 #
 # // What is the purpose of solent.eng?
 #
-# To wrap the Berkeley sockets API with a much friendlier interface that makes
-# it straightforward to create an event loop around managed sockets.
+# To create an easy-to-use asynchronous  event loop. Part of this involves
+# wrapping the Berkeley sockets API with a much friendlier interface that
+# makes it straightforward to build systems around non-blocking network
+# access.
 #
 #
 # // How do I use eng?
@@ -40,15 +42,20 @@
 # classes in that module for individual explanations.
 #
 #
+# // What is a spin?
+#
+# A spin is a thing that you can add to the engine. It gets regular turns.
+# There's a special version of a spin called an orb already built into the
+# system, and most common use-cases can be addressed by using an orb.
+#
+#
 # // What is an orb?
 #
-# Think of the engine a bit like the engine of a car. It powers a crankshaft.
-# Anything in the car that needs to be powered by the engine hangs off the
-# crankshaft. You can think of an orb (short for orbit) as being a ring of
-# teeth on the crankshaft. This provides a means by which the power of the
-# engine can be distributed to things that want to consume that power.
-#
-# Every pass of the event loop, the engine calls orb.at_turn on each orb.
+# Think of the engine a bit like the engine of a car. A car engine powers a
+# crankshaft. Anything in the car that needs to be powered by the engine hangs
+# off the crankshaft. You can think of an orb (short for orbit) as being a
+# ring of teeth on the crankshaft. This provides a means by which the power of
+# the engine can be distributed to things that want to consume that power.
 #
 # Typically, an orb will be a container for a set of related services. (cogs,
 # see below)
@@ -102,8 +109,6 @@
 
 from solent import SolentQuitException
 from solent.eng import engine_new
-from solent.eng import orb_new
-from solent.eng import nearcast_schema_new
 from solent.eng import QuitEvent
 from solent.log import init_logging
 from solent.log import log
@@ -187,11 +192,9 @@ def scenario_basic_nearcast_example(engine):
                 log('quitting')
                 raise SolentQuitException()
     #
-    nearcast_schema = nearcast_schema_new(
-        i_nearcast=i_nearcast)
     orb = engine.init_orb(
         orb_h=__name__,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=i_nearcast)
     orb.init_cog(CogSender)
     orb.init_cog(CogPrinter)
     orb.init_cog(CogQuitter)
@@ -218,10 +221,9 @@ def scenario_broadcast_listen(engine):
             field data
     '''
     #
-    # This class provides broadcast listen functionality. It's not tied
-    # the the nearcast schema. It just exposes a standard application
-    # interface.
-    class SpinBroadcastListener:
+    # This class provides broadcast listen functionality. It's easy to
+    # embed this within a cog.
+    class BroadcastListener:
         def __init__(self, engine, cb_on_line):
             self.engine = engine
             self.cb_on_line = cb_on_line
@@ -251,7 +253,7 @@ def scenario_broadcast_listen(engine):
             self.orb = orb
             self.engine = engine
             #
-            self.spin_broadcast_listener = SpinBroadcastListener(
+            self.broadcast_listener = BroadcastListener(
                 engine=engine,
                 cb_on_line=self._broadcast_on_line)
         def _broadcast_on_line(self, line):
@@ -260,11 +262,11 @@ def scenario_broadcast_listen(engine):
                 message_h='received_from_network',
                 data=line)
         def on_start_listener(self, ip, port):
-            self.spin_broadcast_listener.start(
+            self.broadcast_listener.start(
                 ip=ip,
                 port=port)
         def on_stop_listener(self):
-            self.spin_broadcast_listener.stop()
+            self.broadcast_listener.stop()
     #
     #
     class CogPrinter:
@@ -297,8 +299,7 @@ def scenario_broadcast_listen(engine):
     #
     orb = engine.init_orb(
         orb_h=__name__,
-        nearcast_schema=nearcast_schema_new(
-            i_nearcast=i_nearcast))
+        i_nearcast=i_nearcast)
     orb.init_cog(CogContainsSpin)
     orb.init_cog(CogPrinter)
     orb.init_cog(CogEvents)
@@ -333,7 +334,7 @@ def scenario_broadcast_listen_and_unlisten(engine):
     # This class provides broadcast listen functionality. It's not tied
     # the the nearcast schema. It just exposes a standard application
     # interface.
-    class SpinBroadcastListener:
+    class BroadcastListener:
         def __init__(self, engine, cb_on_line):
             self.engine = engine
             self.cb_on_line = cb_on_line
@@ -365,7 +366,7 @@ def scenario_broadcast_listen_and_unlisten(engine):
             self.orb = orb
             self.engine = engine
             #
-            self.spin_broadcast_listener = SpinBroadcastListener(
+            self.broadcast_listener = BroadcastListener(
                 engine=engine,
                 cb_on_line=self._broadcast_on_line)
         def _broadcast_on_line(self, line):
@@ -374,11 +375,11 @@ def scenario_broadcast_listen_and_unlisten(engine):
                 message_h='received_from_network',
                 data=line)
         def on_start_listener(self, ip, port):
-            self.spin_broadcast_listener.start(
+            self.broadcast_listener.start(
                 ip=ip,
                 port=port)
         def on_stop_listener(self):
-            self.spin_broadcast_listener.stop()
+            self.broadcast_listener.stop()
     #
     #
     class CogPrinter:
@@ -415,11 +416,9 @@ def scenario_broadcast_listen_and_unlisten(engine):
                 self.orb.nearcast(
                     cog=self,
                     message_h='stop_listener')
-    nearcast_schema = nearcast_schema_new(
-        i_nearcast=i_nearcast)
     orb = engine.init_orb(
         orb_h=__name__,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=i_nearcast)
     # We are going to create a snoop here. This one logs nearcast messages as
     # they happen.
     orb.add_log_snoop()
@@ -553,14 +552,15 @@ def scenario_multiple_tcp_servers(engine):
             self.orb = orb
             self.engine = engine
             self.turn_counter = 0
+            #
+            self.schedule = {
+                3: ('x', '127.0.0.1', 4120),
+                5: ('y', '127.0.0.1', 4121),
+                8: ('z', '127.0.0.1', 4122)}
         def at_turn(self, activity):
-            schedule = { 3: ('x', '127.0.0.1', 4120)
-                       , 5: ('y', '127.0.0.1', 4121)
-                       , 8: ('z', '127.0.0.1', 4122)
-                       }
             self.turn_counter += 1
-            if self.turn_counter in schedule:
-                (spin_h, ip, port) = schedule[self.turn_counter]
+            if self.turn_counter in self.schedule:
+                (spin_h, ip, port) = self.schedule[self.turn_counter]
                 activity.mark(
                     l=self,
                     s='starting server %s'%spin_h)
@@ -571,11 +571,9 @@ def scenario_multiple_tcp_servers(engine):
                     ip=ip,
                     port=port)
     #
-    nearcast_schema = nearcast_schema_new(
-        i_nearcast=i_nearcast)
     orb = engine.init_orb(
         orb_h=__name__,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=i_nearcast)
     orb.init_cog(CogEvents)
     orb.init_cog(CogServerContainer)
     engine.event_loop()
@@ -660,11 +658,9 @@ def scenario_close_tcp_servers(engine):
             if self.turn_counter == 25:
                 raise SolentQuitException()
     #
-    nearcast_schema = nearcast_schema_new(
-        i_nearcast=i_nearcast)
     orb = engine.init_orb(
         orb_h=__name__,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=i_nearcast)
     orb.init_cog(CogEvents)
     orb.init_cog(CogServerContainer)
     try:

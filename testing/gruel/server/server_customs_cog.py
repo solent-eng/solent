@@ -25,12 +25,11 @@ from testing.eng import engine_fake
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent.eng import activity_new
-from solent.eng import orb_new
 from solent.eng.cs import *
 from solent.gruel import gruel_schema_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
-from solent.gruel.server.gs_nearcast_schema import gs_nearcast_schema_new
+from solent.gruel.server.i_nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.server_customs_cog import server_customs_cog_new
 from solent.gruel.server.server_customs_cog import ServerCustomsState
 from solent.log import log
@@ -52,10 +51,9 @@ def should_throw_alg_exception_if_packet_seen_before_password():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(
@@ -86,10 +84,9 @@ def should_store_password_values():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(
@@ -119,10 +116,9 @@ def should_boot_client_if_first_message_is_not_client_login():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(
@@ -161,10 +157,9 @@ def should_boot_user_on_receipt_of_login_message_when_already_logged_in():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(
@@ -205,10 +200,9 @@ def should_do_basic_login_reject():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(
@@ -251,10 +245,9 @@ def should_do_successful_login_accept():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(
@@ -296,10 +289,9 @@ def should_run_a_rejection_sequence():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(
@@ -352,10 +344,9 @@ def should_clear_state_in_announce_connect():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(
@@ -383,10 +374,9 @@ def should_buffer_a_couple_of_docs():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(
@@ -459,10 +449,9 @@ def should_send_a_couple_of_docs():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(
@@ -526,10 +515,9 @@ def should_convert_heartbeat_requests_to_gruel():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
     r = orb.init_cog(

@@ -26,13 +26,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .gs_nearcast_schema import gs_nearcast_schema_new
 from .ipval_cog import ipval_cog_new
 from .heartbeater_cog import heartbeater_cog_new
+from .i_nearcast import I_NEARCAST_GRUEL_SERVER
 from .server_customs_cog import server_customs_cog_new
 from .tcp_server_cog import tcp_server_cog_new
 
-from solent.eng import orb_new
 from solent.gruel import gruel_press_new
 from solent.log import hexdump_bytes
 from solent.log import log
@@ -85,7 +84,7 @@ class SpinGruelServer:
         #
         self.orb = engine.init_orb(
             orb_h=__name__,
-            nearcast_schema=gs_nearcast_schema_new())
+            i_nearcast=I_NEARCAST_GRUEL_SERVER)
         self.orb.add_log_snoop()
         #
         # disabled because it distracts from development

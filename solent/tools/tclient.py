@@ -30,7 +30,6 @@
 from solent import solent_cpair
 from solent import solent_keycode
 from solent.eng import engine_new
-from solent.eng import nearcast_schema_new
 from solent.log import init_logging
 from solent.log import log
 from solent.log import hexdump_bytes
@@ -171,6 +170,9 @@ class CogTerm:
         self.spin_term.refresh_console()
     #
     def term_on_keycode(self, keycode):
+        if None == self.line_finder:
+            return
+        #
         cpair = solent_cpair('orange')
         # This backspace mechanism is far from perfect.
         if keycode == solent_keycode('backspace'):
@@ -248,11 +250,9 @@ def main():
         net_addr = sys.argv[1]
         net_port = int(sys.argv[2])
         #
-        nearcast_schema = nearcast_schema_new(
-            i_nearcast=I_NEARCAST_SCHEMA)
         orb = engine.init_orb(
             orb_h=__name__,
-            nearcast_schema=nearcast_schema)
+            i_nearcast=I_NEARCAST_SCHEMA)
         orb.add_log_snoop()
         orb.init_cog(CogTcpClient)
         orb.init_cog(CogTerm)

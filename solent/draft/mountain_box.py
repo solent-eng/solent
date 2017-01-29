@@ -247,9 +247,9 @@ def game_new(console):
 # The husk is the thing that contains the game. The husk exposes new game and
 # load game and save game.
 #
-CPAIR_MENU_BORDER = solent_cpair('black_info')
-CPAIR_MENU_TEXT = solent_cpair('white')
-CPAIR_TITLE = solent_cpair('white')
+CPAIR_MENU_BORDER = solent_cpair('grey_info')
+CPAIR_MENU_TEXT = solent_cpair('black_info')
+CPAIR_TITLE = solent_cpair('black_info')
 
 class Husk(object):
     def __init__(self, console, cgrid, title):

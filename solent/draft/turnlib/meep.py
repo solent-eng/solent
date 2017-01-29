@@ -25,7 +25,7 @@
 
 from solent import solent_cpair
 
-DEFAULT_CPAIR = solent_cpair('t_red')
+DEFAULT_CPAIR = solent_cpair('grey')
 
 class Meep(object):
     def __init__(self, overhead, mind, plane, coords, c, cpair):

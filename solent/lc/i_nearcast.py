@@ -1,5 +1,5 @@
 #
-# lc_nearcast_schema
+# i_nearcast
 #
 # // overview
 # The nearcast schema for the line console server functionality.
@@ -22,10 +22,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import nearcast_schema_new
-from solent.log import log
-
-I_LC_NEARCAST_SCHEMA = '''
+I_NEARCAST_LINE_CONSOLE = '''
     i message h
         i field h
 
@@ -36,9 +33,4 @@ I_LC_NEARCAST_SCHEMA = '''
 
     message stop_gruel_server
 '''
-
-def lc_nearcast_schema_new():
-    ob = nearcast_schema_new(
-        i_nearcast=I_LC_NEARCAST_SCHEMA)
-    return ob
 

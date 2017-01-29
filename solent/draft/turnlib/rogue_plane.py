@@ -37,7 +37,7 @@ from solent import solent_cpair
 
 import types
 
-TERRAIN_DEFAULT_COL = solent_cpair('purple_t')
+TERRAIN_DEFAULT_COL = solent_cpair('purple')
 
 class RoguePlane(object):
     def __init__(self):

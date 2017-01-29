@@ -31,8 +31,6 @@ from solent import SolentQuitException
 from solent.console import cgrid_new
 from solent.console import console_new
 from solent.eng import engine_new
-from solent.eng import nearcast_schema_new
-from solent.eng import orb_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_schema_new
@@ -472,11 +470,9 @@ def wrap_eng(console):
         mtu=1500)
     engine.default_timeout = 0.02
     try:
-        nearcast_schema = nearcast_schema_new(
-            i_nearcast=I_NEARCAST_SCHEMA)
         orb = engine.init_orb(
             orb_h=__name__,
-            nearcast_schema=nearcast_schema)
+            i_nearcast=I_NEARCAST_SCHEMA)
         #
         orb.init_cog(CogGruelClient)
         orb.init_cog(CogShell)

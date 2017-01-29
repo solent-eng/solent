@@ -29,7 +29,7 @@ from testing.util import clock_fake
 
 from solent.eng import activity_new
 from solent.eng import cs
-from solent.lc import lc_nearcast_schema_new
+from solent.lc.i_nearcast import I_NEARCAST_LINE_CONSOLE
 from solent.log import log
 from solent.log import hexdump_bytes
 from solent.util import uniq
@@ -38,7 +38,7 @@ import sys
 
 @test
 def should_not_crash():
-    nearcast_schema = lc_nearcast_schema_new()
+    nearcast_schema = I_NEARCAST_LINE_CONSOLE
     #
     return True
 

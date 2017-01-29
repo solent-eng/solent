@@ -25,12 +25,11 @@ from testing.eng import engine_fake
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent.eng import activity_new
-from solent.eng import orb_new
 from solent.eng.cs import *
 from solent.gruel import gruel_schema_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
-from solent.gruel.server.gs_nearcast_schema import gs_nearcast_schema_new
+from solent.gruel.server.i_nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.heartbeater_cog import heartbeater_cog_new
 from solent.gruel.server.server_customs_cog import server_customs_cog_new
 from solent.gruel.server.server_customs_cog import ServerCustomsState
@@ -54,10 +53,9 @@ def should_start_on_announce_login_and_stop_on_announce_condrop():
         gruel_schema=gruel_schema,
         mtu=engine.mtu)
     #
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=gs_nearcast_schema_new())
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     heartbeater_cog = orb.init_cog(
         construct=heartbeater_cog_new)
     r = orb.init_cog(

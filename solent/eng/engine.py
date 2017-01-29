@@ -108,11 +108,11 @@ class Engine(object):
         if orb in self.orbs.values():
             raise Exception("Orb is already in engine. Don't double-add.")
         self.orbs[orb_h] = orb
-    def init_orb(self, orb_h, nearcast_schema):
+    def init_orb(self, orb_h, i_nearcast):
         orb = orb_new(
             orb_h=orb_h,
             engine=self,
-            nearcast_schema=nearcast_schema)
+            i_nearcast=i_nearcast)
         self.add_orb(
             orb_h=orb_h,
             orb=orb)

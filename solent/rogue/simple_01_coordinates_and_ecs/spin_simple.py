@@ -24,7 +24,6 @@
 
 from solent import solent_cpair
 from solent.console import cgrid_new
-from solent.eng import nearcast_schema_new
 from solent.log import log
 from solent.rogue import directive_new
 
@@ -111,9 +110,6 @@ class SpinSimple:
             width=grid_width)
         self.q_mail_messages = deque()
 
-        self.nearcast = None
-        self._init_nearcast()
-
         self.orb = None
         self._init_orb()
 
@@ -130,14 +126,10 @@ class SpinSimple:
             in globals().keys()
             if key.startswith('DIRECTIVE_')]
 
-    def _init_nearcast(self):
-        self.nearcast = nearcast_schema_new(
-            i_nearcast=I_NEARCAST)
-
     def _init_orb(self):
         self.orb = self.engine.init_orb(
             orb_h='swamp_monster_orb',
-            nearcast_schema=self.nearcast)
+            i_nearcast=I_NEARCAST)
         #self.orb.add_log_snoop()
 
     def get_supported_directives(self):

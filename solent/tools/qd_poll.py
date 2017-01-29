@@ -24,7 +24,6 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.eng import engine_new
-from solent.eng import nearcast_schema_new
 from solent.log import init_logging
 from solent.log import log
 from solent.log import hexdump_bytes
@@ -95,11 +94,9 @@ def main():
         net_addr = sys.argv[1]
         net_port = int(sys.argv[2])
         #
-        nearcast_schema = nearcast_schema_new(
-            i_nearcast=I_NEARCAST_SCHEMA)
         orb = engine.init_orb(
             orb_h=__name__,
-            nearcast_schema=nearcast_schema)
+            i_nearcast=I_NEARCAST_SCHEMA)
         orb.init_cog(CogUdpSender)
         bridge = orb.init_cog(CogBridge)
         bridge.nc_init(

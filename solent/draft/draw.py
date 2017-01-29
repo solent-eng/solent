@@ -24,7 +24,6 @@ from solent import solent_cpair
 from solent import solent_keycode
 from solent.console import cgrid_new
 from solent.eng import engine_new
-from solent.eng import nearcast_schema_new
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
@@ -40,6 +39,8 @@ import time
 import traceback
 
 MTU = 1500
+
+APP_NAME = 'mouse_draw'
 
 
 # --------------------------------------------------------
@@ -251,7 +252,7 @@ class CogMenu:
             cb_display_clear=self.menu_display_clear,
             cb_display_write=self.menu_display_write)
         self.nearcast.menu_title(
-            text=__name__)
+            text=APP_NAME)
         self.nearcast.menu_item(
             menu_keycode=MENU_KEYCODE_NEW_GAME,
             text='new game')
@@ -295,7 +296,7 @@ class CogMenu:
             drop=drop,
             rest=rest,
             s=s,
-            cpair=solent_cpair('blue_t'))
+            cpair=solent_cpair('blue'))
     #
     def _mi_new_game(self):
         self.nearcast.game_new()
@@ -373,11 +374,9 @@ def main():
             mtu=MTU)
         engine.default_timeout = 0.05
         #
-        nearcast_schema = nearcast_schema_new(
-            i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         orb = engine.init_orb(
             orb_h=__name__,
-            nearcast_schema=nearcast_schema)
+            i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)

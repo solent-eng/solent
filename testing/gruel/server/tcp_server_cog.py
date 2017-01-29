@@ -25,14 +25,12 @@ from testing.eng import engine_fake
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent.eng import activity_new
-from solent.eng import nearcast_schema_new
-from solent.eng import orb_new
 from solent.eng.cs import *
 from solent.gruel import gruel_schema_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
 from solent.gruel.gruel_schema import GruelMessageType
-from solent.gruel.server.gs_nearcast_schema import gs_nearcast_schema_new
+from solent.gruel.server.i_nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.tcp_server_cog import tcp_server_cog_new
 from solent.log import log
 from solent.util import uniq
@@ -110,11 +108,9 @@ def simulate_client_send_login(engine, orb, tcp_server_cog, pw, hbint):
 @test
 def should_start_and_stop():
     engine = engine_fake()
-    nearcast_schema = gs_nearcast_schema_new()
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     r = orb.init_cog(
         construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(
@@ -152,11 +148,9 @@ def should_start_and_stop():
 @test
 def should_handle_client_connect_and_then_boot_client():
     engine = engine_fake()
-    nearcast_schema = gs_nearcast_schema_new()
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     r = orb.init_cog(
         construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(
@@ -211,11 +205,9 @@ def should_handle_client_connect_and_then_boot_client():
 @test
 def should_broadcast_incoming_message_as_gruel_in():
     engine = engine_fake()
-    nearcast_schema = gs_nearcast_schema_new()
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
     r = orb.init_cog(
         construct=receiver_cog_fake)
@@ -285,11 +277,9 @@ def should_broadcast_incoming_message_as_gruel_in():
 @test
 def should_boot_client_when_told_to():
     engine = engine_fake()
-    nearcast_schema = gs_nearcast_schema_new()
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
     r = orb.init_cog(
         construct=receiver_cog_fake)
@@ -332,11 +322,9 @@ def should_boot_client_when_told_to():
 def should_boot_client_when_invalid_gruel_is_received():
     activity = activity_new()
     engine = engine_fake()
-    nearcast_schema = gs_nearcast_schema_new()
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
     r = orb.init_cog(
         construct=receiver_cog_fake)
@@ -393,11 +381,9 @@ def should_ignore_gruel_send_when_no_client():
         mtu=MTU)
     #
     engine = engine_fake()
-    nearcast_schema = gs_nearcast_schema_new()
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     r = orb.init_cog(
         construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(
@@ -450,11 +436,9 @@ def should_send_gruel_send_data_to_a_connected_client():
         mtu=MTU)
     #
     engine = engine_fake()
-    nearcast_schema = gs_nearcast_schema_new()
-    orb = orb_new(
+    orb = engine.init_orb(
         orb_h='app',
-        engine=engine,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=I_NEARCAST_GRUEL_SERVER)
     r = orb.init_cog(
         construct=receiver_cog_fake)
     tcp_server_cog = orb.init_cog(

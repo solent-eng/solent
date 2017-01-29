@@ -20,7 +20,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.eng import cs
-from solent.eng import orb_new
+from solent.eng.orb import orb_new
 from solent.util import uniq
 
 from testing.util import clock_fake
@@ -45,11 +45,11 @@ class Engine:
         self.mtu = 500
     def get_clock(self):
         return self.clock
-    def init_orb(self, orb_h, nearcast_schema):
+    def init_orb(self, orb_h, i_nearcast):
         return orb_new(
             orb_h=orb_h,
             engine=self,
-            nearcast_schema=nearcast_schema)
+            i_nearcast=i_nearcast)
     def send(self, sid, payload):
         self.sent_data.append(payload[:])
     def open_tcp_client(self, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):

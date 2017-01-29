@@ -27,7 +27,6 @@ from solent import solent_cpair
 from solent import solent_keycode
 from solent.console import cgrid_new
 from solent.eng import engine_new
-from solent.eng import nearcast_schema_new
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
@@ -596,11 +595,9 @@ def game(console_type):
         engine.set_default_timeout(0.04)
         #engine.debug_eloop_on()
         #
-        nearcast_schema = nearcast_schema_new(
-            i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         orb = engine.init_orb(
             orb_h=__name__,
-            nearcast_schema=nearcast_schema)
+            i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         #orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)

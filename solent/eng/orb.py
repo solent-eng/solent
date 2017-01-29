@@ -48,6 +48,7 @@
 #
 
 from .activity import activity_new
+from .nearcast_schema import nearcast_schema_new
 from .test_receiver_cog import test_receiver_cog_new
 
 from solent import SolentQuitException
@@ -186,13 +187,13 @@ class NetworkSnoop:
         self.q_outbound.append(nice)
 
 class Orb:
-    def __init__(self, orb_h, engine, nearcast_schema):
+    def __init__(self, orb_h, engine, i_nearcast):
         self.orb_h = orb_h
         self.engine = engine
-        self.nearcast_schema = nearcast_schema
+        self.i_nearcast = i_nearcast
         #
-        if type(nearcast_schema) == str:
-            raise Exception('need a nearcast_schema object, not string.')
+        self.nearcast_schema = nearcast_schema_new(
+            i_nearcast=i_nearcast)
         #
         self.snoops = []
         self.pins = []
@@ -403,10 +404,10 @@ class Orb:
                         log('')
                         raise
 
-def orb_new(orb_h, engine, nearcast_schema):
+def orb_new(orb_h, engine, i_nearcast):
     ob = Orb(
         orb_h=orb_h,
         engine=engine,
-        nearcast_schema=nearcast_schema)
+        i_nearcast=i_nearcast)
     return ob
 

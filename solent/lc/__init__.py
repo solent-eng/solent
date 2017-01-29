@@ -1,3 +1,7 @@
+# // overview
+# Line console. This is a simple TCP server that listens on an address and
+# port, and calls back whenever it gets a line.
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -16,6 +20,5 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .lc_nearcast_schema import lc_nearcast_schema_new
 from .spin_line_console import spin_line_console_new
 

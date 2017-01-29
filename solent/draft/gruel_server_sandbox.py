@@ -24,7 +24,6 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.eng import engine_new
-from solent.eng import nearcast_schema_new
 from solent.gruel import spin_gruel_server_new
 from solent.lc import spin_line_console_new
 from solent.log import cformat
@@ -312,11 +311,9 @@ def main():
     engine = engine_new(
         mtu=1500)
     try:
-        nearcast_schema = nearcast_schema_new(
-            i_nearcast=I_NEARCAST_SCHEMA)
         orb = engine.init_orb(
             orb_h=__name__,
-            nearcast_schema=nearcast_schema)
+            i_nearcast=I_NEARCAST_SCHEMA)
         orb.add_log_snoop()
         #
         orb.init_cog(CogLcServer)

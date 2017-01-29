@@ -61,10 +61,11 @@ PROFILE_VIOLET      = ((128, 0, 255)    , (0, 0, 0))
 PROFILE_PURPLE      = ((255, 0, 255)    , (0, 0, 0))
 PROFILE_MAGENTA     = ((255, 127, 255)  , (0, 0, 0))
 
-PROFILE_BLACK_INFO  = ((0, 0, 0)        , (0, 255, 255))
-PROFILE_GREY_INFO   = ((127, 127, 127)  , (0, 255, 255))
+PROFILE_BLACK_INFO  = ((0, 0, 0)        , (255, 255, 255))
+PROFILE_GREY_INFO   = ((0, 0, 0)        , (127, 127, 127))
 
-PROFILE_GREEN_INFO  = ((0, 255, 0)      , (0, 255, 255))
+PROFILE_GREEN_INFO  = ((0, 255, 0)      , (255, 255, 255))
+
 PROFILE_ALARM       = ((255, 64, 0)     , (0, 255, 255))
 
 MAP_CONST_COLOURS_TO_CPAIR = { solent_cpair('grey'): PROFILE_GREY

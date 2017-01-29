@@ -1,9 +1,3 @@
-#
-# gs_nearcast_schema
-#
-# // overview
-# Gruel server's nearcast schema.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -21,9 +15,6 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-
-from solent.eng import nearcast_schema_new
-from solent.log import log
 
 I_NEARCAST_GRUEL_SERVER = '''
     i message h
@@ -78,9 +69,4 @@ I_NEARCAST_GRUEL_SERVER = '''
     message heartbeat_send
 
 '''
-
-def gs_nearcast_schema_new():
-    ob = nearcast_schema_new(
-        i_nearcast=I_NEARCAST_GRUEL_SERVER)
-    return ob
 

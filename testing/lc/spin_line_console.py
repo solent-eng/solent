@@ -26,8 +26,6 @@ from testing.util import clock_fake
 
 from solent.eng import activity_new
 from solent.eng import cs
-from solent.eng import orb_new
-from solent.lc import lc_nearcast_schema_new
 from solent.lc import spin_line_console_new
 from solent.log import log
 from solent.log import hexdump_bytes

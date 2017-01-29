@@ -29,7 +29,6 @@ from .sigil import sigil_new
 from .swamp_generator import swamp_generator_new
 
 from solent import solent_cpair
-from solent.eng import nearcast_schema_new
 from solent.log import log
 from solent.util import uniq
 
@@ -545,11 +544,9 @@ class SpinSwampMonster:
         self.cb_put = cb_put
         self.cb_log = cb_log
         #
-        self.nearcast = nearcast_schema_new(
-            i_nearcast=I_NEARCAST)
         self.orb = self.engine.init_orb(
             orb_h='swamp_monster_orb',
-            nearcast_schema=self.nearcast)
+            i_nearcast=I_NEARCAST)
         self.orb.add_log_snoop()
         self.orb.init_cog(CogWorld)
         self.orb.init_cog(CogLadyOfTheLake)
