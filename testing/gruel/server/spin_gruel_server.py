@@ -21,19 +21,19 @@
 
 from testing import run_tests
 from testing import test
-from testing.eng import engine_fake
 from testing.util import clock_fake
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
+from solent import uniq
 from solent.eng import activity_new
 from solent.eng import cs
+from solent.eng import fake_engine_new
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_press_new
-from solent.gruel import gruel_schema_new
+from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_server_new
 from solent.log import log
 from solent.log import hexdump_bytes
-from solent.util import uniq
 
 import sys
 
@@ -59,16 +59,16 @@ def should_construct_and_start_and_stop():
         orb=None,
         engine=None)
     #
-    engine = engine_fake()
+    engine = fake_engine_new()
     activity = activity_new()
     #
     # scenario: construction
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=MTU)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=MTU)
     spin_gruel_server = spin_gruel_server_new(
         engine=engine,

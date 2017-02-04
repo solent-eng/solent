@@ -29,6 +29,7 @@
 
 from solent import solent_cpair
 from solent import solent_keycode
+from solent import uniq
 from solent.console import console_new
 from solent.draft.turnlib.algobunny_mind import algobunny_mind_new
 from solent.draft.turnlib.cursor import cursor_new
@@ -40,7 +41,6 @@ from solent.draft.turnlib.initiative import initiative_new
 from solent.exceptions import SolentQuitException
 from solent.console import e_boxtype
 from solent.console import cgrid_new
-from solent.util import uniq
 
 from collections import deque
 import os

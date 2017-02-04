@@ -1,6 +1,14 @@
 #
 # nearcast schema
 #
+# // overview
+# Each orb has a nearcast. The definition for the message structures that
+# can be send over that nearcast are stored in an instance of the class
+# described here.
+#
+# Nearcast schemas are defined in a dialect of interface script. There is
+# an example below, and a few examples in scenarios.py
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -19,8 +27,10 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from .test_bridge_class_cog import test_bridge_cog_class_new
+
+from solent import ns
 from solent.log import log
-from solent.util import ns
 from solent.util.interface_script import init_interface_script_parser
 from solent.util.interface_script import SignalConsumer
 
@@ -140,6 +150,12 @@ class NearcastSchema:
             orb=orb,
             cog=cog)
         setattr(cog, 'nearcast', nearcast_dispatcher)
+    def init_test_bridge_cog(self, cog_h, orb, engine):
+        test_class = test_bridge_cog_class_new(
+            nearcast_schema=self)
+        cog = orb.init_cog(
+            construct=test_class)
+        return cog
 
 def nearcast_schema_new(i_nearcast):
     '''

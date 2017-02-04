@@ -1,5 +1,10 @@
 #
-# engine (testing)
+# fake_engine
+#
+# // overview
+# Useful in testing. Not sure how much life this has ahead of it. The main
+# codebase engine is becoming flexible enough that we could use it in
+# testing scenarios which previously justified this dedicated fake.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -19,9 +24,9 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent import uniq
 from solent.eng import cs
 from solent.eng.orb import orb_new
-from solent.util import uniq
 
 from testing.util import clock_fake
 
@@ -34,24 +39,24 @@ class FakeSocket:
 def create_fake_sid():
     return 'fake_sid_%s'%uniq()
 
-class Engine:
+class FakeEngine:
     def __init__(self):
         #
         self.clock = clock_fake()
         self.events = []
-        self.sent_data = []
+        self.sent_bb = []
         self.sids = {}
         #
         self.mtu = 500
     def get_clock(self):
         return self.clock
-    def init_orb(self, orb_h, i_nearcast):
+    def init_orb(self, spin_h, i_nearcast):
         return orb_new(
-            orb_h=orb_h,
+            spin_h=spin_h,
             engine=self,
             i_nearcast=i_nearcast)
-    def send(self, sid, payload):
-        self.sent_data.append(payload[:])
+    def send(self, sid, bb):
+        self.sent_bb.append(bb[:])
     def open_tcp_client(self, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
         self.events.append( ('open_tcp_client', addr, port) )
         #
@@ -97,7 +102,7 @@ class Engine:
         s.cb_tcp_connect(
             cs_tcp_connect=cs_tcp_connect)
 
-def engine_fake():
-    ob = Engine()
+def fake_engine_new():
+    ob = FakeEngine()
     return ob
 

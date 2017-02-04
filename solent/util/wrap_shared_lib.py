@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .simple import ns
+from solent import ns
 
 def wrap_so_fn(so_fn, argtypes, restype):
     '''

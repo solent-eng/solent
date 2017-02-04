@@ -19,7 +19,7 @@
 
 from .gruel_press import gruel_press_new
 from .gruel_puff import gruel_puff_new
-from .gruel_schema import gruel_schema_new
+from .gruel_protocol import gruel_protocol_new
 
 from .client.spin_gruel_client import spin_gruel_client_new
 from .server.spin_gruel_server import spin_gruel_server_new

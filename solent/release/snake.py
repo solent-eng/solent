@@ -22,13 +22,13 @@
 
 from solent import solent_cpair
 from solent import solent_keycode
+from solent import uniq
 from solent.eng import engine_new
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
 from solent.term import spin_term_new
 from solent.menu import spin_menu_new
-from solent.util import uniq
 
 from collections import deque
 import os
@@ -572,7 +572,7 @@ def game(console_type):
         engine.default_timeout = 0.01
         #
         orb = engine.init_orb(
-            orb_h=__name__,
+            spin_h=__name__,
             i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)

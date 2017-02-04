@@ -25,9 +25,15 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent import solent_keycode
 from solent.log import log
 
 import types
+
+ENDINGS = (
+    solent_keycode('nul'),
+    solent_keycode('newline'),
+    solent_keycode('eot'))
 
 class LineFinder:
     "When you get to the end of a line, callback."
@@ -45,7 +51,7 @@ class LineFinder:
         if not isinstance(s, str):
             raise Exception('Wrong type supplied [%s]'%(type(s)))
         for c in s:
-            if c == '\n':
+            if ord(c) in ENDINGS:
                 self.cb_line(''.join(self.sb))
                 self.sb = []
             else:

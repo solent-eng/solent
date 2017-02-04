@@ -1,5 +1,5 @@
 #
-# Engine.
+# engine
 #
 # // overview
 # Network engine. This is the core class of the eng system. It provides
@@ -13,9 +13,12 @@
 #   * Also, there's a FAQ at the top there.
 #
 # If you do decide to press on and delve into this code, I recommend you start
-# by reading the header for metasock.py. There's lots of edge-cases in the
-# Berkeley sockets API, and there's an unusual amount of complexity to
-# facading that. Good luck.
+# as follows:
+#   - read the header for metasock.py. There's lots of edge-cases in the
+#   Berkeley sockets API, and there's an unusual amount of complexity to
+#   facading that. Much of what is here is explained by that priority.
+#   - read from event_loop below to see what an engine instance does once
+#   it has been started.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -35,21 +38,23 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from .action_pool import action_pool_new
 from .activity import activity_new
 from .metasock import MetasockCloseCondition
-from .metasock import metasock_create_accepted_tcp_client
-from .metasock import metasock_create_broadcast_listener
-from .metasock import metasock_create_broadcast_sender
+from .metasock import metasock_create_sub
+from .metasock import metasock_create_pub
+from .metasock import metasock_create_tcp_accept
 from .metasock import metasock_create_tcp_client
 from .metasock import metasock_create_tcp_server
 from .orb import orb_new
 
 from solent import mempool_new
+from solent import uniq
 from solent.log import hexdump_bytes
 from solent.log import log
 from solent.util.clock import clock_new
 
-import errno
+from collections import OrderedDict as od
 import select
 import socket
 import time
@@ -62,19 +67,48 @@ class QuitEvent(Exception):
 def eloop_debug(msg):
     log('(@) %s'%msg)
 
+class CsMsClose:
+    '''
+    This exists to handle a very specific scenario. Imagine if you decide to
+    close a socket during an event loop. The event loop has several stages.
+    You don't want the later stages of the event loop to do things to the
+    socket if it is in closing.
+
+    This callback exists so that we can have an ignore list for things that
+    are in that state.
+    
+    Unlike other callbacks in the file, user code should never be concerned
+    with it. It is specific to the relationship between Engine and Metasock.
+
+    You don't need to be aware of this structure you're coming to grips
+    with engine/metasock. It has been deliberately kept out of cs.py to
+    reduce the likelihood of end-users being confused by it.
+    '''
+    def __init__(self):
+        self.ms = None
+        self.sid = None
+        self.message = None
+    def __repr__(self):
+        return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
+            [self.ms, self.sid, self.message]]))
+
 class Engine(object):
     def __init__(self, mtu):
         self.mtu = mtu
         #
         self.mempool = mempool_new()
         self.clock = clock_new()
-        self.sid_to_metasock = {}
-        self.orbs = {}
+        self.action_pool = action_pool_new()
+        self.sid_to_metasock = od()
+        self.spins = od()
         #
         self.activity = activity_new()
         self.b_debug_eloop = False
         self.sid_counter = 0
         self.default_timeout = 0.2
+        #
+        self.cb_ms_close = None
+        self.cs_ms_close = CsMsClose()
     def debug_eloop_on(self):
         self.b_debug_eloop = True
     def debug_eloop_off(self):
@@ -99,31 +133,54 @@ class Engine(object):
                     sid=sid,
                     reason='engine_closing')
             except:
-                pass
-        for orb in self.orbs.values():
-            orb.close()
-    def add_orb(self, orb_h, orb):
-        if orb_h in self.orbs:
-            raise Exception("Engine already has orb_h %s"%orb_h)
-        if orb in self.orbs.values():
+                traceback.print_exc()
+        for orb in self.spins.values():
+            try:
+                orb.at_close()
+            except:
+                traceback.print_exc()
+    def _add_spin(self, spin_h, spin):
+        at_methods = [m for m in dir(spin) if m.startswith('at_')]
+        m = "Missing method. Spins need at_turn(drive) and at_close()."
+        if 'at_turn' not in at_methods:
+            raise Exception(m)
+        if 'at_close' not in at_methods:
+            raise Exception(m)
+        if spin_h in self.spins:
+            raise Exception("Engine already has spin_h %s"%spin_h)
+        if spin in self.spins.values():
             raise Exception("Orb is already in engine. Don't double-add.")
-        self.orbs[orb_h] = orb
-    def init_orb(self, orb_h, i_nearcast):
-        orb = orb_new(
-            orb_h=orb_h,
+        self.spins[spin_h] = spin
+    def init_orb(self, spin_h, i_nearcast):
+        '''
+        Orb is a special kind of spin that does nearcasting.
+        '''
+        spin = orb_new(
+            spin_h=spin_h,
             engine=self,
             i_nearcast=i_nearcast)
-        self.add_orb(
-            orb_h=orb_h,
-            orb=orb)
-        return orb
-    def del_orb(self, orb_h):
-        del self.orbs[org_h]
+        self._add_spin(
+            spin_h=spin_h,
+            spin=spin)
+        return spin
+    def init_spin(self, construct, **kwargs):
+        spin_h = '%s/%s'%(str(construct), uniq())
+        spin = construct(
+            spin_h=spin_h,
+            engine=self,
+            **kwargs)
+        self._add_spin(
+            spin_h=spin_h,
+            spin=spin)
+        return spin
+    def del_spin(self, spin_h):
+        # xxx unsubscribe logic if it is an orb
+        del self.spins[spin_h]
     def turn(self, timeout=0):
         b_any_activity_at_all = False
         #
         # Caller's callback
-        orbs_in_this_loop = list(self.orbs.values())
+        orbs_in_this_loop = list(self.spins.values())
         for orb in orbs_in_this_loop:
             orb.at_turn(
                 activity=self.activity)
@@ -174,30 +231,30 @@ class Engine(object):
                     timeout=timeout)
         except QuitEvent as e:
             log('QuitEvent [%s]'%(e.message))
-    def send(self, sid, payload):
+    def send(self, sid, bb):
         '''This is called send to correspond to user intent.
 
-        In fact, the payload data goes into a buffer. The event loop will get
+        In fact, the bb data goes into a buffer. The event loop will get
         around to pushing that data to the network.
         
-        This method makes a copy of payload. So you don't need to worry
+        This method makes a copy of bb. So you don't need to worry
         about the effect of subsequent writes made to that buffer.
 
-        In short: you can call send here, know that a copy of your payload is
+        In short: you can call send here, know that a copy of your bb is
         in the mail, and carry on without further concern. So long as
         connectivity stays up, your user will get a copy of what was in
-        payload when it was supplied to this method.
+        bb when it was supplied to this method.
         '''
         # --------------------------------------------------------
-        #   conversion logic from payload to sip
+        #   conversion logic from bb to sip
         # --------------------------------------------------------
         #
         #   !   This is only needed whilst we are switching between the
         #       new and old memory models.
         #
         sip = self.mempool.alloc(
-            size=len(payload))
-        sip.arr[:] = payload
+            size=len(bb))
+        sip.arr[:] = bb
         # --------------------------------------------------------
         #   standard logic
         # --------------------------------------------------------
@@ -205,9 +262,9 @@ class Engine(object):
         ms = self._get_ms_for_sid(sid)
         if not ms.can_it_send:
             raise Exception("%s does not have can_it_send"%(sid))
-        if len(payload) > self.mtu:
+        if len(bb) > self.mtu:
             raise Exception('Payload size %s is larger than mtu %s'%(
-                len(payload), self.mtu))
+                len(bb), self.mtu))
         ms.copy_to_send_queue(
             sip=sip)
         # --------------------------------------------------------
@@ -225,7 +282,7 @@ class Engine(object):
         # arguments being empty sets. We avoid this scenario by detecting if
         # there is no networking being done. In this case, we honour the
         # timeout with a short sleep. [Emphasis: in the current logic below,
-        # elst gets every socket in it. So if we get past this conditional,
+        # xlist gets every socket in it. So if we get past this conditional,
         # there should not be further circumstances in which the Windows error
         # circumstance can be triggered.]
         if 0 == len(self.sid_to_metasock):
@@ -242,6 +299,18 @@ class Engine(object):
         # sockets that have been closed since the last select so we can
         # avoid processing them.
         sock_ignore_list = []
+        # It is important we make a copy of this here, before the loop
+        # starts running
+        candidate_pairs = [pair
+            for pair
+            in self.sid_to_metasock.items()]
+        # This function combines the items above to give you socket resources
+        # that are still in play
+        def active_sid_ms_pairs():
+            'generator. yields (sid, ms).'
+            for (sid, ms) in candidate_pairs:
+                if ms.sock not in sock_ignore_list:
+                    yield (sid, ms)
         #
         # All socket closes in the metasock give a callback. This allows us to
         # have cleanup functionality in a single place. The reason it's here
@@ -249,139 +318,130 @@ class Engine(object):
         # This could probably be a global variable instead, but for the moment
         # it's no big deal.
         def cb_ms_close(cs_ms_close):
-            sock_ignore_list.append(cs_ms_close.ms.sock)
+            ms = cs_ms_close.ms
+            sid = cs_ms_close.sid
+            message = cs_ms_close.message
+            #
+            sock_ignore_list.append(ms.sock)
             log('metasock %s closed [reason: %s]'%(
                 cs_ms_close.ms.sid, cs_ms_close.message))
-        #
-        # It seems inefficient and laborious to set this on every pass, but
-        # at the moment it's not a big deal.
-        items_for_this_eloop = [pair for pair in self.sid_to_metasock.items()]
-        for (sid, ms) in items_for_this_eloop:
-            ms.cb_ms_close = cb_ms_close
-        #
-        # Handle TCP clients who are in the process of connecting. The call
-        # below on a successful connection is weird. I can't find a cleaner
-        # way to encapsulate the logic. I think this could be useful if ever
-        # I'm looking for an example that highlights the odd design of the
-        # bsd sockets api.
-        for (sid, ms) in items_for_this_eloop:
-            if ms.is_tcp_client_connecting:
-                ec = ms.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-                if 0 == ec:
-                    ms.successful_connection_as_tcp_client()
-                elif 'EINPROGRESS' == errno.errorcode[ec]:
-                    sock_ignore_list.append(ms.sock)
-                else:
-                    sock_ignore_list.append(ms.sock)
-                    r = ' '.join( [ 'Unable to connect to'
-                                  , '%s:%s'%(ms.addr, ms.port)
-                                  , '[%s:%s]'%(ec, errno.errorcode[ec])
-                                  ] )
-                    self._close_metasock(
-                        sid=sid,
-                        reason=r)
+        self.cb_ms_close = cb_ms_close
         #
         # Groundwork for the select
-        rlst = []
-        wlst = []
-        elst = []
-        for (sid, ms) in items_for_this_eloop:
-            if ms.sock in sock_ignore_list:
-                continue
+        rlist = []
+        wlist = []
+        xlist = []
+        for (sid, ms) in active_sid_ms_pairs():
             create_lookup_for_metasock(ms)
-            if ms.desires_recv():
-                rlst.append(ms.sock)
-            if ms.desires_send():
-                wlst.append(ms.sock)
-            elst.append(ms.sock)
+            if ms.desire_for_readable_select_list():
+                rlist.append(ms.sock)
+            if ms.desire_for_writable_select_list():
+                wlist.append(ms.sock)
+            xlist.append(ms.sock)
         #
         # Select
-        rlst, wlst, elst = select.select(rlst, wlst, elst, timeout)
-        #log('select %s|%s|%s|%s'%(timeout, rlst, wlst, elst))
+        rlist, wlist, xlist = select.select(rlist, wlist, xlist, timeout)
+        #log('select /r%s /w%s /x%s /t:%s'%(rlist, wlist, xlist, timeout))
         #
         # Handle errors
-        for sock in elst:
-            if sock in sock_ignore_list:
-                continue
-            ms = sock_to_metasock[sock]
-            self._close_metasock(
-                sid=ms.sid,
-                reason='select_elst')
-        #
-        # Handle reads
-        for sock in rlst:
+        for sock in xlist:
             if sock in sock_ignore_list:
                 continue
             ms = sock_to_metasock[sock]
             try:
-                ms.manage_recv(
-                    cb_ms_close=cb_ms_close)
+                ms.manage_exceptionable()
+            except MetasockCloseCondition as e:
+                self._close_metasock(
+                    sid=ms.sid,
+                    reason=e.message)
+        for sock in rlist:
+            if sock in sock_ignore_list:
+                continue
+            ms = sock_to_metasock[sock]
+            try:
+                ms.manage_readable()
             except MetasockCloseCondition as e:
                 self._close_metasock(
                     sid=ms.sid,
                     reason=e.message)
         #
-        # Handle writes
-        for sock in wlst:
+        # Handle writes (and pending connections)
+        for sock in wlist:
             if sock in sock_ignore_list:
                 continue
             ms = sock_to_metasock[sock]
             try:
-                ms.manage_send()
+                ms.manage_writable()
             except MetasockCloseCondition as e:
-                self._close_metasock( sid=ms.sid
-                                    , reason=e.message
-                                    )
+                self._close_metasock(
+                    sid=ms.sid,
+                    reason=e.message)
+        #
+        # Now we are out of the loop, we can clear the callback that was
+        # protecting against ships-in-the-night problems to do with sockets
+        # being in a state of closing.
+        self.cb_ms_close = None
         #
         # The caller may wish to use the return code to influence it on
         # the timeout that it passes in on a further iteration.
-        if rlst or wlst or elst or sock_ignore_list:
+        if rlist or wlist or xlist or sock_ignore_list:
             return True
         else:
             return False
-    def register_accepted_tcp_csock(self, csock, addr, port, cb_tcp_condrop, cb_tcp_recv, cb_ms_close):
+    def open_sub(self, addr, port, cb_sub_start, cb_sub_stop, cb_sub_recv):
+        sid = self.create_sid()
+        ms = metasock_create_sub(
+            engine=self,
+            mempool=self.mempool,
+            sid=sid,
+            addr=addr,
+            port=port,
+            cb_sub_start=cb_sub_start,
+            cb_sub_stop=cb_sub_stop,
+            cb_sub_recv=cb_sub_recv)
+        return sid
+    def close_sub(self, sub_sid):
+        self._close_metasock(
+            sid=sub_sid,
+            reason='close_sub %s'%(sub_sid))
+    def open_pub(self, addr, port, cb_pub_start, cb_pub_stop):
+        sid = self.create_sid()
+        ms = metasock_create_pub(
+            engine=self,
+            mempool=self.mempool,
+            sid=sid,
+            addr=addr,
+            port=port,
+            cb_pub_start=cb_pub_start,
+            cb_pub_stop=cb_pub_stop)
+        return sid
+    def close_pub(self, pub_sid):
+        self._close_metasock(
+            sid=pub_sid,
+            reason='close_pub %s'%(pub_sid))
+    def register_tcp_accept(self, accept_sock, addr, port, parent_sid, cb_tcp_accept_connect, cb_tcp_accept_condrop, cb_tcp_accept_recv):
         """When metasock has a tcp server, it will create a new socket
         whenever it does an accept. At this point, it passes that new
-        sock here so that we can set up a new metasock to manage it."""
-        client_sid = self.create_sid()
-        ms = metasock_create_accepted_tcp_client(
+        sock here so that we can set up a new metasock to manage it.
+        This should never be called from outside this package."""
+        accept_sid = self.create_sid()
+        ms = metasock_create_tcp_accept(
             engine=self,
             mempool=self.mempool,
-            sid=client_sid,
-            csock=csock,
+            sid=accept_sid,
+            accept_sock=accept_sock,
             addr=addr,
             port=port,
-            cb_tcp_condrop=cb_tcp_condrop,
-            cb_tcp_recv=cb_tcp_recv,
-            cb_ms_close=cb_ms_close)
-        self.sid_to_metasock[client_sid] = ms
-        return client_sid
-    def open_broadcast_listener(self, addr, port, cb_sub_recv):
-        sid = self.create_sid()
-        ms = metasock_create_broadcast_listener(
-            engine=self,
-            mempool=self.mempool,
-            sid=sid,
-            addr=addr,
-            port=port,
-            cb_sub_recv=cb_sub_recv)
-        self.sid_to_metasock[sid] = ms
-        return sid
-    def close_broadcast_listener(self, sid):
-        self._close_metasock(sid, 'close_broadcast_listener %s'%(sid))
-    def open_broadcast_sender(self, addr, port):
-        sid = self.create_sid()
-        ms = metasock_create_broadcast_sender(
-            engine=self,
-            mempool=self.mempool,
-            sid=sid,
-            addr=addr,
-            port=port)
-        self.sid_to_metasock[sid] = ms
-        return sid
-    def close_broadcast_sender(self, sid):
-        self._close_metasock(sid, 'close_broadcast_sender %s'%(sid))
-    def open_tcp_server(self, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
+            parent_sid=parent_sid,
+            cb_tcp_accept_connect=cb_tcp_accept_connect,
+            cb_tcp_accept_condrop=cb_tcp_accept_condrop,
+            cb_tcp_accept_recv=cb_tcp_accept_recv)
+        return accept_sid
+    def close_tcp_accept(self, accept_sid):
+        self._close_metasock(
+            sid=accept_sid,
+            reason='close_tcp_accept %s'%accept_sid)
+    def open_tcp_server(self, addr, port, cb_tcp_server_start, cb_tcp_server_stop, cb_tcp_accept_connect, cb_tcp_accept_condrop, cb_tcp_accept_recv):
         sid = self.create_sid()
         ms = metasock_create_tcp_server(
             engine=self,
@@ -389,14 +449,17 @@ class Engine(object):
             sid=sid,
             addr=addr,
             port=port,
-            cb_tcp_connect=cb_tcp_connect,
-            cb_tcp_condrop=cb_tcp_condrop,
-            cb_tcp_recv=cb_tcp_recv)
-        self.sid_to_metasock[sid] = ms
+            cb_tcp_server_start=cb_tcp_server_start,
+            cb_tcp_server_stop=cb_tcp_server_stop,
+            cb_tcp_accept_connect=cb_tcp_accept_connect,
+            cb_tcp_accept_condrop=cb_tcp_accept_condrop,
+            cb_tcp_accept_recv=cb_tcp_accept_recv)
         return sid
-    def close_tcp_server(self, sid):
-        self._close_metasock(sid, 'close_tcp_server')
-    def open_tcp_client(self, addr, port, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
+    def close_tcp_server(self, server_sid):
+        self._close_metasock(
+            sid=server_sid,
+            reason='close_tcp_server %s'%server_sid)
+    def open_tcp_client(self, addr, port, cb_tcp_client_connect, cb_tcp_client_condrop, cb_tcp_client_recv):
         sid = self.create_sid()
         ms = metasock_create_tcp_client(
             engine=self,
@@ -404,19 +467,40 @@ class Engine(object):
             sid=sid,
             addr=addr,
             port=port,
-            cb_tcp_connect=cb_tcp_connect,
-            cb_tcp_condrop=cb_tcp_condrop,
-            cb_tcp_recv=cb_tcp_recv)
-        self.sid_to_metasock[sid] = ms
+            cb_tcp_client_connect=cb_tcp_client_connect,
+            cb_tcp_client_condrop=cb_tcp_client_condrop,
+            cb_tcp_client_recv=cb_tcp_client_recv)
         return sid
-    def close_tcp_client(self, sid):
-        self._close_metasock(sid, 'close_tcp_client')
+    def close_tcp_client(self, client_sid):
+        self._close_metasock(
+            sid=client_sid,
+            reason='close_tcp_client %s'%client_sid)
+    def _map_sid_to_metasock(self, sid, ms):
+        '''
+        We need to call this from the metasock factories. It must happen after
+        the metasock has been created, but before the init callbacks have been
+        called against the metasock. That way if any of those sockets try to
+        send as part of their initialisation callbacks, the sid will be
+        waiting in this map already.
+        '''
+        self.sid_to_metasock[sid] = ms
     def _get_ms_for_sid(self, sid):
         return self.sid_to_metasock[sid]
     def _close_metasock(self, sid, reason):
-        ms = self._get_ms_for_sid(sid)
+        ms = self._get_ms_for_sid(
+            sid=sid)
         ms.close(reason)
         del self.sid_to_metasock[sid]
+        #
+        # If we are in the middle of a select loop, there is a mechanism
+        # that avoids us from (example) tripping over our laces by trying to
+        # read from a socket that is in shutdown. That's what this block is
+        # about.
+        if self.cb_ms_close != None:
+            self.cs_ms_close.ms = ms
+            self.cs_ms_close.message = reason
+            self.cb_ms_close(
+                cs_ms_close=self.cs_ms_close)
 
 def engine_new(mtu):
     ob = Engine(

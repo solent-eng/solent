@@ -34,7 +34,7 @@ from solent import ref_release
 def should_acquire_and_release():
     source = 'abc'
     ref = ref_create(
-        data=source)
+        bb=source)
     ref_acquire(
         ref=ref)
     taken = ref_lookup(

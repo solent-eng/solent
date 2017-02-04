@@ -21,10 +21,9 @@
 
 from testing import run_tests
 from testing import test
-from testing.eng import engine_fake
 from testing.util import clock_fake
 
-from solent.eng.orb import orb_new
+from solent.eng import fake_engine_new
 
 I_NEARCAST_EXAMPLE = '''
     i message h
@@ -47,9 +46,9 @@ I_NEARCAST_EXAMPLE = '''
 
 @test
 def should_construct():
-    engine = engine_fake()
+    engine = fake_engine_new()
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_EXAMPLE)
     #
     return True

@@ -33,7 +33,7 @@ from solent.console import console_new
 from solent.eng import engine_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
-from solent.gruel import gruel_schema_new
+from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_client_new
 from solent.log import init_logging
 from solent.log import log
@@ -213,15 +213,15 @@ class CogGruelClient:
         self.orb = orb
         self.engine = engine
         #
-        self.gruel_schema = gruel_schema_new()
+        self.gruel_protocol = gruel_protocol_new()
         self.gruel_press = gruel_press_new(
-            gruel_schema=self.gruel_schema,
+            gruel_protocol=self.gruel_protocol,
             mtu=engine.mtu)
         self.gruel_puff = gruel_puff_new(
-            gruel_schema=self.gruel_schema,
+            gruel_protocol=self.gruel_protocol,
             mtu=engine.mtu)
-        self.spin_gruel_client = spin_gruel_client_new(
-            engine=engine,
+        self.spin_gruel_client = engine.init_spin(
+            construct=spin_gruel_client_new,
             gruel_press=self.gruel_press,
             gruel_puff=self.gruel_puff)
     def at_turn(self, activity):
@@ -471,7 +471,7 @@ def wrap_eng(console):
     engine.default_timeout = 0.02
     try:
         orb = engine.init_orb(
-            orb_h=__name__,
+            spin_h=__name__,
             i_nearcast=I_NEARCAST_SCHEMA)
         #
         orb.init_cog(CogGruelClient)

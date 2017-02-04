@@ -48,14 +48,12 @@ I_NEARCAST_SCHEMA = '''
         field addr
         field port
 
-    message tcp_connect
-    message tcp_condrop
+    message net_connect
+    message net_condrop
         field message
-
-    message netrecv
+    message net_recv
         field bb
-
-    message netsend
+    message net_send
         field bb
 '''
 
@@ -69,46 +67,48 @@ class CogTcpClient:
         self.orb = orb
         self.engine = engine
         #
-        self.sid_tcp_client = None
+        self.client_sid = None
     def at_close(self):
         self.engine.close_tcp_client(
-            sid=self.sid_broadcast_sender)
+            client_sid=self.client_sid)
     def at_turn(self, activity):
-        if self.sid_tcp_client == None:
+        if self.client_sid == None:
             return
     def on_init(self, addr, port):
-        self.sid_tcp_client = self.engine.open_tcp_client(
+        self.engine.open_tcp_client(
             addr=addr,
             port=port,
-            cb_tcp_connect=self.engine_on_tcp_connect,
-            cb_tcp_condrop=self.engine_on_tcp_condrop,
-            cb_tcp_recv=self.engine_on_tcp_recv)
-    def on_netsend(self, bb):
+            cb_tcp_client_connect=self._engine_on_tcp_client_connect,
+            cb_tcp_client_condrop=self._engine_on_tcp_client_condrop,
+            cb_tcp_client_recv=self._engine_on_tcp_client_recv)
+    def on_net_send(self, bb):
         self.engine.send(
-            sid=self.sid_tcp_client,
-            payload=bb)
+            sid=self.client_sid,
+            bb=bb)
     #
-    def engine_on_tcp_connect(self, cs_tcp_connect):
-        engine = cs_tcp_connect.engine
-        client_sid = cs_tcp_connect.client_sid
-        addr = cs_tcp_connect.addr
-        port = cs_tcp_connect.port
+    def _engine_on_tcp_client_connect(self, cs_tcp_client_connect):
+        engine = cs_tcp_client_connect.engine
+        client_sid = cs_tcp_client_connect.client_sid
+        addr = cs_tcp_client_connect.addr
+        port = cs_tcp_client_connect.port
         #
-        self.nearcast.tcp_connect()
-    def engine_on_tcp_condrop(self, cs_tcp_condrop):
-        engine = cs_tcp_condrop.engine
-        client_sid = cs_tcp_condrop.client_sid
-        message = cs_tcp_condrop.message
+        self.client_sid = client_sid
+        self.nearcast.net_connect()
+    def _engine_on_tcp_client_condrop(self, cs_tcp_client_condrop):
+        engine = cs_tcp_client_condrop.engine
+        client_sid = cs_tcp_client_condrop.client_sid
+        message = cs_tcp_client_condrop.message
         #
-        self.nearcast.tcp_condrop(
+        self.client_sid = None
+        self.nearcast.net_condrop(
             message=message)
-    def engine_on_tcp_recv(self, cs_tcp_recv):
-        engine = cs_tcp_recv.engine
-        client_sid = cs_tcp_recv.client_sid
-        data = cs_tcp_recv.data
+    def _engine_on_tcp_client_recv(self, cs_tcp_client_recv):
+        engine = cs_tcp_client_recv.engine
+        client_sid = cs_tcp_client_recv.client_sid
+        bb = cs_tcp_client_recv.bb
         #
-        self.nearcast.netrecv(
-            bb=data)
+        self.nearcast.net_recv(
+            bb=bb)
 
 class CogTerm:
     def __init__(self, cog_h, orb, engine):
@@ -137,7 +137,7 @@ class CogTerm:
         self.drop = 0
         self.rest = 0
         self.spin_term.refresh_console()
-    def on_tcp_connect(self):
+    def on_net_connect(self):
         self.line_finder = line_finder_new(
             cb_line=self.lfinder_on_line)
         #
@@ -150,7 +150,7 @@ class CogTerm:
         self.drop = 1
         self.rest = 0
         self.spin_term.refresh_console()
-    def on_tcp_condrop(self, message):
+    def on_net_condrop(self, message):
         self.line_finder = None
         #
         self.spin_term.clear()
@@ -162,7 +162,7 @@ class CogTerm:
         self.drop = 1
         self.rest = 0
         self.spin_term.refresh_console()
-    def on_netrecv(self, bb):
+    def on_net_recv(self, bb):
         for keycode in bb:
             self._print(
                 keycode=keycode,
@@ -195,7 +195,7 @@ class CogTerm:
     def term_on_select(self, drop, rest):
         pass
     def lfinder_on_line(self, line):
-        self.nearcast.netsend(
+        self.nearcast.net_send(
             bb=bytes('%s\n'%line, 'utf8'))
     #
     def _print(self, keycode, cpair):
@@ -251,7 +251,7 @@ def main():
         net_port = int(sys.argv[2])
         #
         orb = engine.init_orb(
-            orb_h=__name__,
+            spin_h=__name__,
             i_nearcast=I_NEARCAST_SCHEMA)
         orb.add_log_snoop()
         orb.init_cog(CogTcpClient)

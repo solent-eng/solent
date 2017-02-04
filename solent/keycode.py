@@ -26,8 +26,10 @@ class e_keycode(enum.Enum):
     nul           = 0x00
     lmousedown    = 0x01  # in ascii this is start-of-heading
     lmouseup      = 0x02  # in ascii this is end-of-heading
-    rmousedown    = 0x03  # in ascii this is end-of-text
-    rmouseup      = 0x04  # in ascii this is end-of-transmission
+    etx           = 0x03  # ctrl+c
+    eot           = 0x04  # ctrl+d
+    rmousedown    = 0x05  # in ascii this is end-of-text
+    rmouseup      = 0x06  # in ascii this is end-of-transmission
     #
     backspace     = 0x08
     tab           = 0x09

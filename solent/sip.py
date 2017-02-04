@@ -37,7 +37,7 @@
 from .ref import ref_acquire
 from .ref import ref_release
 
-from solent.util import uniq
+from solent import uniq
 
 import struct
 

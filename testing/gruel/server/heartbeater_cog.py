@@ -21,20 +21,20 @@
 
 from testing import run_tests
 from testing import test
-from testing.eng import engine_fake
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
+from solent import uniq
 from solent.eng import activity_new
+from solent.eng import fake_engine_new
 from solent.eng.cs import *
-from solent.gruel import gruel_schema_new
+from solent.gruel import gruel_protocol_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
-from solent.gruel.server.i_nearcast import I_NEARCAST_GRUEL_SERVER
+from solent.gruel.server.nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.heartbeater_cog import heartbeater_cog_new
 from solent.gruel.server.server_customs_cog import server_customs_cog_new
 from solent.gruel.server.server_customs_cog import ServerCustomsState
 from solent.log import log
-from solent.util import uniq
 
 from enum import Enum
 import sys
@@ -43,18 +43,18 @@ MTU = 500
 
 @test
 def should_start_on_announce_login_and_stop_on_announce_condrop():
-    engine = engine_fake()
+    engine = fake_engine_new()
     clock = engine.get_clock()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     heartbeater_cog = orb.init_cog(
         construct=heartbeater_cog_new)

@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.util import uniq
+from solent import uniq
 from solent.util.interface_script import init_interface_script_parser
 from solent.util.interface_script import SignalConsumer
 
@@ -38,7 +38,7 @@ class Datatype(Enum):
     s40 = uniq()
     # fixed size-string, 100 bytes
     s100 = uniq()
-    # variable string (u2 tells payload length, then payload)
+    # variable string (u2 tells bb length, then bb)
     vs = uniq()
 
 class GruelMessageType(Enum):
@@ -143,7 +143,7 @@ class MessageStencil:
             sb.append('%s(%s)'%(n, dt))
         return '|'.join(sb)
 
-class GruelSchema:
+class GruelProtocol:
     '''
     Holds stencils for the kinds of messages that are supported
     in the schema of the gruel messaging protoco.
@@ -167,7 +167,7 @@ class GruelSchema:
         return self.get_message_stencil(
             message_h=message_h)
 
-def gruel_schema_new():
+def gruel_protocol_new():
     '''
     You should only need to create one of these per application. The
     structure of the schema is stored in the module itself, hence there
@@ -209,7 +209,7 @@ def gruel_schema_new():
     parser = init_interface_script_parser(acc)
     parser.parse(I_MESSAGE_DEF)
     #
-    ob = GruelSchema(
+    ob = GruelProtocol(
         d_message_stencils=acc.d_message_stencils)
     return ob
 

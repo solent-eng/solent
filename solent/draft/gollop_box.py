@@ -24,12 +24,12 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import solent_cpair
+from solent import uniq
 from solent.eng import engine_new
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
 from solent.term import spin_term_new
-from solent.util import uniq
 
 from collections import deque
 import os
@@ -38,6 +38,9 @@ import time
 import traceback
 
 MTU = 1500
+
+CONSOLE_WIDTH = 60
+CONSOLE_HEIGHT = 20
 
 I_NEARCAST_SCHEMA = '''
     i message h
@@ -69,12 +72,17 @@ class CogTerm(object):
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)
         self.spin_term.open_console(
-            width=20,
-            height=10)
+            width=CONSOLE_WIDTH,
+            height=CONSOLE_HEIGHT)
         self.spin_term.write(
-            drop=8,
+            drop=0,
             rest=0,
-            s='(Press Q to quit)',
+            s='Escape toggles selection mode.',
+            cpair=solent_cpair('green'))
+        self.spin_term.write(
+            drop=1,
+            rest=0,
+            s='Press Q to quit (when selection mode is off).',
             cpair=solent_cpair('green'))
     def close(self):
         self.spin_term.close()
@@ -105,7 +113,7 @@ def main():
         engine.default_timeout = 0.04
         #
         orb = engine.init_orb(
-            orb_h=__name__,
+            spin_h=__name__,
             i_nearcast=I_NEARCAST_SCHEMA)
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)

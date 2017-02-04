@@ -22,6 +22,7 @@
 
 from solent import solent_cpair
 from solent import solent_keycode
+from solent import uniq
 from solent.console import cgrid_new
 from solent.eng import engine_new
 from solent.exceptions import SolentQuitException
@@ -29,7 +30,6 @@ from solent.log import init_logging
 from solent.log import log
 from solent.term import spin_term_new
 from solent.menu import spin_menu_new
-from solent.util import uniq
 
 from collections import deque
 import os
@@ -375,7 +375,7 @@ def main():
         engine.default_timeout = 0.05
         #
         orb = engine.init_orb(
-            orb_h=__name__,
+            spin_h=__name__,
             i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         orb.add_log_snoop()
         orb.init_cog(CogInterpreter)

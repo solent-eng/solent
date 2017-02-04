@@ -28,15 +28,15 @@
 
 from .ipval_cog import ipval_cog_new
 from .heartbeater_cog import heartbeater_cog_new
-from .i_nearcast import I_NEARCAST_GRUEL_SERVER
+from .nearcast import I_NEARCAST_GRUEL_SERVER
 from .server_customs_cog import server_customs_cog_new
 from .tcp_server_cog import tcp_server_cog_new
 
+from solent import ns
+from solent import uniq
 from solent.gruel import gruel_press_new
 from solent.log import hexdump_bytes
 from solent.log import log
-from solent.util import ns
-from solent.util import uniq
 
 from collections import deque
 from collections import OrderedDict as od
@@ -83,7 +83,7 @@ class SpinGruelServer:
         self.b_active = False
         #
         self.orb = engine.init_orb(
-            orb_h=__name__,
+            spin_h=__name__,
             i_nearcast=I_NEARCAST_GRUEL_SERVER)
         self.orb.add_log_snoop()
         #

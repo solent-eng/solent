@@ -154,13 +154,13 @@ class ReceiverCog:
         return self.acc_gruel_send
     def last_gruel_send(self):
         return self.acc_gruel_send[-1]
-    def on_gruel_send(self, payload):
-        self.acc_gruel_send.append(payload[:])
-    def nc_gruel_send(self, payload):
+    def on_gruel_send(self, bb):
+        self.acc_gruel_send.append(bb[:])
+    def nc_gruel_send(self, bb):
         self.orb.nearcast(
             cog=self,
             message_h='gruel_send',
-            payload=payload)
+            bb=bb)
         self.orb.cycle()
     #
     def count_announce_login(self):

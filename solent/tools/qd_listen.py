@@ -58,51 +58,80 @@ def usage():
     sys.exit(1)
 
 class SpinUdpListener:
-    def __init__(self, engine, cb_data):
+    def __init__(self, spin_h, engine, cb_bb):
+        self.spin_h = spin_h
         self.engine = engine
-        self.cb_data = cb_data
+        self.cb_bb = cb_bb
         #
+        self.b_active = False
         self.sub_sid = None
         self.accumulate = []
+    def at_turn(self, activity):
+        pass
+    def at_close(self):
+        pass
+    #
     def start(self, ip, port):
-        self.sub_sid = self.engine.open_broadcast_listener(
+        self.b_active = True
+        self.sub_sid = self.engine.open_sub(
             addr=ip,
             port=port,
-            cb_sub_recv=self.engine_on_sub_recv)
+            cb_sub_start=self._engine_on_sub_start,
+            cb_sub_stop=self._engine_on_sub_stop,
+            cb_sub_recv=self._engine_on_sub_recv)
     def stop(self):
+        self.b_active = False
         self.close_broadcast_listener(
             sid=self.sub_sid)
-    def engine_on_sub_recv(self, cs_sub_recv):
+    #
+    def _engine_on_sub_start(self, cs_sub_start):
+        engine = cs_sub_start.engine
+        sub_sid = cs_sub_start.sub_sid
+        addr = cs_sub_start.addr
+        port = cs_sub_start.port
+        #
+        log('sub %s started %s:%s'%(sub_sid, addr, port))
+        #
+        self.sub_sid = sub_sid
+    def _engine_on_sub_stop(self, cs_sub_stop):
+        engine = cs_sub_stop.engine
+        sub_sid = cs_sub_stop.sub_sid
+        message = cs_sub_stop.message
+        #
+        log('sub stopped %s'%(sub_sid))
+        #
+        self.sub_sid = None
+    def _engine_on_sub_recv(self, cs_sub_recv):
         engine = cs_sub_recv.engine
         sub_sid = cs_sub_recv.sub_sid
-        data = cs_sub_recv.data
+        bb = cs_sub_recv.bb
         #
-        self.cb_data(
-            data=data)
+        self.cb_bb(
+            bb=bb)
 
 def operate_a_udp_broadcast_listener(engine, net_addr, net_port):
     #
     # We'll gather data to here
-    class Cog(object):
+    class CogUdpListener(object):
         def __init__(self, cog_h, orb, engine):
             self.cog_h = cog_h
             self.orb = orb
             self.engine = engine
             #
-            self.spin_udp_listener = SpinUdpListener(
-                engine=engine,
-                cb_data=self.spin_on_data)
+            self.spin_udp_listener = engine.init_spin(
+                construct=SpinUdpListener,
+                cb_bb=self.spin_on_bb)
             self.spin_udp_listener.start(
                 ip=net_addr,
                 port=net_port)
-        def spin_on_data(self, data):
+        def spin_on_bb(self, bb):
             hexdump_bytes(
-                arr=data,
+                arr=bb,
                 title='Received')
     orb = engine.init_orb(
-        orb_h=__name__,
+        spin_h=__name__,
         i_nearcast='')
-    orb.init_cog(Cog)
+    orb.init_cog(CogUdpListener)
     engine.event_loop()
 
 def main():

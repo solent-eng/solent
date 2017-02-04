@@ -199,12 +199,14 @@ class CogLcServer:
         self.orb = orb
         self.engine = engine
         #
-        self.spin_line_console = spin_line_console_new(
-            engine=engine,
-            cb_line=self.lc_on_line)
+        self.spin_line_console = engine.init_spin(
+            construct=spin_line_console_new)
         self.spin_line_console.start(
             ip=LC_ADDR,
-            port=LC_PORT)
+            port=LC_PORT,
+            cb_connect=lambda: None,
+            cb_condrop=lambda: None,
+            cb_line=self.lc_on_line)
     #
     def lc_on_line(self, line):
         self.nearcast.lc_input(
@@ -312,7 +314,7 @@ def main():
         mtu=1500)
     try:
         orb = engine.init_orb(
-            orb_h=__name__,
+            spin_h=__name__,
             i_nearcast=I_NEARCAST_SCHEMA)
         orb.add_log_snoop()
         #

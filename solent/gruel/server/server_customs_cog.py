@@ -37,12 +37,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent import uniq
 from solent.gruel import gruel_press_new
-from solent.gruel import gruel_schema_new
-from solent.gruel.gruel_schema import DOCPART_OVERHEAD
-from solent.gruel.gruel_schema import GruelMessageType
+from solent.gruel import gruel_protocol_new
+from solent.gruel.gruel_protocol import DOCPART_OVERHEAD
+from solent.gruel.gruel_protocol import GruelMessageType
 from solent.log import log
-from solent.util import uniq
 
 from collections import deque
 from enum import Enum
@@ -76,9 +76,9 @@ class ServerCustomsCog:
         #
         # long-lived variables
         self.expected_password = None
-        self.gruel_schema = gruel_schema_new()
+        self.gruel_protocol = gruel_protocol_new()
         self.gruel_press = gruel_press_new(
-            gruel_schema=self.gruel_schema,
+            gruel_protocol=self.gruel_protocol,
             mtu=engine.mtu)
         #
         # variables that are zeroed between each client session
@@ -118,7 +118,7 @@ class ServerCustomsCog:
                     l=self,
                     s='preparing server_bye')
                 self.nc_gruel_send(
-                    payload=self.gruel_press.create_server_bye_payload(
+                    bb=self.gruel_press.create_server_bye_bb(
                         notes=self.reject_message))
                 self.state = ServerCustomsState.reject_stage_b
         elif self.state == ServerCustomsState.reject_stage_b:
@@ -135,16 +135,16 @@ class ServerCustomsCog:
                 activity.mark(
                     l=self,
                     s='preparing docpart')
-                data = self.send_doc_q.popleft()
+                bb = self.send_doc_q.popleft()
                 b_complete = 1
-                if len(data) > self.max_docpart_size:
+                if len(bb) > self.max_docpart_size:
                     self.send_doc_q.appendleft(
-                        data[self.max_docpart_size:])
-                    data = data[:self.max_docpart_size]
+                        bb[self.max_docpart_size:])
+                    bb = bb[:self.max_docpart_size]
                     b_complete = 0
                 self.nc_gruel_send(
-                    payload=self.gruel_press.create_docdata_payload(
-                        data=data,
+                    bb=self.gruel_press.create_docdata_bb(
+                        data=bb,
                         b_complete=b_complete))
     def on_announce_tcp_connect(self, ip, port):
         self._zero()
@@ -179,9 +179,9 @@ class ServerCustomsCog:
                 self.nc_heartbeat_recv()
             elif message_h == 'docdata':
                 b_complete = d_gruel['b_complete']
-                data = d_gruel['data']
+                bb = d_gruel['data']
                 #
-                self.recv_doc_buffer.append(data)
+                self.recv_doc_buffer.append(bb)
                 if b_complete == 1:
                     doc = ''.join(self.recv_doc_buffer)
                     self.recv_doc_buffer = []
@@ -205,7 +205,7 @@ class ServerCustomsCog:
         self.send_doc_q.append(doc)
     def on_heartbeat_send(self):
         self.nc_gruel_send(
-            payload=self.gruel_press.create_heartbeat_payload())
+            bb=self.gruel_press.create_heartbeat_bb())
     #
     def _to_rejection(self, s):
         self.state = ServerCustomsState.reject_stage_a
@@ -218,7 +218,7 @@ class ServerCustomsCog:
             return
         #
         # ok: this looks like a valid login. now we have to massage our
-        # figures for document and payload sizes.
+        # figures for document and bb sizes.
         self.max_fulldoc_size = d_gruel['max_fulldoc_size']
         if 0 == self.max_fulldoc_size:
             self.max_fulldoc_size = None
@@ -243,7 +243,7 @@ class ServerCustomsCog:
             max_packet_size=0,
             max_fulldoc_size=0)
         self.nc_gruel_send(
-            payload=self.gruel_press.create_server_greet_payload(
+            bb=self.gruel_press.create_server_greet_bb(
                 max_packet_size=1234))
         self.state = ServerCustomsState.authorised
         return
@@ -263,11 +263,11 @@ class ServerCustomsCog:
         self.orb.nearcast(
             cog=self,
             message_h='please_tcp_boot')
-    def nc_gruel_send(self, payload):
+    def nc_gruel_send(self, bb):
         self.orb.nearcast(
             cog=self,
             message_h='gruel_send',
-            payload=payload)
+            bb=bb)
     def nc_doc_recv(self, doc):
         self.orb.nearcast(
             cog=self,

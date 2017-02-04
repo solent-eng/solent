@@ -22,7 +22,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .gruel_schema import GruelMessageType
+from .gruel_protocol import GruelMessageType
 
 from solent.log import log
 from solent.log import hexdump_bytes
@@ -35,23 +35,87 @@ MAX_FULLDOC_SIZE_IN_BYTES = 0
 PROTOCOL_H = 'proto_h/change_me_later'
 
 class GruelPress:
-    def __init__(self, gruel_schema, mtu):
-        self.gruel_schema = gruel_schema
+    def __init__(self, gruel_protocol, mtu):
+        self.gruel_protocol = gruel_protocol
         self.mtu = mtu
         #
         # This is the block of memory we will render to. Emphasis: a single
         # array of memory is used to prepare messages for the wire. (So you
         # would not want to buffer this anywhere.)
         self.arr = bytearray(self.mtu)
-    def create(self, message_h, **fields):
+    def create_client_login_bb(self, password, heartbeat_interval):
+        gmt = GruelMessageType.client_login
+        #
+        message_h = gmt.name
+        message_type = gmt.value
+        self._create(
+            message_h=message_h,
+            # fields are below
+            message_type=message_type,
+            heartbeat_interval=heartbeat_interval,
+            max_packet_size=MAX_PACKET_LEN_IN_BYTES,
+            max_fulldoc_size=MAX_FULLDOC_SIZE_IN_BYTES,
+            protocol_h=PROTOCOL_H,
+            password=password,
+            notes='text for notes')
+        return self.arr
+    def create_server_greet_bb(self, max_packet_size):
+        gmt = GruelMessageType.server_greet
+        #
+        message_h = gmt.name
+        message_type = gmt.value
+        self._create(
+            message_h=message_h,
+            # fields are below
+            message_type=message_type,
+            max_packet_size=max_packet_size,
+            max_fulldoc_size=MAX_FULLDOC_SIZE_IN_BYTES,
+            notes='text for notes')
+        return self.arr
+    def create_server_bye_bb(self, notes):
+        gmt = GruelMessageType.server_bye
+        #
+        message_h = gmt.name
+        message_type = gmt.value
+        self._create(
+            message_h=message_h,
+            # fields are below
+            message_type=message_type,
+            notes=notes)
+        return self.arr
+
+    def create_heartbeat_bb(self):
+        gmt = GruelMessageType.heartbeat
+        #
+        message_h = gmt.name
+        message_type = gmt.value
+        self._create(
+            message_h=message_h,
+            # fields are below
+            message_type=message_type)
+        return self.arr
+    def create_docdata_bb(self, b_complete, data):
+        gmt = GruelMessageType.docdata
+        #
+        message_h = gmt.name
+        message_type = gmt.value
+        self._create(
+            message_h=message_h,
+            # fields are below
+            message_type=message_type,
+            b_complete=b_complete,
+            data=data)
+        return self.arr
+    #
+    def _create(self, message_h, **fields):
         '''
         Render the supplied message values to the bytearray.
         '''
         #
         # ensure that the fields match the schema
-        if message_h not in self.gruel_schema:
+        if message_h not in self.gruel_protocol:
             raise Exception("No message exists matching [%s]"%message_h)
-        message_stencil = self.gruel_schema.get_message_stencil(
+        message_stencil = self.gruel_protocol.get_message_stencil(
             message_h=message_h)
         set_sch = set(message_stencil.field_names())
         set_got = set(fields.keys())
@@ -103,74 +167,10 @@ class GruelPress:
                 raise Exception("Datatype not recognised/handled: %s"%(
                     field_dt.name))
         return self.arr
-    #
-    def create_client_login_payload(self, password, heartbeat_interval):
-        gmt = GruelMessageType.client_login
-        #
-        message_h = gmt.name
-        message_type = gmt.value
-        self.create(
-            message_h=message_h,
-            # fields are below
-            message_type=message_type,
-            heartbeat_interval=heartbeat_interval,
-            max_packet_size=MAX_PACKET_LEN_IN_BYTES,
-            max_fulldoc_size=MAX_FULLDOC_SIZE_IN_BYTES,
-            protocol_h=PROTOCOL_H,
-            password=password,
-            notes='text for notes')
-        return self.arr
-    def create_server_greet_payload(self, max_packet_size):
-        gmt = GruelMessageType.server_greet
-        #
-        message_h = gmt.name
-        message_type = gmt.value
-        self.create(
-            message_h=message_h,
-            # fields are below
-            message_type=message_type,
-            max_packet_size=max_packet_size,
-            max_fulldoc_size=MAX_FULLDOC_SIZE_IN_BYTES,
-            notes='text for notes')
-        return self.arr
-    def create_server_bye_payload(self, notes):
-        gmt = GruelMessageType.server_bye
-        #
-        message_h = gmt.name
-        message_type = gmt.value
-        self.create(
-            message_h=message_h,
-            # fields are below
-            message_type=message_type,
-            notes=notes)
-        return self.arr
 
-    def create_heartbeat_payload(self):
-        gmt = GruelMessageType.heartbeat
-        #
-        message_h = gmt.name
-        message_type = gmt.value
-        self.create(
-            message_h=message_h,
-            # fields are below
-            message_type=message_type)
-        return self.arr
-    def create_docdata_payload(self, b_complete, data):
-        gmt = GruelMessageType.docdata
-        #
-        message_h = gmt.name
-        message_type = gmt.value
-        self.create(
-            message_h=message_h,
-            # fields are below
-            message_type=message_type,
-            b_complete=b_complete,
-            data=data)
-        return self.arr
-
-def gruel_press_new(gruel_schema, mtu):
+def gruel_press_new(gruel_protocol, mtu):
     ob = GruelPress(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=mtu)
     return ob
 

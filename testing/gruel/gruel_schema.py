@@ -19,13 +19,13 @@
 from testing import run_tests
 from testing import test
 
-from solent.gruel import gruel_schema_new
+from solent.gruel import gruel_protocol_new
 
 import sys
 
 @test
 def test_creation():
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     return True
 
 if __name__ == '__main__':

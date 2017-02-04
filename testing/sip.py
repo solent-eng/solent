@@ -152,9 +152,9 @@ def should_store_and_retrieve_reference():
     source_a = 'abcdefghij'
     source_b = 'z'*50000
     ref_a = ref_create(
-        data=source_a)
+        bb=source_a)
     ref_b = ref_create(
-        data=source_b)
+        bb=source_b)
     #
     sip.put_ref(
         ref=ref_a,

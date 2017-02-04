@@ -95,12 +95,12 @@ def init_logging_to_udp(addr, port, nid):
                 #sys.stdout = io_hijack
                 #
                 sock.send(pack)
-            max_payload_size = CORE_MTU - 8
+            max_bb_size = CORE_MTU - 8
             msg = '%s\n'%msg
             s = msg
-            while len(s) > max_payload_size:
-                sized_send(s[:max_payload_size])
-                s = s[max_payload_size:]
+            while len(s) > max_bb_size:
+                sized_send(s[:max_bb_size])
+                s = s[max_bb_size:]
             sized_send(s)
             #orig_stdout.write(msg)
         def _encase(self, s, is_stderr):
@@ -115,13 +115,13 @@ def init_logging_to_udp(addr, port, nid):
                 sb.append(chr(0x10))
                 sb.append(chr(0x60)) # stdout
             #
-            # // payload size (big-endian)
+            # // bb size (big-endian)
             sb.extend(struct.pack('!H', len(s)))
             #
             # // node id
             sb.extend(struct.pack('!L', int(nid, 16)))
             #
-            # // payload
+            # // bb
             sb.extend(s)
             return ''.join(sb)
     io_hijack = IoHijack()

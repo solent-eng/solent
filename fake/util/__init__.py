@@ -1,11 +1,3 @@
-#
-# activity
-#
-# // overview
-# During the execution of the select loop, we want to know whenever activity
-# occurs. This will affect the timeout of the next round of the select loop.
-# We would track such activity in instances of this class.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -24,18 +16,5 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-class Activity:
-    def __init__(self):
-        self.lst = []
-    def clear(self):
-        self.lst = []
-    def mark(self, l, s):
-        '''l: location; s: string description'''
-        self.lst.append("%s/%s"%(str(l), s))
-    def get(self):
-        return self.lst[:]
-
-def activity_new():
-    ob = Activity()
-    return ob
+from .fake_clock import fake_clock_new
 

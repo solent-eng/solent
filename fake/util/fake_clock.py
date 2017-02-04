@@ -1,8 +1,5 @@
 #
-# lc_nearcast_schema (testing)
-#
-# // overview
-# The nearcast schema for the line console server functionality.
+# fake_clock
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -22,27 +19,19 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from testing import run_tests
-from testing import test
-from testing.eng import engine_fake
-from testing.util import clock_fake
+class FakeClock:
+    def __init__(self):
+        self.t = 0
+    def add(self, n):
+        self.t += n
+    def set(self, t):
+        self.t = t
+    def inc(self, amt=1):
+        self.t += amt
+    def now(self):
+        return self.t
 
-from solent.eng import activity_new
-from solent.eng import cs
-from solent.lc.i_nearcast import I_NEARCAST_LINE_CONSOLE
-from solent.log import log
-from solent.log import hexdump_bytes
-from solent.util import uniq
-
-import sys
-
-@test
-def should_not_crash():
-    nearcast_schema = I_NEARCAST_LINE_CONSOLE
-    #
-    return True
-
-if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+def fake_clock_new():
+    ob = FakeClock()
+    return ob
 

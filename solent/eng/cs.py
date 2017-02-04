@@ -68,9 +68,93 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-class CsTcpConnect(object):
+class CsPubStart:
+    def __init__(self):
+        self.engine = None
+        self.pub_sid = None
+        self.addr = None
+        self.port = None
+    def __repr__(self):
+        return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
+            [self.engine, self.pub_sid, self.addr, self.port]]))
+
+class CsPubStop:
+    def __init__(self):
+        self.engine = None
+        self.pub_sid = None
+        self.message = None
+    def __repr__(self):
+        return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
+            [self.engine, self.pub_sid, self.message]]))
+
+class CsSubStart:
+    def __init__(self):
+        self.engine = None
+        self.sub_sid = None
+        self.addr = None
+        self.port = None
+    def __repr__(self):
+        return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
+            [self.engine, self.sub_sid, self.addr, self.port]]))
+
+class CsSubStop:
+    def __init__(self):
+        self.engine = None
+        self.sub_sid = None
+        self.message = None
+    def __repr__(self):
+        return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
+            [self.engine, self.sub_sid, self.message]]))
+
+class CsSubRecv:
+    "TCP data receivers for UDP and multicast subscribers."
+    def __init__(self):
+        self.engine = None
+        self.sub_sid = None
+        self.bb = None
+    def __repr__(self):
+        return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
+            [self.engine, self.sub_sid, self.bb]]))
+
+class CsTcpAcceptConnect:
+    "Fired when a TCP server has accepted a client connection."
+    def __init__(self):
+        self.engine = None
+        self.server_sid = None
+        self.accept_sid = None
+        self.client_addr = None
+        self.client_port = None
+    def __repr__(self):
+        return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
+            [self.engine, self.server_sid, self.accept_sid, self.client_addr, self.client_port]]))
+
+class CsTcpAcceptCondrop:
+    "Fired when a TCP server has accepted a client connection."
+    def __init__(self):
+        self.engine = None
+        self.server_sid = None
+        self.accept_sid = None
+        self.message = None
+    def __repr__(self):
+        return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
+            [self.engine, self.server_sid, self.accept_sid, self.message]]))
+
+class CsTcpAcceptRecv:
+    '''This callback struct relates to the behaviour of client connections.
+    When a client connection gets data, a callback will trigger that
+    contains an instance of this.
+    '''
+    def __init__(self):
+        self.engine = None
+        self.accept_sid = None
+        self.bb = None
+    def __repr__(self):
+        return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
+            [self.engine, self.accept_sid, self.bb]]))
+
+class CsTcpClientConnect:
     '''Data that is sent in the callback announcing that an attempt to
-    establish a TCP connection has been successful.
+    establish a TCP client connection has been successful.
     '''
     def __init__(self):
         self.engine = None
@@ -81,9 +165,9 @@ class CsTcpConnect(object):
         return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
             [self.engine, self.client_sid, self.addr, self.port]]))
 
-class CsTcpCondrop(object):
+class CsTcpClientCondrop:
     '''Data that is sent in the callback announcing any kind of dropped TCP
-    connection /or connection attempt/.
+    client connection /or connection attempt/.
     Let's just cover those scenarios.
         * You are making an outbound tcp client connection, and it doesn't get
           established.
@@ -110,7 +194,7 @@ class CsTcpCondrop(object):
         return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
             [self.engine, self.client_sid, self.message]]))
 
-class CsTcpRecv(object):
+class CsTcpClientRecv:
     '''This callback struct relates to the behaviour of client connections.
     When a client connection gets data, a callback will trigger that
     contains an instance of this.
@@ -118,38 +202,29 @@ class CsTcpRecv(object):
     def __init__(self):
         self.engine = None
         self.client_sid = None
-        self.data = None
+        self.bb = None
     def __repr__(self):
         return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
-            [self.engine, self.client_sid, self.data]]))
+            [self.engine, self.client_sid, self.bb]]))
 
-class CsSubRecv(object):
-    '''Similar to CsTcpRecv, but designed for subscribers. It's useful
-    to distinguish, because this discourages a naive user in a large codebase
-    from trying to send traffic over a sub sid.
-    '''
+class CsTcpServerStart:
+    "Fired when a TCP server is listening."
     def __init__(self):
         self.engine = None
-        self.sub_sid = None
-        self.data = None
+        self.server_sid = None
+        self.addr = None
+        self.port = None
     def __repr__(self):
         return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
-            [self.engine, self.sub_sid, self.data]]))
+            [self.engine, self.server_sid, self.addr, self.port]]))
 
-class CsMsClose(object):
-    '''You don't need to be aware of this structure you're coming to grips
-    with engine/metasock.
-    
-    This callback struct is used for coordinating close events between engine
-    and metasock. User code should never be concerned with it. In particular,
-    it has to do with the shutdown of sockets during an event loop. Don't
-    confuse this with CsTcpCondrop.
-    '''
+class CsTcpServerStop:
+    "Fired when a TCP server stops listening."
     def __init__(self):
-        self.ms = None
-        self.sid = None
+        self.engine = None
+        self.server_sid = None
         self.message = None
     def __repr__(self):
         return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
-            [self.ms, self.sid, self.message]]))
+            [self.engine, self.server_sid, message]]))
 

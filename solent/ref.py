@@ -35,18 +35,18 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.util import uniq
+from .common import uniq
 
 class RefStore:
     def __init__(self):
         # ref int vs int
         self.acrelease_counts = {}
-        # ref int vs data
+        # ref int vs bb
         self.store = {}
-    def create(self, data):
+    def create(self, bb):
         ref = uniq()
         self.acrelease_counts[ref] = 0
-        self.store[ref] = data
+        self.store[ref] = bb
         return ref
     def lookup(self, ref):
         if ref not in self.store:
@@ -67,15 +67,15 @@ def _store_singleton():
         REF_STORE = RefStore()
     return REF_STORE
 
-def ref_create(data):
+def ref_create(bb):
     ref_store = _store_singleton()
-    ref = ref_store.create(data)
+    ref = ref_store.create(bb)
     return ref
 
 def ref_lookup(ref):
     ref_store = _store_singleton()
-    data = ref_store.lookup(ref)
-    return data
+    bb = ref_store.lookup(ref)
+    return bb
 
 def ref_acquire(ref):
     ref_store = _store_singleton()

@@ -21,24 +21,127 @@
 
 from testing import run_tests
 from testing import test
-from testing.eng import engine_fake
-from testing.gruel.server.receiver_cog import receiver_cog_fake
 
+from solent import uniq
 from solent.eng import activity_new
-from solent.eng.cs import *
-from solent.gruel import gruel_schema_new
+from solent.eng import engine_new
+from solent.gruel import gruel_protocol_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
-from solent.gruel.gruel_schema import GruelMessageType
-from solent.gruel.server.i_nearcast import I_NEARCAST_GRUEL_SERVER
+from solent.gruel.gruel_protocol import GruelMessageType
+from solent.gruel.server.nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.tcp_server_cog import tcp_server_cog_new
 from solent.log import log
-from solent.util import uniq
 
 import sys
 
 MTU = 500
 
+
+# --------------------------------------------------------
+#   :rene
+# --------------------------------------------------------
+#
+# This is a manufactured client that behaves on the wire like a real
+# client. But it's much simpler: we're able to poke it in the test
+# cases to do exactly the behaviour we want.
+#
+class SpinReneClient:
+    """
+    Named after Decartes, reference to brain in a vat. This client does what
+    we tell it to to prompt the server, making it brain-in-a-vat-like.
+    """
+    def __init__(self, spin_h, engine):
+        self.spin_h = spin_h
+        self.engine = engine
+        #
+        self.gruel_protocol = None
+        self.gruel_press = None
+        self.gruel_puff = None
+        #
+        self.ip = None
+        self.port = None
+        self.client_sid = None
+        self.b_have_received_something = None
+        self.sb_recv = None
+    def at_turn(self, activity):
+        pass
+    def at_close(self):
+        pass
+    #
+    def _engine_on_tcp_client_connect(self, cs_tcp_client_connect):
+        engine = cs_tcp_client_connect.engine
+        client_sid = cs_tcp_client_connect.client_sid
+        addr = cs_tcp_client_connect.addr
+        port = cs_tcp_client_connect.port
+        #
+        log('rene connect')
+        self.client_sid = client_sid
+        self.sb_recv = []
+        self.b_have_received_something = False
+    def _engine_on_tcp_client_condrop(self, cs_tcp_client_condrop):
+        engine = cs_tcp_client_condrop.engine
+        client_sid = cs_tcp_client_condrop.client_sid
+        message = cs_tcp_client_condrop.message
+        #
+        log('rene condrop')
+        self.client_sid = None
+        self.sb_recv = None
+    def _engine_on_tcp_client_recv(self, cs_tcp_client_recv):
+        engine = cs_tcp_client_recv.engine
+        client_sid = cs_tcp_client_recv.client_sid
+        bb = cs_tcp_client_recv.bb
+        #
+        self.sb_recv.append(bb)
+        self.b_have_received_something = True
+    def _start_server(self):
+        self.engine.open_tcp_client(
+            addr=self.ip,
+            port=self.port,
+            cb_tcp_client_connect=self._engine_on_tcp_client_connect,
+            cb_tcp_client_condrop=self._engine_on_tcp_client_condrop,
+            cb_tcp_client_recv=self._engine_on_tcp_client_recv)
+    def _stop_server(self):
+        self.engine.close_tcp_client(
+            client_sid=self.client_sid)
+    #
+    def init(self):
+        self.gruel_protocol = gruel_protocol_new()
+        self.gruel_press = gruel_press_new(
+            gruel_protocol=self.gruel_protocol,
+            mtu=MTU)
+        self.gruel_puff = gruel_puff_new(
+            gruel_protocol=self.gruel_protocol,
+            mtu=MTU)
+    def start(self, ip, port):
+        self.ip = ip
+        self.port = port
+        self._start_server()
+    def send_invalid_gruel(self):
+        bb = bytes('this string is invalid gruel', 'utf8')
+        self.engine.send(
+            sid=self.client_sid,
+            bb=bb)
+    def send_login(self, pw, hbint):
+        bb = self.gruel_press.create_client_login_bb(
+            password=pw,
+            heartbeat_interval=hbint)
+        self.engine.send(
+            sid=self.client_sid,
+            bb=bb)
+    def disconnect(self):
+        self._stop_server()
+
+def spin_rene_client_new(spin_h, engine):
+    ob = SpinReneClient(
+        spin_h=spin_h,
+        engine=engine)
+    return ob
+
+
+# --------------------------------------------------------
+#   :old_rest
+# --------------------------------------------------------
 class FakeCog:
     def __init__(self):
         self.cog_h = 'testing'
@@ -46,73 +149,18 @@ class FakeCog:
 def create_sid():
     return 'fake_sid_%s'%(uniq())
 
-def start_service(orb, ip, port, password):
-    orb.nearcast(
-        cog=FakeCog(),
-        message_h='start_service',
-        ip=ip,
-        port=port,
-        password=password)
-    orb.cycle()
 
-def stop_service(orb):
-    orb.nearcast(
-        cog=FakeCog(),
-        message_h='stop_service')
-    orb.cycle()
-
-def send_announce_tcp_connect(orb, ip, port):
-    orb.nearcast(
-        cog=FakeCog(),
-        message_h='announce_tcp_connect',
-        ip=ip,
-        port=port)
-    orb.cycle()
-
-def simulate_client_connect(engine, orb, server_sid, ip, port):
-    engine.simulate_tcp_client_connect(
-        server_sid=server_sid,
-        client_ip=ip,
-        client_port=port)
-    orb.cycle()
-
-def simulate_client_condrop(engine, orb, tcp_server_cog):
-    cs_tcp_condrop = CsTcpCondrop()
-    cs_tcp_condrop.engine = engine
-    cs_tcp_condrop.client_sid = create_sid()
-    cs_tcp_condrop.message = 'testing'
-    tcp_server_cog._engine_on_tcp_condrop(
-        cs_tcp_condrop=cs_tcp_condrop)
-    orb.cycle()
-
-def simulate_client_send_login(engine, orb, tcp_server_cog, pw, hbint):
-    gruel_schema = gruel_schema_new()
-    gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
-        mtu=MTU)
-    gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
-        mtu=MTU)
-    #
-    payload = gruel_press.create_client_login_payload(
-        password=pw,
-        heartbeat_interval=hbint)
-    cs_tcp_recv = CsTcpRecv()
-    cs_tcp_recv.engine = engine
-    cs_tcp_recv.client_sid = create_sid()
-    cs_tcp_recv.data = payload
-    tcp_server_cog._engine_on_tcp_recv(
-        cs_tcp_recv=cs_tcp_recv)
-    orb.cycle()
-
+# --------------------------------------------------------
+#   rest
+# --------------------------------------------------------
 @test
 def should_start_and_stop():
-    engine = engine_fake()
+    engine = engine_new(
+        mtu=MTU)
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
-    r = orb.init_cog(
-        construct=receiver_cog_fake)
+    bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     #
@@ -122,37 +170,38 @@ def should_start_and_stop():
     #
     # confirm starting state
     orb.cycle()
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid == None
+    assert False == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     # scenario: start the server
-    r.nc_start_service(
+    bridge.nc_start_service(
         ip=addr,
         port=port,
         password=password)
     #
     # confirm effects
-    assert tcp_server_cog.server_sid != None
-    assert tcp_server_cog.client_sid == None
+    orb.cycle()
+    assert True == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     # scenario: stop the service
-    stop_service(
-        orb=orb)
+    bridge.nc_stop_service()
     #
     # confirm effects
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid == None
+    orb.cycle()
+    assert False == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     return True
 
 @test
 def should_handle_client_connect_and_then_boot_client():
-    engine = engine_fake()
+    engine = engine_new(
+        mtu=MTU)
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
-    r = orb.init_cog(
-        construct=receiver_cog_fake)
+    bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     #
@@ -161,128 +210,121 @@ def should_handle_client_connect_and_then_boot_client():
     password = 'bbb'
     #
     # confirm starting state
-    assert 0 == r.count_announce_tcp_connect()
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid == None
+    assert 0 == bridge.count_announce_tcp_connect()
+    assert False == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     # scenario: start the server
-    start_service(
-        orb=orb,
+    bridge.nc_start_service(
         ip=addr,
         port=port,
         password=password)
     #
     # confirm effects
-    assert 0 == r.count_announce_tcp_connect()
-    assert tcp_server_cog.server_sid != None
-    assert tcp_server_cog.client_sid == None
+    assert 0 == bridge.count_announce_tcp_connect()
+    assert True == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     # scenario: client connects
-    client_addr = '203.15.93.150'
-    client_port = 6000
-    simulate_client_connect(
-        engine=engine,
-        orb=orb,
-        server_sid=tcp_server_cog.server_sid,
-        ip=client_addr,
-        port=client_port)
+    rene = engine.init_spin(
+        construct=spin_rene_client_new)
+    rene.init()
+    rene.start(
+        ip=addr,
+        port=port)
     #
     # confirm effects
-    assert 1 == r.count_announce_tcp_connect()
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid != None
+    engine.cycle()
+    assert 1 == bridge.count_announce_tcp_connect()
+    assert False == tcp_server_cog.is_server_listening()
+    assert True == tcp_server_cog.is_accept_connected()
     #
     # scenario: stop the service, booting the client in the process
-    stop_service(
-        orb=orb)
+    bridge.nc_stop_service()
     #
     # confirm effects
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid == None
+    assert False == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     return True
 
 @test
 def should_broadcast_incoming_message_as_gruel_in():
-    engine = engine_fake()
+    engine = engine_new(
+        mtu=MTU)
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
-    r = orb.init_cog(
-        construct=receiver_cog_fake)
+    bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
+    bridge = orb.init_test_bridge_cog()
     #
     addr = '127.0.0.1'
     port = 5000
     password = 'bbb'
     #
     # get to a point where the client is logged in
-    start_service(
-        orb=orb,
+    bridge.nc_start_service(
         ip=addr,
         port=port,
         password=password)
-    simulate_client_connect(
-        engine=engine,
-        orb=orb,
-        server_sid=tcp_server_cog.server_sid,
-        ip='123.216.321.5',
-        port=123)
+    rene = engine.init_spin(
+        construct=spin_rene_client_new)
+    rene.init()
+    rene.start(
+        ip=addr,
+        port=port)
     #
     # confirm starting position
-    assert 1 == r.count_announce_tcp_connect()
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid != None
+    engine.cycle()
+    assert 1 == bridge.count_announce_tcp_connect()
+    assert False == tcp_server_cog.is_server_listening()
+    assert True == tcp_server_cog.is_accept_connected()
     #
     # scenario: client sends a message
     client_send_password = 'ddd'
     client_send_hbint = 3
-    simulate_client_send_login(
-        engine=engine,
-        orb=orb,
-        tcp_server_cog=tcp_server_cog,
+    rene.send_login(
         pw=client_send_password,
         hbint=client_send_hbint)
     #
     # confirm effects
-    assert 1 == r.count_gruel_recv()
-    d_gruel = r.last_gruel_recv()
+    engine.cycle()
+    assert 1 == bridge.count_gruel_recv()
+    d_gruel = bridge.last_gruel_recv()[0]
     assert d_gruel['message_h'] == 'client_login'
     assert d_gruel['heartbeat_interval'] == client_send_hbint
     assert d_gruel['password'] == client_send_password
     #
     # scenario: client disconnect
-    simulate_client_condrop(
-        engine=engine,
-        orb=orb,
-        tcp_server_cog=tcp_server_cog)
-    orb.cycle()
+    rene.disconnect()
     #
     # confirm effects
-    assert tcp_server_cog.server_sid != None
-    assert tcp_server_cog.client_sid == None
+    engine.cycle()
+    assert True == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     # scenario: close server
-    stop_service(
-        orb=orb)
+    bridge.nc_stop_service()
     #
     # confirm effects
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid == None
+    engine.cycle()
+    assert False == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     return True
 
 @test
 def should_boot_client_when_told_to():
-    engine = engine_fake()
+    engine = engine_new(
+        mtu=MTU)
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
-    r = orb.init_cog(
-        construct=receiver_cog_fake)
+    bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     #
@@ -291,101 +333,107 @@ def should_boot_client_when_told_to():
     password = 'bbb'
     #
     # get to a point where the client is logged in
-    start_service(
-        orb=orb,
+    bridge.nc_start_service(
         ip=addr,
         port=port,
         password=password)
-    simulate_client_connect(
-        engine=engine,
-        orb=orb,
-        server_sid=tcp_server_cog.server_sid,
-        ip='205.231.231.123',
-        port=2000)
+    rene = engine.init_spin(
+        construct=spin_rene_client_new)
+    rene.init()
+    rene.start(
+        ip=addr,
+        port=port)
     #
     # confirm starting position
-    assert 1 == r.count_announce_tcp_connect()
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid != None
+    engine.cycle()
+    assert 1 == bridge.count_announce_tcp_connect()
+    assert False == tcp_server_cog.is_server_listening()
+    assert True == tcp_server_cog.is_accept_connected()
     #
     # scenario: we receive a boot message
-    r.nc_please_tcp_boot()
+    bridge.nc_please_tcp_boot()
     #
     # check effects: we want to see that the connection has been dropped and
     # that the server is back up
-    assert tcp_server_cog.server_sid != None
-    assert tcp_server_cog.client_sid == None
+    engine.cycle()
+    assert True == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
+    #
+    # cleanup
+    bridge.nc_stop_service()
+    engine.cycle()
     #
     return True
 
 @test
 def should_boot_client_when_invalid_gruel_is_received():
     activity = activity_new()
-    engine = engine_fake()
+    engine = engine_new(
+        mtu=MTU)
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
-    r = orb.init_cog(
-        construct=receiver_cog_fake)
+    bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
+    engine.cycle()
     #
     addr = '127.0.0.1'
     port = 5000
     password = 'bbb'
     #
     # get to a point where the client is logged in
-    start_service(
-        orb=orb,
+    bridge.nc_start_service(
         ip=addr,
         port=port,
         password=password)
-    simulate_client_connect(
-        engine=engine,
-        orb=orb,
-        server_sid=tcp_server_cog.server_sid,
-        ip='205.231.231.123',
-        port=2000)
+    engine.cycle()
+    rene = engine.init_spin(
+        construct=spin_rene_client_new)
+    rene.init()
+    rene.start(
+        ip=addr,
+        port=port)
     #
     # confirm starting position
-    assert 1 == r.count_announce_tcp_connect()
-    assert 0 == r.count_please_tcp_boot()
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid != None
+    engine.cycle()
+    assert 1 == bridge.count_announce_tcp_connect()
+    assert 0 == bridge.count_please_tcp_boot()
+    assert False == tcp_server_cog.is_server_listening()
+    assert True == tcp_server_cog.is_accept_connected()
     #
     # scenario: send invalid data as though it is gruel
-    cs_tcp_recv = CsTcpRecv()
-    cs_tcp_recv.engine = engine
-    cs_tcp_recv.client_sid = create_sid()
-    cs_tcp_recv.data = bytes('this string is invalid gruel', 'utf8')
-    tcp_server_cog._engine_on_tcp_recv(
-        cs_tcp_recv=cs_tcp_recv)
-    orb.cycle()
+    rene.send_invalid_gruel()
     #
     # confirm effects: nearcast a boot message
-    assert 1 == r.count_please_tcp_boot()
-    assert tcp_server_cog.server_sid != None
-    assert tcp_server_cog.client_sid == None
+    engine.cycle()
+    assert 1 == bridge.count_please_tcp_boot()
+    assert True == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
+    #
+    # cleanup
+    bridge.nc_stop_service()
+    engine.cycle()
     #
     return True
 
 @test
 def should_ignore_gruel_send_when_no_client():
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=MTU)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=MTU)
     #
-    engine = engine_fake()
+    engine = engine_new(
+        mtu=MTU)
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
-    r = orb.init_cog(
-        construct=receiver_cog_fake)
+    bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     #
@@ -394,53 +442,75 @@ def should_ignore_gruel_send_when_no_client():
     password = 'bbb'
     #
     # confirm starting state
-    assert 0 == r.count_announce_tcp_connect()
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid == None
+    engine.cycle()
+    assert 0 == bridge.count_announce_tcp_connect()
+    assert False == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     # scenario: start the server
-    start_service(
-        orb=orb,
+    bridge.nc_start_service(
         ip=addr,
         port=port,
         password=password)
     #
     # confirm effects
-    assert 0 == r.count_announce_tcp_connect()
-    assert tcp_server_cog.server_sid != None
-    assert tcp_server_cog.client_sid == None
+    engine.cycle()
+    assert 0 == bridge.count_announce_tcp_connect()
+    assert True == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     # scenario: tcp_server_cog gets gruel_send but client is not connected
-    r.nc_gruel_send(
-        payload=gruel_press.create_client_login_payload(
+    bridge.nc_gruel_send(
+        bb=gruel_press.create_client_login_bb(
             password='8_password',
             heartbeat_interval=4))
-    orb.cycle()
     #
     # confirm effects: client should still be connected, and we should have
     # sent no packets to the engine.
-    assert tcp_server_cog.server_sid != None
-    assert tcp_server_cog.client_sid == None
-    assert 0 == len(engine.sent_data)
+    engine.cycle()
+    assert True == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
+    #
+    # now the client connects. they should get nothing.
+    rene = engine.init_spin(
+        construct=spin_rene_client_new)
+    rene.init()
+    rene.start(
+        ip=addr,
+        port=port)
+    #
+    # verify
+    engine.cycle()
+    assert False == tcp_server_cog.is_server_listening()
+    assert True == tcp_server_cog.is_accept_connected()
+    assert False == rene.b_have_received_something
+    #
+    # cleanup
+    bridge.nc_stop_service()
+    engine.cycle()
     #
     return True
 
 @test
 def should_send_gruel_send_data_to_a_connected_client():
-    gruel_schema = gruel_schema_new()
+    '''
+    In contrast to the last test, when a client /is/ connected, they
+    should receive gruel data.
+    '''
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=MTU)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=MTU)
     #
-    engine = engine_fake()
+    engine = engine_new(
+        mtu=MTU)
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
-    r = orb.init_cog(
-        construct=receiver_cog_fake)
+    bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     #
@@ -449,49 +519,51 @@ def should_send_gruel_send_data_to_a_connected_client():
     password = 'bbb'
     #
     # confirm starting state
-    assert 0 == r.count_announce_tcp_connect()
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid == None
+    assert 0 == bridge.count_announce_tcp_connect()
+    assert False == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     # scenario: start the server
-    start_service(
-        orb=orb,
+    bridge.nc_start_service(
         ip=addr,
         port=port,
         password=password)
     #
     # confirm effects
-    assert 0 == r.count_announce_tcp_connect()
-    assert tcp_server_cog.server_sid != None
-    assert tcp_server_cog.client_sid == None
+    assert 0 == bridge.count_announce_tcp_connect()
+    assert True == tcp_server_cog.is_server_listening()
+    assert False == tcp_server_cog.is_accept_connected()
     #
     # scenario: client connects
     client_addr = '203.15.93.150'
     client_port = 6000
-    simulate_client_connect(
-        engine=engine,
-        orb=orb,
-        server_sid=tcp_server_cog.server_sid,
-        ip='205.231.231.123',
-        port=2000)
+    rene = engine.init_spin(
+        construct=spin_rene_client_new)
+    rene.init()
+    rene.start(
+        ip=addr,
+        port=port)
     #
     # confirm baseline
-    assert 1 == r.count_announce_tcp_connect()
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid != None
+    engine.cycle()
+    assert 1 == bridge.count_announce_tcp_connect()
+    assert tcp_server_cog.is_accept_connected()
     #
     # scenario: tcp_server_cog gets gruel_send but client is not connected
-    r.nc_gruel_send(
-        payload=gruel_press.create_client_login_payload(
+    bridge.nc_gruel_send(
+        bb=gruel_press.create_client_login_bb(
             password='8_password',
             heartbeat_interval=4))
-    orb.cycle()
     #
     # confirm effects: client should still be connected, and we should have
     # sent no packets to the engine.
-    assert tcp_server_cog.server_sid == None
-    assert tcp_server_cog.client_sid != None
-    assert 1 == len(engine.sent_data)
+    engine.cycle()
+    assert tcp_server_cog.is_accept_connected()
+    assert rene.b_have_received_something == True
+    #
+    # cleanup
+    bridge.nc_stop_service()
+    engine.cycle()
     #
     return True
 

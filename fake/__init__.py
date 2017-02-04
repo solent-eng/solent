@@ -1,9 +1,3 @@
-#
-# i_nearcast
-#
-# // overview
-# The nearcast schema for the line console server functionality.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -21,16 +15,4 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
-
-I_NEARCAST_LINE_CONSOLE = '''
-    i message h
-        i field h
-
-    message lc_line
-        field line
-
-    message start_gruel_server
-
-    message stop_gruel_server
-'''
 

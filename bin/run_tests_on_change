@@ -50,8 +50,15 @@ else:
     print("0")
     ')
     if [[ "$WORTH_RUNNING" == "1" ]]; then
-        clear
-        date
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo "========================================================"
+        echo "  `date`"
+        echo "========================================================"
+        echo ""
         run_tests_within_venv
     fi
 done

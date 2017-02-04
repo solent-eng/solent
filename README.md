@@ -130,3 +130,18 @@ pyinstaller solent/pyinstaller/snake_pygame.spec
 #
 ```
 
+# What people are saying
+
+"I definitely see the value, having gone through the pain of implementing
+get/setsockopt. You've taken the common 5 or 6 steps required to get a BSD
+socket up and running and boiled it down to a nice set of options. Kudos."
+(Lead developer of a prominent free software project)
+
+"I'm guessing you're off work, how long have you got for all this (really
+jealous BTW). (,,,) So when I said jealous I meant of your time, you have
+time, so jealous." (Former colleague)
+
+"Apart from that you are apparently still not working? I am not exactly sure
+what the problem is - do you need to go in a different direction?" (My mother)
+
+

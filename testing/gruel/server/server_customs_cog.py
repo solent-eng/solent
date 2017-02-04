@@ -21,19 +21,19 @@
 
 from testing import run_tests
 from testing import test
-from testing.eng import engine_fake
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
+from solent import uniq
 from solent.eng import activity_new
+from solent.eng import fake_engine_new
 from solent.eng.cs import *
-from solent.gruel import gruel_schema_new
+from solent.gruel import gruel_protocol_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
-from solent.gruel.server.i_nearcast import I_NEARCAST_GRUEL_SERVER
+from solent.gruel.server.nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.server_customs_cog import server_customs_cog_new
 from solent.gruel.server.server_customs_cog import ServerCustomsState
 from solent.log import log
-from solent.util import uniq
 
 from enum import Enum
 import sys
@@ -42,17 +42,17 @@ MTU = 500
 
 @test
 def should_throw_alg_exception_if_packet_seen_before_password():
-    engine = engine_fake()
-    gruel_schema = gruel_schema_new()
+    engine = fake_engine_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -64,7 +64,7 @@ def should_throw_alg_exception_if_packet_seen_before_password():
     try:
         r.nc_gruel_recv(
             d_gruel=gruel_puff.unpack(
-                payload=gruel_press.create_heartbeat_payload()))
+                bb=gruel_press.create_heartbeat_bb()))
     except:
         b_error = True
     if b_error:
@@ -75,17 +75,17 @@ def should_throw_alg_exception_if_packet_seen_before_password():
 
 @test
 def should_store_password_values():
-    engine = engine_fake()
-    gruel_schema = gruel_schema_new()
+    engine = fake_engine_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -106,18 +106,18 @@ def should_store_password_values():
 
 @test
 def should_boot_client_if_first_message_is_not_client_login():
-    engine = engine_fake()
+    engine = fake_engine_new()
     clock = engine.get_clock()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -137,7 +137,7 @@ def should_boot_client_if_first_message_is_not_client_login():
     # scenario: first message is not client_login
     r.nc_gruel_recv(
         d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_heartbeat_payload()))
+            bb=gruel_press.create_heartbeat_bb()))
     orb.cycle()
     #
     # check effects
@@ -147,18 +147,18 @@ def should_boot_client_if_first_message_is_not_client_login():
 
 @test
 def should_boot_user_on_receipt_of_login_message_when_already_logged_in():
-    engine = engine_fake()
+    engine = fake_engine_new()
     clock = engine.get_clock()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -178,7 +178,7 @@ def should_boot_user_on_receipt_of_login_message_when_already_logged_in():
     # scenario: send a message that is client_login
     r.nc_gruel_recv(
         d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_client_login_payload(
+            bb=gruel_press.create_client_login_bb(
                 password=our_password,
                 heartbeat_interval=3)))
     orb.cycle()
@@ -190,18 +190,18 @@ def should_boot_user_on_receipt_of_login_message_when_already_logged_in():
 
 @test
 def should_do_basic_login_reject():
-    engine = engine_fake()
+    engine = fake_engine_new()
     clock = engine.get_clock()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -222,7 +222,7 @@ def should_do_basic_login_reject():
     # scenario: user sends an invalid password
     r.nc_gruel_recv(
         d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_client_login_payload(
+            bb=gruel_press.create_client_login_bb(
                 password=usr_password,
                 heartbeat_interval=3)))
     orb.cycle()
@@ -235,18 +235,18 @@ def should_do_basic_login_reject():
 
 @test
 def should_do_successful_login_accept():
-    engine = engine_fake()
+    engine = fake_engine_new()
     clock = engine.get_clock()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -263,7 +263,7 @@ def should_do_successful_login_accept():
     # scenario: user sends an valid password
     r.nc_gruel_recv(
         d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_client_login_payload(
+            bb=gruel_press.create_client_login_bb(
                 password=our_password,
                 heartbeat_interval=3)))
     orb.cycle()
@@ -279,18 +279,18 @@ def should_do_successful_login_accept():
 
 @test
 def should_run_a_rejection_sequence():
-    engine = engine_fake()
+    engine = fake_engine_new()
     clock = engine.get_clock()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -321,7 +321,7 @@ def should_run_a_rejection_sequence():
     orb.cycle()
     assert 1 == r.count_gruel_send()
     d_gruel = gruel_puff.unpack(
-        payload=r.last_gruel_send())
+        bb=r.last_gruel_send())
     assert d_gruel['message_h'] == 'server_bye'
     assert 0 == r.count_please_tcp_boot()
     #
@@ -334,18 +334,18 @@ def should_run_a_rejection_sequence():
 
 @test
 def should_clear_state_in_announce_connect():
-    engine = engine_fake()
+    engine = fake_engine_new()
     clock = engine.get_clock()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -364,18 +364,18 @@ def should_clear_state_in_announce_connect():
 
 @test
 def should_buffer_a_couple_of_docs():
-    engine = engine_fake()
+    engine = fake_engine_new()
     clock = engine.get_clock()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -395,7 +395,7 @@ def should_buffer_a_couple_of_docs():
         port=456)
     r.nc_gruel_recv(
         d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_client_login_payload(
+            bb=gruel_press.create_client_login_bb(
                 password=our_password,
                 heartbeat_interval=3)))
     orb.cycle()
@@ -403,7 +403,7 @@ def should_buffer_a_couple_of_docs():
     # scenario: user sends part of a doc
     r.nc_gruel_recv(
         d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_docdata_payload(
+            bb=gruel_press.create_docdata_bb(
                 b_complete=0,
                 data='123')))
     orb.cycle()
@@ -414,7 +414,7 @@ def should_buffer_a_couple_of_docs():
     # scenario: now finish the first doc
     r.nc_gruel_recv(
         d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_docdata_payload(
+            bb=gruel_press.create_docdata_bb(
                 b_complete=1,
                 data='456')))
     orb.cycle()
@@ -426,7 +426,7 @@ def should_buffer_a_couple_of_docs():
     # scenario: now send a second doc, and check it's correct
     r.nc_gruel_recv(
         d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_docdata_payload(
+            bb=gruel_press.create_docdata_bb(
                 b_complete=1,
                 data='here is a doc')))
     orb.cycle()
@@ -439,18 +439,18 @@ def should_buffer_a_couple_of_docs():
 
 @test
 def should_send_a_couple_of_docs():
-    engine = engine_fake()
+    engine = fake_engine_new()
     clock = engine.get_clock()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -470,7 +470,7 @@ def should_send_a_couple_of_docs():
         port=456)
     r.nc_gruel_recv(
         d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_client_login_payload(
+            bb=gruel_press.create_client_login_bb(
                 password=our_password,
                 heartbeat_interval=3)))
     orb.cycle()
@@ -505,18 +505,18 @@ def should_send_a_couple_of_docs():
 
 @test
 def should_convert_heartbeat_requests_to_gruel():
-    engine = engine_fake()
+    engine = fake_engine_new()
     clock = engine.get_clock()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        orb_h='app',
+        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     server_customs_cog = orb.init_cog(
         construct=server_customs_cog_new)
@@ -536,7 +536,7 @@ def should_convert_heartbeat_requests_to_gruel():
         port=456)
     r.nc_gruel_recv(
         d_gruel=gruel_puff.unpack(
-            payload=gruel_press.create_client_login_payload(
+            bb=gruel_press.create_client_login_bb(
                 password=our_password,
                 heartbeat_interval=3)))
     orb.cycle()

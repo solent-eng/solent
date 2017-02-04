@@ -21,159 +21,251 @@
 
 from testing import run_tests
 from testing import test
-from testing.eng import engine_fake
 from testing.util import clock_fake
 
+from solent import uniq
 from solent.eng import activity_new
 from solent.eng import cs
+from solent.eng import engine_new
 from solent.lc import spin_line_console_new
 from solent.log import log
 from solent.log import hexdump_bytes
-from solent.util import uniq
 
 import sys
 
-class LineAcc:
+MTU = 1500
+
+class Receiver:
     def __init__(self):
-        self.lines = []
+        self.sb = []
+        self.b_connected = False
+    def on_connect(self):
+        self.b_connected = True
+    def on_condrop(self):
+        self.b_connected = False
     def on_line(self, line):
-        self.lines.append(line)
+        self.sb.append(line)
 
-def simulate_client_connect(engine, server_sid, ip, port):
-    engine.simulate_tcp_client_connect(
-        server_sid=server_sid,
-        client_ip=ip,
-        client_port=port)
+class SpinBasicTcpClient:
+    def __init__(self, spin_h, engine):
+        self.spin_h = spin_h
+        self.engine = engine
+        #
+        self.client_sid = None
+        self.sb = None
+    def at_turn(self, activity):
+        pass
+    def at_close(self):
+        if self.client_sid != None:
+            self.engine.close_tcp_client(
+                client_sid=self.client_sid)
+    #
+    def is_connected(self):
+        return self.client_sid != None
+    def start(self, addr, port):
+        self.engine.open_tcp_client(
+            addr=addr,
+            port=port,
+            cb_tcp_client_connect=self._engine_on_tcp_client_connect,
+            cb_tcp_client_condrop=self._engine_on_tcp_client_condrop,
+            cb_tcp_client_recv=self._engine_on_tcp_client_recv)
+    def send(self, msg):
+        bb = bytes(msg, 'utf8')
+        self.engine.send(
+            sid=self.client_sid,
+            bb=bb)
+    def stop(self):
+        self.engine.close_tcp_client(
+            client_sid=self.client_sid)
+    #
+    def _engine_on_tcp_client_connect(self, cs_tcp_client_connect):
+        engine = cs_tcp_client_connect.engine
+        client_sid = cs_tcp_client_connect.client_sid
+        addr = cs_tcp_client_connect.addr
+        port = cs_tcp_client_connect.port
+        #
+        self.client_sid = client_sid
+        self.sb = []
+    def _engine_on_tcp_client_condrop(self, cs_tcp_client_condrop):
+        engine = cs_tcp_client_condrop.engine
+        client_sid = cs_tcp_client_condrop.client_sid
+        message = cs_tcp_client_condrop.message
+        #
+        self.client_sid = None
+        self.sb = None
+    def _engine_on_tcp_client_recv(self, cs_tcp_client_recv):
+        engine = cs_tcp_client_recv.engine
+        client_sid = cs_tcp_client_recv.client_sid
+        bb = cs_tcp_client_recv.bb
+        #
+        msg = bb.decode('utf8')
+        self.sb.append(msg)
 
 @test
-def should_start_with_no_services_active():
-    engine = engine_fake()
-    line_acc = LineAcc()
-    spin_line_console = spin_line_console_new(
-        engine=engine,
-        cb_line=line_acc.on_line)
+def should_start_and_stop_without_crashing():
+    receiver = Receiver()
     #
-    # confirm baseline
-    assert None == spin_line_console.server_sid
-    assert None == spin_line_console.client_sid
+    engine = engine_new(
+        mtu=MTU)
+    spin_line_console = engine.init_spin(
+        construct=spin_line_console_new)
+    engine.cycle()
     #
-    return True
-
-@test
-def should_start_and_stop_server():
-    engine = engine_fake()
-    line_acc = LineAcc()
-    spin_line_console = spin_line_console_new(
-        engine=engine,
-        cb_line=line_acc.on_line)
-    #
+    # Stage: Start it
     spin_line_console.start(
-        ip='127.0.0.1',
-        port=4080)
-    assert None != spin_line_console.server_sid
-    assert None == spin_line_console.client_sid
+        ip='localhost',
+        port=5000,
+        cb_connect=receiver.on_connect,
+        cb_condrop=receiver.on_condrop,
+        cb_line=receiver.on_line)
     #
+    # Verify
+    engine.cycle()
+    assert spin_line_console.is_server_listening() == True
+    assert spin_line_console.is_accept_connected() == False
+    #
+    # Stage: Stop it
     spin_line_console.stop()
-    assert None == spin_line_console.server_sid
-    assert None == spin_line_console.client_sid
+    #
+    # Verify
+    engine.cycle()
+    assert spin_line_console.is_server_listening() == False
+    assert spin_line_console.is_accept_connected() == False
     #
     return True
 
 @test
 def should_accept_client_and_boot_client_on_stop():
-    engine = engine_fake()
-    line_acc = LineAcc()
-    spin_line_console = spin_line_console_new(
-        engine=engine,
-        cb_line=line_acc.on_line)
+    ip = 'localhost'
+    port = 5000
     #
+    engine = engine_new(
+        mtu=MTU)
+    receiver = Receiver()
+    #
+    # step: start
+    spin_line_console = engine.init_spin(
+        construct=spin_line_console_new)
     spin_line_console.start(
-        ip='127.0.0.1',
-        port=4080)
+        ip=ip,
+        port=port,
+        cb_connect=receiver.on_connect,
+        cb_condrop=receiver.on_condrop,
+        cb_line=receiver.on_line)
     #
-    # scenario: client connects
-    client_ip = '203.15.93.2'
-    client_port = 1234
-    simulate_client_connect(
-        engine=engine,
-        server_sid=spin_line_console.server_sid,
-        ip=client_ip,
-        port=client_port)
+    # verify
+    engine.cycle()
+    assert spin_line_console.is_server_listening() == True
+    assert spin_line_console.is_accept_connected() == False
     #
-    # confirm effects
-    assert None == spin_line_console.server_sid
-    assert None != spin_line_console.client_sid
+    # step: client connects
+    client = engine.init_spin(
+        construct=SpinBasicTcpClient)
+    client.start(
+        addr=ip,
+        port=port)
     #
-    # scenario: server is stopped with client attached
+    # verify
+    engine.cycle()
+    assert spin_line_console.is_server_listening() == False
+    assert spin_line_console.is_accept_connected() == True
+    assert client.is_connected() == True
+    #
+    # step: server is stopped with client attached
     spin_line_console.stop()
     #
     # confirm effects
-    assert None == spin_line_console.server_sid
-    assert None == spin_line_console.client_sid
+    engine.cycle()
+    assert spin_line_console.is_server_listening() == False
+    assert spin_line_console.is_accept_connected() == False
+    assert client.is_connected() == False
     #
     return True
 
 @test
 def should_transfer_of_text():
-    engine = engine_fake()
-    line_acc = LineAcc()
-    spin_line_console = spin_line_console_new(
-        engine=engine,
-        cb_line=line_acc.on_line)
-    # server start
+    ip = 'localhost'
+    port = 5000
+    #
+    engine = engine_new(
+        mtu=MTU)
+    receiver = Receiver()
+    #
+    # step: start it
+    spin_line_console = engine.init_spin(
+        construct=spin_line_console_new)
     spin_line_console.start(
-        ip='127.0.0.1',
-        port=4080)
-    # client connects
-    client_sid = 'fake_sid_%s'%(uniq())
-    cs_tcp_connect = cs.CsTcpConnect()
-    cs_tcp_connect.engine = engine
-    cs_tcp_connect.client_sid = client_sid
-    cs_tcp_connect.addr = '203.15.93.2'
-    cs_tcp_connect.port = 1234
-    spin_line_console._engine_on_tcp_connect(
-        cs_tcp_connect=cs_tcp_connect)
+        ip=ip,
+        port=port,
+        cb_connect=receiver.on_connect,
+        cb_condrop=receiver.on_condrop,
+        cb_line=receiver.on_line)
     #
-    def send_data(text):
-        utf8_bytes = bytes(text, 'utf8')
-        cs_tcp_recv = cs.CsTcpRecv()
-        cs_tcp_recv.engine = engine
-        cs_tcp_recv.client_sid = client_sid
-        cs_tcp_recv.data = utf8_bytes
-        spin_line_console._engine_on_tcp_recv(
-            cs_tcp_recv=cs_tcp_recv)
+    # verify
+    engine.cycle()
+    assert spin_line_console.is_server_listening() == True
+    assert spin_line_console.is_accept_connected() == False
     #
-    # scenario: client sends text that does not have a newline
-    send_data(
-        text="abc") # emphasis: no newline
-    # should not have received a line
-    assert 0 == len(line_acc.lines)
+    # step: client connects
+    client = engine.init_spin(
+        construct=SpinBasicTcpClient)
+    client.start(
+        addr=ip,
+        port=port)
     #
-    # scenario: now we get a newline and some overflow
-    send_data(
-        text="\noverflow")
-    assert 1 == len(line_acc.lines)
-    assert line_acc.lines[-1] == 'abc'
+    # verify
+    engine.cycle()
+    assert spin_line_console.is_server_listening() == False
+    assert spin_line_console.is_accept_connected() == True
+    assert client.is_connected() == True
     #
-    # scenario: another line
-    send_data(
-        text="/second half\n")
-    assert 2 == len(line_acc.lines)
-    assert line_acc.lines[-1] == 'overflow/second half'
+    # step: client sends text that does not have a newline
+    client.send(
+        msg="abc") # emphasis: no newline
     #
-    # scenario: multiple lines in one pass
-    send_data(
-        text="three\nfour\n")
-    assert 4 == len(line_acc.lines)
-    assert line_acc.lines[-2] == 'three'
-    assert line_acc.lines[-1] == 'four'
+    # verify: we should not have received a line
+    engine.cycle()
+    assert 0 == len(receiver.sb)
     #
-    # scenario: we write to client
-    s = "here is some text"
-    spin_line_console.write_to_client(
-        s=s)
-    assert 1 == len(engine.sent_data)
-    assert engine.sent_data[-1] == bytes(s, 'utf8')
+    # step: now send a new line and some overflow
+    client.send(
+        msg="\noverflow")
+    client.send(
+        msg="/second half")
+    #
+    # verify: we should have seen our first line
+    engine.cycle()
+    assert 1 == len(receiver.sb)
+    assert receiver.sb[0] == 'abc'
+    #
+    # step: another line ending
+    client.send(
+        msg='\n')
+    #
+    # verify
+    engine.cycle()
+    assert 2 == len(receiver.sb)
+    assert receiver.sb[-1] == 'overflow/second half'
+    #
+    # step: multiple lines in one pass
+    client.send(
+        msg="three\nfour\n")
+    #
+    # verify
+    engine.cycle()
+    assert 4 == len(receiver.sb)
+    assert receiver.sb[-2] == 'three'
+    assert receiver.sb[-1] == 'four'
+    #
+    # step: we write to client
+    s = "here is some text\n"
+    spin_line_console.send(
+        msg=s)
+    #
+    # verify
+    engine.cycle()
+    assert 1 == len(client.sb)
+    assert client.sb[-1] == s
     #
     return True
 

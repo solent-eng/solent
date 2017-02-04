@@ -52,26 +52,42 @@ class CogUdpSender:
         self.orb = orb
         self.engine = engine
         #
-        self.sid_broadcast_sender = None
+        self.pub_sid = None
         self.t_last = None
-    def at_close(self):
-        self.engine.close_broadcast_listener(
-            sid=self.sid_broadcast_sender)
-        self.sid_broadcast_sender = None
-    def on_init(self, addr, port):
-        self.sid_broadcast_sender = self.engine.open_broadcast_sender(
-            addr=addr,
-            port=port)
-        self.t_last = 0
     def at_turn(self, activity):
-        if self.sid_broadcast_sender == None:
+        if self.pub_sid == None:
             return
         now = time.time()
         if now - self.t_last > 2:
+            log('send!')
             self.t_last = now
             self.engine.send(
-                sid=self.sid_broadcast_sender,
-                payload=bytes('message at [%s]\n'%now, 'utf8'))
+                sid=self.pub_sid,
+                bb=bytes('message at [%s]\n'%now, 'utf8'))
+    def at_close(self):
+        self.engine.close_broadcast_listener(
+            sid=self.pub_sid)
+        self.pub_sid = None
+    def on_init(self, addr, port):
+        self.engine.open_pub(
+            addr=addr,
+            port=port,
+            cb_pub_start=self._engine_on_pub_start,
+            cb_pub_stop=self._engine_on_pub_stop)
+        self.t_last = 0
+    def _engine_on_pub_start(self, cs_pub_start):
+        engine = cs_pub_start.engine
+        pub_sid = cs_pub_start.pub_sid
+        addr = cs_pub_start.addr
+        port = cs_pub_start.port
+        #
+        self.pub_sid = pub_sid
+    def _engine_on_pub_stop(self, cs_pub_stop):
+        engine = cs_pub_stop.engine
+        pub_sid = cs_pub_stop.pub_sid
+        message = cs_pub_stop.message
+        #
+        self.pub_sid = None
 
 class CogBridge:
     def __init__(self, cog_h, orb, engine):
@@ -95,7 +111,7 @@ def main():
         net_port = int(sys.argv[2])
         #
         orb = engine.init_orb(
-            orb_h=__name__,
+            spin_h=__name__,
             i_nearcast=I_NEARCAST_SCHEMA)
         orb.init_cog(CogUdpSender)
         bridge = orb.init_cog(CogBridge)

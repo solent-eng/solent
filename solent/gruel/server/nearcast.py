@@ -50,7 +50,7 @@ I_NEARCAST_GRUEL_SERVER = '''
         field d_gruel
 
     message gruel_send
-        field payload
+        field bb
 
     message announce_login
         field max_packet_size

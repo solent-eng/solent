@@ -19,25 +19,28 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from fake.util import fake_clock_new
+
 from testing import run_tests
 from testing import test
-from testing.eng import engine_fake
-from testing.util import clock_fake
 
+from solent import uniq
 from solent.eng import activity_new
 from solent.eng import cs
+from solent.eng import engine_new
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_press_new
-from solent.gruel import gruel_schema_new
+from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_client_new
 from solent.log import hexdump_bytes
 from solent.log import log
-from solent.util import uniq
 
 from collections import deque
 import sys
+import time
 
-MTU = 1492
+# having this small makes debugging easier
+MTU = 120
 
 class ConnectionInfo:
     def __init__(self):
@@ -54,192 +57,192 @@ class DocReceiver:
     def on_doc(self, doc):
         self.docs.append(doc)
 
+class SpinReneGruelServer:
+    def __init__(self, spin_h, engine, gruel_protocol, gruel_press, gruel_puff):
+        self.spin_h = spin_h
+        self.engine = engine
+        self.gruel_protocol = gruel_protocol
+        self.gruel_press = gruel_press
+        self.gruel_puff = gruel_puff
+        #
+        self.b_active = False
+        self.ip = None
+        self.port = None
+        self.accept_sid = None
+        self.server_sid = None
+        self.received_message_ds = None
+    def at_turn(self, activity):
+        pass
+    def at_close(self):
+        self._close_everything()
+    #
+    def is_server_listening(self):
+        return self.server_sid != None
+    def is_accept_connected(self):
+        return self.accept_sid != None
+    def start(self, ip, port):
+        self.ip = ip
+        self.port = port
+        #
+        self.b_active = True
+        self._start_server()
+    def stop(self):
+        self.b_active = False
+        self._close_everything()
+    def send_server_greet(self, max_packet_size):
+        bb = self.gruel_press.create_server_greet_bb(
+            max_packet_size=max_packet_size)
+        self.engine.send(
+            sid=self.accept_sid,
+            bb=bb)
+    def send_server_bye(self, notes):
+        bb = self.gruel_press.create_server_bye_bb(
+            notes=notes)
+        self.engine.send(
+            sid=self.accept_sid,
+            bb=bb)
+    def send_heartbeat(self):
+        bb = self.gruel_press.create_heartbeat_bb()
+        self.engine.send(
+            sid=self.accept_sid,
+            bb=bb)
+    def send_docpart(self, b_complete, msg):
+        bb = self.gruel_press.create_docdata_bb(
+            b_complete=b_complete,
+            data=msg)
+        self.engine.send(
+            sid=self.accept_sid,
+            bb=bb)
+    #
+    def _close_everything(self):
+        self.b_active = False
+        self._boot_any_accept()
+        self._boot_any_server()
+    def _boot_any_accept(self):
+        if self.accept_sid != None:
+            self.engine.close_tcp_accept(
+                accept_sid=self.accept_sid)
+    def _boot_any_server(self):
+        if self.server_sid != None:
+            self.engine.close_tcp_server(
+                server_sid=self.server_sid)
+    def _engine_on_tcp_server_start(self, cs_tcp_server_start):
+        engine = cs_tcp_server_start.engine
+        server_sid = cs_tcp_server_start.server_sid
+        addr = cs_tcp_server_start.addr
+        port = cs_tcp_server_start.port
+        #
+        self.server_sid = server_sid
+    def _engine_on_tcp_server_stop(self, cs_tcp_server_stop):
+        engine = cs_tcp_server_stop.engine
+        server_sid = cs_tcp_server_stop.server_sid
+        message = cs_tcp_server_stop.message
+        #
+        self.server_sid = None
+    def _engine_on_tcp_accept_connect(self, cs_tcp_accept_connect):
+        engine = cs_tcp_accept_connect.engine
+        server_sid = cs_tcp_accept_connect.server_sid
+        accept_sid = cs_tcp_accept_connect.accept_sid
+        client_addr = cs_tcp_accept_connect.client_addr
+        client_port = cs_tcp_accept_connect.client_port
+        #
+        self.accept_sid = accept_sid
+        self.received_message_ds = []
+        self._stop_server()
+    def _engine_on_tcp_accept_condrop(self, cs_tcp_accept_condrop):
+        engine = cs_tcp_accept_condrop.engine
+        server_sid = cs_tcp_accept_condrop.server_sid
+        accept_sid = cs_tcp_accept_condrop.accept_sid
+        #
+        self.accept_sid = None
+        self.received_message_ds = None
+        if self.b_active:
+            self._start_server()
+    def _engine_on_tcp_accept_recv(self, cs_tcp_accept_recv):
+        engine = cs_tcp_accept_recv.engine
+        accept_sid = cs_tcp_accept_recv.accept_sid
+        bb = cs_tcp_accept_recv.bb
+        #
+        hexdump_bytes(
+            arr=bb,
+            title='_engine_on_tcp_accept_recv')
+        d_message = self.gruel_puff.unpack(
+            bb=bb)
+        self.received_message_ds.append(d_message)
+    def _start_server(self):
+        self.engine.open_tcp_server(
+            addr=self.ip,
+            port=self.port,
+            cb_tcp_server_start=self._engine_on_tcp_server_start,
+            cb_tcp_server_stop=self._engine_on_tcp_server_stop,
+            cb_tcp_accept_connect=self._engine_on_tcp_accept_connect,
+            cb_tcp_accept_condrop=self._engine_on_tcp_accept_condrop,
+            cb_tcp_accept_recv=self._engine_on_tcp_accept_recv)
+    def _stop_server(self):
+        self.engine.close_tcp_server(
+            server_sid=self.server_sid)
+
 @test
 def should_start_at_dormant_status():
-    engine = engine_fake()
-    gruel_schema = gruel_schema_new()
+    engine = engine_new(
+        mtu=MTU)
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=MTU)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=MTU)
-    spin_gruel_client = spin_gruel_client_new(
-        engine=engine,
+    spin_gruel_client = engine.init_spin(
+        construct=spin_gruel_client_new,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)
     #
     # confirm status
+    engine.cycle()
     assert spin_gruel_client.get_status() == 'dormant'
     #
     return True
 
 @test
-def should_attempt_connection():
+def should_successfully_connect_and_log_in():
     addr = '127.0.0.1'
     port = 4098
-    #
-    engine = engine_fake()
-    gruel_schema = gruel_schema_new()
-    gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
-        mtu=MTU)
-    gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
-        mtu=MTU)
-    spin_gruel_client = spin_gruel_client_new(
-        engine=engine,
-        gruel_press=gruel_press,
-        gruel_puff=gruel_puff)
+    password = 'pass1234'
     #
     connection_info = ConnectionInfo()
     doc_receiver = DocReceiver()
-    #
-    # connection attempt
-    assert 0 == len(engine.events)
-    spin_gruel_client.order_connect(
-        addr=addr,
-        port=port,
-        password='pword',
-        cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop,
-        cb_doc=doc_receiver.on_doc)
-    #
-    # confirm effects
-    assert 0 == connection_info.calls_to_on_condrop
-    assert 0 == connection_info.calls_to_on_connect
-    assert 1 == len(engine.events)
-    assert engine.events[-1] == ('open_tcp_client', addr, port)
-    assert spin_gruel_client.get_status() == 'attempting_tcp_connection'
-    #
-    return True
-
-@test
-def should_return_to_dormant_on_failed_connection():
-    addr = '127.0.0.1'
-    port = 4098
-    #
-    engine = engine_fake()
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=MTU)
     gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
+        gruel_protocol=gruel_protocol,
         mtu=MTU)
-    spin_gruel_client = spin_gruel_client_new(
-        engine=engine,
+    #
+    engine = engine_new(
+        mtu=MTU)
+    #
+    # step: start our fake gruel server
+    server = engine.init_spin(
+        construct=SpinReneGruelServer,
+        gruel_protocol=gruel_protocol,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)
+    server.start(
+        ip=addr,
+        port=port)
     #
-    connection_info = ConnectionInfo()
-    doc_receiver = DocReceiver()
+    # verify
+    engine.cycle()
+    assert server.is_server_listening() == True
+    assert server.is_accept_connected() == False
     #
-    # connection attempt
-    assert 0 == len(engine.events)
-    spin_gruel_client.order_connect(
-        addr=addr,
-        port=port,
-        password='pword',
-        cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop,
-        cb_doc=doc_receiver.on_doc)
-    #
-    # confirm effects
-    assert spin_gruel_client.get_status() == 'attempting_tcp_connection'
-    #
-    # simulate the engine rejecting the connection
-    cs_tcp_condrop = cs.CsTcpCondrop()
-    cs_tcp_condrop.engine = engine
-    cs_tcp_condrop.sid = uniq()
-    cs_tcp_condrop.message = 'test123'
-    spin_gruel_client._engine_on_tcp_condrop(
-        cs_tcp_condrop=cs_tcp_condrop)
-    #
-    # confirm effects
-    assert 0 == connection_info.calls_to_on_connect
-    assert 1 == connection_info.calls_to_on_condrop
-    assert spin_gruel_client.get_status() == 'dormant'
-    #
-    return True
-
-@test
-def should_handle_successful_tcp_connection():
-    addr = '127.0.0.1'
-    port = 4098
-    #
-    engine = engine_fake()
-    gruel_schema = gruel_schema_new()
-    gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
-        mtu=MTU)
-    gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
-        mtu=MTU)
-    spin_gruel_client = spin_gruel_client_new(
-        engine=engine,
+    # step: spin_gruel_client connects to our rene server
+    spin_gruel_client = engine.init_spin(
+        construct=spin_gruel_client_new,
         gruel_press=gruel_press,
         gruel_puff=gruel_puff)
-    #
-    connection_info = ConnectionInfo()
-    doc_receiver = DocReceiver()
-    #
-    # connection attempt
-    assert 0 == len(engine.events)
-    spin_gruel_client.order_connect(
-        addr=addr,
-        port=port,
-        password='pword',
-        cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop,
-        cb_doc=doc_receiver.on_doc)
-    #
-    # have engine indicate connection success
-    cs_tcp_connect = cs.CsTcpConnect()
-    cs_tcp_connect.engine = engine
-    cs_tcp_connect.sid = uniq()
-    cs_tcp_connect.message = 'test123'
-    spin_gruel_client._engine_on_tcp_connect(
-        cs_tcp_connect=cs_tcp_connect)
-    #
-    # confirm effects
-    assert 1 == connection_info.calls_to_on_connect
-    assert 0 == connection_info.calls_to_on_condrop
-    assert spin_gruel_client.get_status() == 'ready_to_attempt_login'
-    #
-    return True
-
-@test
-def should_simulate_common_behaviour():
-    MAX_PACKET_LEN = 800
-    #
-    # get our engine going
-    engine = engine_fake()
-    clock = engine.get_clock()
-    #
-    gruel_schema = gruel_schema_new()
-    gruel_press = gruel_press_new(
-        gruel_schema=gruel_schema,
-        mtu=MTU)
-    gruel_puff = gruel_puff_new(
-        gruel_schema=gruel_schema,
-        mtu=MTU)
-    spin_gruel_client = spin_gruel_client_new(
-        engine=engine,
-        gruel_press=gruel_press,
-        gruel_puff=gruel_puff)
-    assert spin_gruel_client.heartbeat_interval == 4
-    #
-    # other bits we'll need
-    activity = activity_new()
-    connection_info = ConnectionInfo()
-    doc_receiver = DocReceiver()
-    #
-    # scenario: connection attempt
-    assert 0 == len(engine.events)
-    addr = '127.0.0.1'
-    port = 4098
-    password = 'pword'
     spin_gruel_client.order_connect(
         addr=addr,
         port=port,
@@ -248,197 +251,412 @@ def should_simulate_common_behaviour():
         cb_condrop=connection_info.on_condrop,
         cb_doc=doc_receiver.on_doc)
     #
-    # scenario: successful connection
-    # (here we simulate the engine calling back to the client to say
-    # that there connection was successful)
-    clock.set(5)
-    cs_tcp_connect = cs.CsTcpConnect()
-    cs_tcp_connect.engine = engine
-    cs_tcp_connect.sid = uniq()
-    cs_tcp_connect.message = 'test123'
-    spin_gruel_client._engine_on_tcp_connect(
-        cs_tcp_connect=cs_tcp_connect)
-    #
-    # confirm effects
-    assert spin_gruel_client.get_status() == 'ready_to_attempt_login'
-    assert spin_gruel_client.last_heartbeat_recv == 5
-    assert spin_gruel_client.last_heartbeat_sent == 5
-    #
-    # give the client a turn so it can move to logging in.
-    spin_gruel_client.at_turn(
-        activity=activity)
-    #
-    # confirm effects
-    assert activity.get()[-1] == 'SpinGruelClient/sending login'
+    # verify
+    engine.cycle()
     assert spin_gruel_client.get_status() == 'login_message_in_flight'
+    assert server.is_server_listening() == False
+    assert server.is_accept_connected() == True
+    assert 0 == connection_info.calls_to_on_connect
+    assert 0 == connection_info.calls_to_on_condrop
     #
-    # do we see the login message in-flight?
-    assert 1 == len(engine.sent_data)
-    latest_payload = engine.sent_data[-1]
-    d_client_login = gruel_puff.unpack(
-        payload=latest_payload)
-    assert d_client_login['message_h'] == 'client_login'
-    assert d_client_login['password'] == password
-    assert d_client_login['heartbeat_interval'] == 4
-    #
-    # simulate server sending back a successful login. (first, we create
-    # the kind of payload that the server would have created in this
-    # circumstance. Then we call back to the client in the same way that
-    # a real engine would call back to it.)
-    def server_sends_greet_payload():
-        server_greet_payload = gruel_press.create_server_greet_payload(
-            max_packet_size=MAX_PACKET_LEN)
-        cs_tcp_recv = cs.CsTcpRecv()
-        cs_tcp_recv.engine = engine
-        cs_tcp_recv.client_sid = 'fake_sid'
-        cs_tcp_recv.data = server_greet_payload
-        spin_gruel_client._engine_on_tcp_recv(
-            cs_tcp_recv=cs_tcp_recv)
-    server_sends_greet_payload()
+    # step: server confirms login with a 'server_greet' message
+    server.send_server_greet(
+        max_packet_size=1000)
     #
     # confirm effects
+    engine.cycle()
     assert spin_gruel_client.get_status() == 'streaming'
     #
-    # scenario: server sends a heartbeat
-    clock.set(10)
-    def server_sends_heartbeat():
-        server_heartbeat = gruel_press.create_heartbeat_payload()
-        cs_tcp_recv = cs.CsTcpRecv()
-        cs_tcp_recv.engine = engine
-        cs_tcp_recv.client_sid = 'fake_sid'
-        cs_tcp_recv.data = server_heartbeat
-        spin_gruel_client._engine_on_tcp_recv(
-            cs_tcp_recv=cs_tcp_recv)
-    server_sends_heartbeat()
+    # cleanup
+    server.stop()
+    #
+    return True
+
+@test
+def should_callback_and_go_dormant_on_failed_connection():
+    addr = '127.0.0.1'
+    port = 4098
+    password = 'pass1234'
+    #
+    connection_info = ConnectionInfo()
+    doc_receiver = DocReceiver()
+    gruel_protocol = gruel_protocol_new()
+    gruel_press = gruel_press_new(
+        gruel_protocol=gruel_protocol,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_protocol=gruel_protocol,
+        mtu=MTU)
+    #
+    engine = engine_new(
+        mtu=MTU)
+    #
+    # step: spin_gruel_client connects to our non-existent rene server
+    spin_gruel_client = engine.init_spin(
+        construct=spin_gruel_client_new,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
+    spin_gruel_client.order_connect(
+        addr=addr,
+        port=port,
+        password=password,
+        cb_connect=connection_info.on_connect,
+        cb_condrop=connection_info.on_condrop,
+        cb_doc=doc_receiver.on_doc)
+    #
+    # verify
+    engine.cycle()
+    assert spin_gruel_client.get_status() == 'dormant'
+    assert 0 == connection_info.calls_to_on_connect
+    assert 1 == connection_info.calls_to_on_condrop
+    #
+    return True
+
+@test
+def should_callback_and_go_dormant_on_failed_login():
+    addr = '127.0.0.1'
+    port = 4098
+    password = 'pass1234'
+    #
+    connection_info = ConnectionInfo()
+    doc_receiver = DocReceiver()
+    gruel_protocol = gruel_protocol_new()
+    gruel_press = gruel_press_new(
+        gruel_protocol=gruel_protocol,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_protocol=gruel_protocol,
+        mtu=MTU)
+    #
+    engine = engine_new(
+        mtu=MTU)
+    #
+    # step: start our fake gruel server
+    server = engine.init_spin(
+        construct=SpinReneGruelServer,
+        gruel_protocol=gruel_protocol,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
+    server.start(
+        ip=addr,
+        port=port)
+    #
+    # verify
+    engine.cycle()
+    assert server.is_server_listening() == True
+    assert server.is_accept_connected() == False
+    #
+    # step: spin_gruel_client connects to our rene server
+    spin_gruel_client = engine.init_spin(
+        construct=spin_gruel_client_new,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
+    spin_gruel_client.order_connect(
+        addr=addr,
+        port=port,
+        password=password,
+        cb_connect=connection_info.on_connect,
+        cb_condrop=connection_info.on_condrop,
+        cb_doc=doc_receiver.on_doc)
+    #
+    # verify
+    engine.cycle()
+    assert spin_gruel_client.get_status() == 'login_message_in_flight'
+    assert server.is_server_listening() == False
+    assert server.is_accept_connected() == True
+    assert 0 == connection_info.calls_to_on_connect
+    assert 0 == connection_info.calls_to_on_condrop
+    #
+    # step: server confirms login with a 'server_greet' message
+    server.send_server_bye(
+        notes='we are booting you')
     #
     # confirm effects
+    engine.cycle()
+    assert spin_gruel_client.get_status() == 'dormant'
+    assert 0 == connection_info.calls_to_on_connect
+    assert 1 == connection_info.calls_to_on_condrop
+    #
+    # cleanup
+    server.stop()
+    #
+    return True
+
+@test
+def should_send_and_receive_heartbeats():
+    addr = '127.0.0.1'
+    port = 4098
+    password = 'pass1234'
+    #
+    fake_clock = fake_clock_new()
+    connection_info = ConnectionInfo()
+    doc_receiver = DocReceiver()
+    gruel_protocol = gruel_protocol_new()
+    gruel_press = gruel_press_new(
+        gruel_protocol=gruel_protocol,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_protocol=gruel_protocol,
+        mtu=MTU)
+    #
+    engine = engine_new(
+        mtu=MTU)
+    engine.clock = fake_clock
+    #
+    # step: start our fake gruel server
+    server = engine.init_spin(
+        construct=SpinReneGruelServer,
+        gruel_protocol=gruel_protocol,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
+    server.start(
+        ip=addr,
+        port=port)
+    #
+    # verify
+    engine.cycle()
+    assert server.is_server_listening() == True
+    assert server.is_accept_connected() == False
+    #
+    # step: spin_gruel_client connects to our rene server
+    spin_gruel_client = engine.init_spin(
+        construct=spin_gruel_client_new,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
+    spin_gruel_client.order_connect(
+        addr=addr,
+        port=port,
+        password=password,
+        cb_connect=connection_info.on_connect,
+        cb_condrop=connection_info.on_condrop,
+        cb_doc=doc_receiver.on_doc)
+    #
+    # verify
+    engine.cycle()
+    assert spin_gruel_client.get_status() == 'login_message_in_flight'
+    assert server.is_server_listening() == False
+    assert server.is_accept_connected() == True
+    assert 0 == connection_info.calls_to_on_connect
+    assert 0 == connection_info.calls_to_on_condrop
+    #
+    # step: server confirms login with a 'server_greet' message
+    server.send_server_greet(
+        max_packet_size=1000)
+    #
+    # confirm effects
+    engine.cycle()
     assert spin_gruel_client.get_status() == 'streaming'
-    assert spin_gruel_client.last_heartbeat_recv == 10
+    assert 1 == len(server.received_message_ds)
     #
-    # scenario: client should send a heartbeat
-    clock.set(11)
-    spin_gruel_client.at_turn(
-        activity=activity)
+    # step: move the clock forward towards a heartbeat
+    fake_clock.inc(
+        amt=spin_gruel_client.heartbeat_interval)
+    t = fake_clock.now()
+    #
+    # verify that our rene server gets a heartbeat
+    engine.cycle()
+    assert 2 == len(server.received_message_ds)
+    d_message = server.received_message_ds[-1]
+    assert d_message['message_h'] == 'heartbeat'
+    #
+    # step: send a heartbeat from our rene server
+    server.send_heartbeat()
+    #
+    # verify that our spin client hasn't crashed (that's all I'm worried
+    # about at the moment
+    engine.cycle()
+    assert spin_gruel_client.last_heartbeat_recv == t
+    #
+    # cleanup
+    server.stop()
+    #
+    return True
+
+@test
+def should_receive_payloads_correctly():
+    addr = '127.0.0.1'
+    port = 4098
+    password = 'pass1234'
+    #
+    fake_clock = fake_clock_new()
+    connection_info = ConnectionInfo()
+    doc_receiver = DocReceiver()
+    gruel_protocol = gruel_protocol_new()
+    gruel_press = gruel_press_new(
+        gruel_protocol=gruel_protocol,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_protocol=gruel_protocol,
+        mtu=MTU)
+    #
+    engine = engine_new(
+        mtu=MTU)
+    engine.clock = fake_clock
+    #
+    # step: start our fake gruel server
+    server = engine.init_spin(
+        construct=SpinReneGruelServer,
+        gruel_protocol=gruel_protocol,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
+    server.start(
+        ip=addr,
+        port=port)
+    #
+    # verify
+    engine.cycle()
+    assert server.is_server_listening() == True
+    assert server.is_accept_connected() == False
+    #
+    # step: spin_gruel_client connects to our rene server
+    spin_gruel_client = engine.init_spin(
+        construct=spin_gruel_client_new,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
+    spin_gruel_client.order_connect(
+        addr=addr,
+        port=port,
+        password=password,
+        cb_connect=connection_info.on_connect,
+        cb_condrop=connection_info.on_condrop,
+        cb_doc=doc_receiver.on_doc)
+    #
+    # verify
+    engine.cycle()
+    assert spin_gruel_client.get_status() == 'login_message_in_flight'
+    assert server.is_server_listening() == False
+    assert server.is_accept_connected() == True
+    assert 0 == connection_info.calls_to_on_connect
+    assert 0 == connection_info.calls_to_on_condrop
+    #
+    # step: server confirms login with a 'server_greet' message
+    server.send_server_greet(
+        max_packet_size=1000)
     #
     # confirm effects
-    assert 2 == len(engine.sent_data)
-    payload = engine.sent_data[-1]
-    d_payload = gruel_puff.unpack(
-        payload=payload)
-    assert d_payload['message_h'] == 'heartbeat'
+    engine.cycle()
+    assert spin_gruel_client.get_status() == 'streaming'
+    assert 1 == len(server.received_message_ds)
     #
-    # confirm that it now does not send another one
-    spin_gruel_client.at_turn(
-        activity=activity)
-    assert 2 == len(engine.sent_data)
-    #
-    # scenario: client sends a small payload
-    small_doc = '''
-        i greet message
-        greet "hello, world!"
-    '''
-    mcount_before = len(engine.sent_data)
-    spin_gruel_client.send_document(
-        doc=small_doc)
-    spin_gruel_client.at_turn(
-        activity=activity)
+    # step: server sends a single-part package
+    msg = 'abcabc'
+    server.send_docpart(
+        b_complete=1,
+        msg=msg)
     #
     # confirm effects
-    assert len(engine.sent_data) == (mcount_before + 1)
-    payload = engine.sent_data[-1]
-    d_payload = gruel_puff.unpack(
-        payload=payload)
-    assert d_payload['message_h'] == 'docdata'
-    assert d_payload['b_complete'] == 1
-    assert d_payload['data'] == small_doc
+    engine.cycle()
+    assert 1 == len(doc_receiver.docs)
+    assert doc_receiver.docs[-1] == msg
     #
-    # scenario: client sends a payload that must span several
-    # packets
-    large_doc = 'w/%s/y'%('x'*(2*MAX_PACKET_LEN))
-    mcount_before = len(engine.sent_data)
+    # step: server sends a multi-part package
+    msg = 'ddd'
+    server.send_docpart(
+        b_complete=0,
+        msg=msg)
+    msg = 'eee'
+    server.send_docpart(
+        b_complete=1,
+        msg=msg)
+    #
+    # confirm effects
+    engine.cycle()
+    log('doc_receiver.docs %s'%str(doc_receiver.docs))
+    assert 2 == len(doc_receiver.docs)
+    assert doc_receiver.docs[-1] == 'dddeee'
+    #
+    return True
+
+@test
+def should_send_payloads_correctly():
+    addr = '127.0.0.1'
+    port = 4098
+    password = 'pass1234'
+    #
+    fake_clock = fake_clock_new()
+    connection_info = ConnectionInfo()
+    doc_receiver = DocReceiver()
+    gruel_protocol = gruel_protocol_new()
+    gruel_press = gruel_press_new(
+        gruel_protocol=gruel_protocol,
+        mtu=MTU)
+    gruel_puff = gruel_puff_new(
+        gruel_protocol=gruel_protocol,
+        mtu=MTU)
+    #
+    engine = engine_new(
+        mtu=MTU)
+    engine.clock = fake_clock
+    #
+    # step: start our fake gruel server
+    server = engine.init_spin(
+        construct=SpinReneGruelServer,
+        gruel_protocol=gruel_protocol,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
+    server.start(
+        ip=addr,
+        port=port)
+    #
+    # verify
+    engine.cycle()
+    assert server.is_server_listening() == True
+    assert server.is_accept_connected() == False
+    #
+    # step: spin_gruel_client connects to our rene server
+    spin_gruel_client = engine.init_spin(
+        construct=spin_gruel_client_new,
+        gruel_press=gruel_press,
+        gruel_puff=gruel_puff)
+    spin_gruel_client.order_connect(
+        addr=addr,
+        port=port,
+        password=password,
+        cb_connect=connection_info.on_connect,
+        cb_condrop=connection_info.on_condrop,
+        cb_doc=doc_receiver.on_doc)
+    #
+    # verify
+    engine.cycle()
+    assert spin_gruel_client.get_status() == 'login_message_in_flight'
+    assert server.is_server_listening() == False
+    assert server.is_accept_connected() == True
+    assert 0 == connection_info.calls_to_on_connect
+    assert 0 == connection_info.calls_to_on_condrop
+    #
+    # step: server confirms login with a 'server_greet' message
+    max_packet_size = 100
+    server.send_server_greet(
+        max_packet_size=max_packet_size)
+    #
+    # confirm effects
+    engine.cycle()
+    assert spin_gruel_client.get_status() == 'streaming'
+    assert 1 == len(server.received_message_ds)
+    #
+    # step: client sends a significant document
+    large_doc = 'w/%s/y'%('x'*(2*max_packet_size))
     spin_gruel_client.send_document(
         doc=large_doc)
-    # give it several turns to allow doc to be dispatched
-    spin_gruel_client.at_turn(activity)
-    spin_gruel_client.at_turn(activity)
-    spin_gruel_client.at_turn(activity)
     #
     # confirm effects
-    assert len(engine.sent_data) > mcount_before
-    #   (inspect first packet)
-    d_payload = gruel_puff.unpack(
-        payload=engine.sent_data[mcount_before])
-    assert d_payload['message_h'] == 'docdata'
-    assert d_payload['b_complete'] == 0
-    assert d_payload['data'][0] == 'w'
-    #   (inspect next-to-last packet)
-    d_payload = gruel_puff.unpack(
-        payload=engine.sent_data[-2])
-    assert d_payload['message_h'] == 'docdata'
-    assert d_payload['b_complete'] == 0
-    assert d_payload['data'][-1] == 'x'
-    #   (inspect last packet)
-    d_payload = gruel_puff.unpack(
-        payload=engine.sent_data[-1])
-    assert d_payload['message_h'] == 'docdata'
-    assert d_payload['b_complete'] == 1
-    assert d_payload['data'][-1] == 'y'
+    engine.cycle() # select can only see one packet here
+    #  |The delay here is concerning. Without the delay, the accept socket on
+    #  |the server is not in rlist. (i.e. There seems to be a gap between the
+    #  |client socket having sent the data, and the operating system
+    #  |transferring the data into the accept socket on the server so that
+    #  |it is available to be read. The delay causes it to resolve.) It's not
+    #  |deterministic, and I expect to have trouble with this in the future.
+    time.sleep(0.04)
     #
-    # scenario: client receives a single-packet payload from server
-    docs_received = len(doc_receiver.docs)
-    small_doc = '''
-        i arbitrary message
-        arbitrary "message content"
-    '''
-    def server_sends_small_payload():
-        payload = gruel_press.create_docdata_payload(
-            b_complete=1,
-            data=small_doc)
-        cs_tcp_recv = cs.CsTcpRecv()
-        cs_tcp_recv.engine = engine
-        cs_tcp_recv.client_sid = 'fake_sid'
-        cs_tcp_recv.data = payload
-        spin_gruel_client._engine_on_tcp_recv(
-            cs_tcp_recv=cs_tcp_recv)
-    server_sends_small_payload()
-    #
-    # confirm effects
-    assert len(doc_receiver.docs) == docs_received+1
-    assert doc_receiver.docs[-1] == small_doc
-    #
-    # scenario: client receives a multi-packet doc that requires
-    # buffering on the client side
-    docs_received = len(doc_receiver.docs)
-    large_doc_segments = 'h/%s/j'%('i'*(2*MAX_PACKET_LEN))
-    large_doc = ''.join(large_doc_segments)
-    def server_sends_large_doc():
-        remaining = large_doc_segments
-        to_send = deque()
-        while remaining != '':
-            doc = remaining[:50]
-            remaining = remaining[50:]
-            to_send.append(doc)
-        while to_send:
-            docpart = to_send.popleft()
-            b_complete = 0
-            if not to_send:
-                b_complete = 1
-            #
-            payload = gruel_press.create_docdata_payload(
-                b_complete=b_complete,
-                data=docpart)
-            #
-            cs_tcp_recv = cs.CsTcpRecv()
-            cs_tcp_recv.engine = engine
-            cs_tcp_recv.client_sid = 'fake_sid'
-            cs_tcp_recv.data = payload
-            spin_gruel_client._engine_on_tcp_recv(
-                cs_tcp_recv=cs_tcp_recv)
-    server_sends_large_doc()
-    #
-    # confirm effects
-    assert len(doc_receiver.docs) > docs_received
-    assert doc_receiver.docs[-1] == large_doc
+    engine.cycle() # select can see all three packets here
+    assert 4 == len(server.received_message_ds)
+    log(server.received_message_ds[-1].keys())
+    assert server.received_message_ds[-3]['data'][0] == 'w'
+    assert server.received_message_ds[-3]['data'][-1] == 'x'
+    assert server.received_message_ds[-2]['data'][0] == 'x'
+    assert server.received_message_ds[-2]['data'][-1] == 'x'
+    assert server.received_message_ds[-1]['data'][-1] == 'y'
     #
     return True
 

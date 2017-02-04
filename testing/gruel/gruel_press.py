@@ -30,7 +30,7 @@ from testing import run_tests
 from testing import test
 
 from solent.gruel import gruel_press_new
-from solent.gruel import gruel_schema_new
+from solent.gruel import gruel_protocol_new
 from solent.log import hexdump_bytes
 from solent.log import hexdump_string
 
@@ -38,109 +38,109 @@ import sys
 
 @test
 def test_creation():
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
         mtu=1400,
-        gruel_schema=gruel_schema)
+        gruel_protocol=gruel_protocol)
     return True
 
 @test
 def test_client_login_creation():
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
         mtu=500,
-        gruel_schema=gruel_schema)
+        gruel_protocol=gruel_protocol)
     #
     message_h = 'client_login'
     #
-    message_stencil = gruel_schema.get_message_stencil(
+    message_stencil = gruel_protocol.get_message_stencil(
         message_h=message_h)
-    payload = gruel_press.create_client_login_payload(
+    bb = gruel_press.create_client_login_bb(
         password='password_value',
         heartbeat_interval=1)
     '''
     print(hexdump_bytes(
-        arr=payload))
+        arr=bb))
     '''
     #
     return True
 
 @test
 def test_server_greet_creation():
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
         mtu=500,
-        gruel_schema=gruel_schema)
+        gruel_protocol=gruel_protocol)
     #
     message_h = 'server_greet'
     #
-    message_stencil = gruel_schema.get_message_stencil(
+    message_stencil = gruel_protocol.get_message_stencil(
         message_h=message_h)
-    payload = gruel_press.create_server_greet_payload(
+    bb = gruel_press.create_server_greet_bb(
         max_packet_size=800)
     '''
     print(hexdump_bytes(
-        arr=payload))
+        arr=bb))
     '''
     #
     return True
 
 @test
 def test_server_bye_creation():
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
         mtu=500,
-        gruel_schema=gruel_schema)
+        gruel_protocol=gruel_protocol)
     #
     message_h = 'server_bye'
     #
-    message_stencil = gruel_schema.get_message_stencil(
+    message_stencil = gruel_protocol.get_message_stencil(
         message_h=message_h)
-    payload = gruel_press.create_server_bye_payload(
+    bb = gruel_press.create_server_bye_bb(
         notes='notes for server_bye')
     '''
     print(hexdump_bytes(
-        arr=payload))
+        arr=bb))
     '''
     #
     return True
 
 @test
 def test_heartbeat_creation():
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
         mtu=500,
-        gruel_schema=gruel_schema)
+        gruel_protocol=gruel_protocol)
     #
     message_h = 'heartbeat'
     #
-    message_stencil = gruel_schema.get_message_stencil(
+    message_stencil = gruel_protocol.get_message_stencil(
         message_h=message_h)
-    payload = gruel_press.create_heartbeat_payload()
+    bb = gruel_press.create_heartbeat_bb()
     '''
     print(hexdump_bytes(
-        arr=payload))
+        arr=bb))
     '''
     #
     return True
 
 @test
 def test_docdata_creation():
-    gruel_schema = gruel_schema_new()
+    gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
         mtu=500,
-        gruel_schema=gruel_schema)
+        gruel_protocol=gruel_protocol)
     #
     message_h = 'docdata'
     #
-    message_stencil = gruel_schema.get_message_stencil(
+    message_stencil = gruel_protocol.get_message_stencil(
         message_h=message_h)
-    payload = gruel_press.create_docdata_payload(
+    bb = gruel_press.create_docdata_bb(
         b_complete=1,
-        data='some content for the payload block')
+        data='some content for the bb block')
     '''
     print(hexdump_bytes(
-        arr=payload))
+        arr=bb))
     '''
     #
     return True

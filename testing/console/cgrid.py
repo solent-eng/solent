@@ -24,7 +24,6 @@ from solent.console import cgrid_new
 
 from testing import run_tests
 from testing import test
-from testing.eng import engine_fake
 from testing.util import clock_fake
 
 from solent.eng import ip_validator_new

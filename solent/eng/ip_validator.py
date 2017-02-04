@@ -4,7 +4,7 @@
 # // overview
 # Simple mechanism for testing whether an IP is permissioned or not. At the
 # time of writing there is no support for pattern matching. But it's easy
-# to imagine now adding this without breaking the existing interface.
+# to imagine adding this later within the existing interface.
 #
 # // license
 # Copyright 2016, Free Software Foundation.

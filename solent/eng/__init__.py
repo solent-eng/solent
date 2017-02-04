@@ -27,8 +27,7 @@ if sys.version_info.major < 3:
 from .activity import activity_new
 from .engine import engine_new as engine_new
 from .engine import engine_new as QuitEvent
+from .fake_engine import fake_engine_new
 from .ip_validator import ip_validator_new
 from .scenarios import scenarios_empty
-from .test_receiver_cog import test_receiver_cog_new
-
 

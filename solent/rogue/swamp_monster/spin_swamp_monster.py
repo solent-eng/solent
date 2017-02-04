@@ -29,8 +29,8 @@ from .sigil import sigil_new
 from .swamp_generator import swamp_generator_new
 
 from solent import solent_cpair
+from solent import uniq
 from solent.log import log
-from solent.util import uniq
 
 from collections import deque
 from collections import OrderedDict as od
@@ -545,7 +545,7 @@ class SpinSwampMonster:
         self.cb_log = cb_log
         #
         self.orb = self.engine.init_orb(
-            orb_h='swamp_monster_orb',
+            spin_h='swamp_monster_orb',
             i_nearcast=I_NEARCAST)
         self.orb.add_log_snoop()
         self.orb.init_cog(CogWorld)
