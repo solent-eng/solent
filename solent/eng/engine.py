@@ -106,9 +106,14 @@ class Engine(object):
         self.b_debug_eloop = False
         self.sid_counter = 0
         self.default_timeout = 0.2
+        self.b_nodelay = False
         #
         self.cb_ms_close = None
         self.cs_ms_close = CsMsClose()
+    def enable_nodelay(self):
+        self.b_nodelay = True
+    def disable_nodelay(self):
+        self.b_nodelay = False
     def debug_eloop_on(self):
         self.b_debug_eloop = True
     def debug_eloop_off(self):

@@ -419,9 +419,16 @@ class Metasock(object):
             raise MetasockCloseCondition('send_fail')
             return
 
+def sock_nodelay_condition(engine, sock):
+    if engine.b_nodelay:
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+
 def metasock_create_pub(engine, mempool, sid, addr, port, cb_pub_start, cb_pub_stop):
     log('metasock_create_pub %s (%s:%s)'%(sid, addr, port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  
+    sock_nodelay_condition(
+        engine=engine,
+        sock=sock)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  
     sock.connect((addr, port))
@@ -449,6 +456,9 @@ def metasock_create_pub(engine, mempool, sid, addr, port, cb_pub_start, cb_pub_s
 def metasock_create_sub(engine, mempool, sid, addr, port, cb_sub_start, cb_sub_stop, cb_sub_recv):
     log('metasock_create_sub %s (%s:%s)'%(sid, addr, port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock_nodelay_condition(
+        engine=engine,
+        sock=sock)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((addr, port))
     sock.setblocking(0)
@@ -480,6 +490,10 @@ def metasock_create_tcp_accept(engine, mempool, sid, accept_sock, addr, port, pa
     'client' socket. But in our language, we call this an 'accept' socket.
     That is, we distinguish between server, client and accept."""
     log('metasock_create_tcp_accept %s (%s:%s)'%(sid, addr, port))
+    sock_nodelay_condition(
+        engine=engine,
+        sock=accept_sock)
+    #
     ms = Metasock(
         engine=engine,
         mempool=mempool,
@@ -505,6 +519,9 @@ def metasock_create_tcp_accept(engine, mempool, sid, accept_sock, addr, port, pa
 def metasock_create_tcp_client(engine, mempool, sid, addr, port, cb_tcp_client_connect, cb_tcp_client_condrop, cb_tcp_client_recv):
     log('metasock_create_tcp_client %s (%s:%s)'%(sid, addr, port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_nodelay_condition(
+        engine=engine,
+        sock=sock)
     sock.setblocking(0)
     sock.connect_ex( (addr, port) )
     #
@@ -533,6 +550,9 @@ def metasock_create_tcp_client(engine, mempool, sid, addr, port, cb_tcp_client_c
 def metasock_create_tcp_server(engine, mempool, sid, addr, port, cb_tcp_server_start, cb_tcp_server_stop, cb_tcp_accept_connect, cb_tcp_accept_condrop, cb_tcp_accept_recv):
     log('metasock_create_tcp_server %s (%s:%s)'%(sid, addr, port))
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_nodelay_condition(
+        engine=engine,
+        sock=sock)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((addr, port))
     sock.setblocking(0)

@@ -586,6 +586,7 @@ def should_send_payloads_correctly():
     #
     engine = engine_new(
         mtu=MTU)
+    engine.enable_nodelay()
     engine.clock = fake_clock
     #
     # step: start our fake gruel server
@@ -641,17 +642,6 @@ def should_send_payloads_correctly():
     #
     # confirm effects
     engine.cycle() # select can only see one packet here
-    #  |The delay here is concerning. Without the delay, the accept socket on
-    #  |the server is not in rlist. (i.e. There seems to be a gap between the
-    #  |client socket having sent the data, and the operating system
-    #  |transferring the data into the accept socket on the server so that
-    #  |it is available to be read. The delay causes it to resolve.) It's not
-    #  |deterministic, and I expect to have trouble with this in the future.
-    time.sleep(0.04)
-    #
-    engine.cycle() # select can see all three packets here
-    assert 4 == len(server.received_message_ds)
-    log(server.received_message_ds[-1].keys())
     assert server.received_message_ds[-3]['data'][0] == 'w'
     assert server.received_message_ds[-3]['data'][-1] == 'x'
     assert server.received_message_ds[-2]['data'][0] == 'x'
