@@ -1,41 +1,46 @@
 # Project Overview
 
-"What's the pitch"
+"What's the pitch?"
 
-Sequencer-architecture platform, currently written in python3.
+Sequencer-architecture platform, currently written in python3, offered under a
+free-software license (LGPL).
 
-"What can I get from this that you can't get elsewhere?"
+"What can I get from this that I can't get elsewhere?"
 
-Solent provides tools for putting together sophisticated applications using
+Solent provides tools for creating sophisticated systems using
 message-broadcast techniques. As far as I know, this is the first version of
 such a system available under a free software license.
 
-"What's message broadcast all about?"
+"What is 'message broadcast' all about?"
 
-Contemporary techniques describe systems as nodes or objects. The messages
-that pass between nodes are an afterthought to the nodes themselves. Solent
-works the other way around. A system is defined in terms of its message
-schema. The nodes evolve as the obvious consequence of the message schema.
+Mainstream software techniques build systems from nodes or objects. The
+messages that pass between the nodes are generally an afterthought to the
+behaviour of the nodes themselves. As a result, most software is brittle.
 
-"What's this sequencer architecture all about?"
+Solent has a different focus. Solent systems are defined in terms of their
+message schema. Nodes emerge as a consequence of the message schema. This
+leads to much better software, particularly at scale.
 
-Once you have a system of a certain size, you will want to distribute it over
-several pieces of hardware. Once we start doing that, it becomes important to
-deliberately sequence the messages that are being sent to the network.
+"What is 'sequencer architecture' all about?"
+
+Once you have a system of a certain size, you will want to distribute it
+across server farms. Since we have defined the system in terms of messages, it
+is straightforward to move nodes off their local messaging groups (nearcasts)
+to network groups (broadcasts).
+
+But once we reach this scale, we will also want fault-tolerence.
+
+Key to this is to have ordered and reliable messaging. Hence, sequencer
+architecture.
 
 "What are the advantages again?"
 
 You can build small things quickly. You can easily scale small things into
-large things.
-
-Systems built this way are obvious to maintain, because the focus of all the
-code is on the messages that the system is composed of, rather than the nodes
-that the system is composed of. Building unit tests is easy and obvious when
-you've built a system using these approaches.
+large things. You can easily maintain large things.
 
 Solent is a good approach to building embarassingly concurrent problems.
-Example: simulations, games, trading systems. But once you understand it, you
-may find it becomes your favourite approach to small stuff as well.
+Example: simulations, games, trading systems. It's also effective for building
+small staff.
 
 "What components does solent have?"
 
@@ -43,7 +48,7 @@ may find it becomes your favourite approach to small stuff as well.
 
 * Nearcast: an in-process mechanism backbone.
 
-* Gruel: general-purpose bidirection asynchronous network protocol (TCP).
+* Gruel: general-purpose bidirection asynchronous network protocol. (Nasdaq publish a spec for a protocol called SOUP. Somebody who knew about SOUP would hopefully judge Gruel to be a predictable evolution.)
 
 * Term: general-purpose textual console (currently offers pygame and curses consoles)
 
@@ -53,12 +58,37 @@ may find it becomes your favourite approach to small stuff as well.
 
 "How evolved is it?"
 
-The platform is now effective for building single-process message-oriented
-systems.
+// Solid at
 
-There's work to be done to put sequencing into the standard library.
-Sequencing is what would allow you to easily distribute a solent system across
-multiple nodes.
+Solent is now effective for building single-process message-oriented systems.
+If you wanted to build a complex network app or a sophisticated roguelike game
+in a single process, you'd find it to be a sharp tool.
+
+// Memory management
+
+So far, solent development has been sloopy about memory management. Ideally
+we'd be deliberately allocating all memory using either the struct library
+or the C bridge.
+
+It's possible that a JITting VM like pypy would manage out the remaining
+inefficiencies.
+
+Regardless, we've introduced a memory pool, and started to be deliberate about
+allocation in the engine core. This is still in the early days.
+
+// Broadcasting
+
+We don't yet have sophisticated redundancy mechanisms in place, and we will
+need that before we 
+
+You could get some distance by wiring nodes together with using supplied Gruel
+tools. But that's not at all in the spirit of the system. Where we need to get
+to is sequenced broadcasting with a scribe and failover options.
+
+"With all that, what are some things it would be a good foundation for?"
+
+Digital audio studio, alt-coin exchange, clearing house, strategic monitoring
+platform, static reference data strategy.
 
 
 # Community/Contributions
