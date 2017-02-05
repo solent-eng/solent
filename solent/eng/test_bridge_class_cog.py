@@ -54,7 +54,9 @@ from solent import ns
 from solent.log import log
 
 import os
+import random
 from string import Template
+import shutil
 import sys
 import time
 
@@ -113,8 +115,12 @@ T_FUNCTIONS_FOR_MESSAGES_WITH_NO_FIELDS = Template('''    #
         self.orb.cycle()''')
 
 def create_code_file_and_then_dynamically_import_class(code):
-    dname = '/tmp/solent.testing.%s'%(str(time.time()))
-    if not os.path.exists(dname):
+    dname = '/tmp/solent.testing.%s.%s'%(
+        str(time.time()), str(random.random()))
+    if os.path.exists(dname):
+        # paranoid, because there is a shutil.rmtree below
+        raise Exception("very weird")
+    else:
         os.mkdir(dname)
     fname = os.sep.join( [dname, 'dyn_receiver_cog.py'] )
     f_ptr = open(fname, 'w+')
@@ -130,7 +136,7 @@ def create_code_file_and_then_dynamically_import_class(code):
     sys.path.pop()
     del dyn_receiver_cog
     os.remove(fname)
-    os.rmdir(dname)
+    shutil.rmtree(dname)
     #
     # here it is
     return TestBridgeCog
