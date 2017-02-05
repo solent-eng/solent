@@ -1,18 +1,64 @@
 # Project Overview
 
-Sequencer-architecture platform. Currently most of it is written in python.
+"What's the pitch"
 
-Elements:
+Sequencer-architecture platform, currently written in python3.
 
-* eng.engine: Concurrency engine. Uses async networking patterns (e.g. select)
+"What can I get from this that you can't get elsewhere?"
 
-* gruel: simple bidirection async protocol for transmitting arbitrary payloads
+Solent provides tools for putting together sophisticated applications using
+message-broadcast techniques. As far as I know, this is the first version of
+such a system available under a free software license.
 
-* term: textual user interface
+"What's message broadcast all about?"
 
-* nearcasting: An in-process mechanism for broadcasting messages
+Contemporary techniques describe systems as nodes or objects. The messages
+that pass between nodes are an afterthought to the nodes themselves. Solent
+works the other way around. A system is defined in terms of its message
+schema. The nodes evolve as the obvious consequence of the message schema.
 
-* mechanisms to build shared libraries and access them from python
+"What's this sequencer architecture all about?"
+
+Once you have a system of a certain size, you will want to distribute it over
+several pieces of hardware. Once we start doing that, it becomes important to
+deliberately sequence the messages that are being sent to the network.
+
+"What are the advantages again?"
+
+You can build small things quickly. You can easily scale small things into
+large things.
+
+Systems built this way are obvious to maintain, because the focus of all the
+code is on the messages that the system is composed of, rather than the nodes
+that the system is composed of. Building unit tests is easy and obvious when
+you've built a system using these approaches.
+
+Solent is a good approach to building embarassingly concurrent problems.
+Example: simulations, games, trading systems. But once you understand it, you
+may find it becomes your favourite approach to small stuff as well.
+
+"What components does solent have?"
+
+* Eng: concurrency engine. Uses async networking patterns (e.g. select). Offers TCP client/server and UDP pub/sub. Select loop and scheduling is done for you.
+
+* Nearcast: an in-process mechanism backbone.
+
+* Gruel: general-purpose bidirection asynchronous network protocol (TCP).
+
+* Term: general-purpose textual console (currently offers pygame and curses consoles)
+
+* Mechanisms to build create shared libraries from C and access them from python
+
+* Mechanisms for creating binary distributions (uses pyinstaller)
+
+"How evolved is it?"
+
+The platform is now effective for building single-process message-oriented
+systems.
+
+There's work to be done to put sequencing into the standard library.
+Sequencing is what would allow you to easily distribute a solent system across
+multiple nodes.
 
 
 # Community/Contributions
@@ -135,7 +181,7 @@ pyinstaller solent/pyinstaller/snake_pygame.spec
 "I definitely see the value, having gone through the pain of implementing
 get/setsockopt. You've taken the common 5 or 6 steps required to get a BSD
 socket up and running and boiled it down to a nice set of options. Kudos."
-(Lead developer of a prominent free software project)
+(Lead developer of a prominent free software operating system)
 
 "I'm guessing you're off work, how long have you got for all this (really
 jealous BTW). (,,,) So when I said jealous I meant of your time, you have
