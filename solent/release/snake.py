@@ -330,7 +330,7 @@ MENU_KEYCODE_QUIT = solent_keycode('q')
 def t100():
     return time.time() * 100
 
-class PinContainmentMode:
+class TrackContainmentMode:
     '''
     Tracks whether we are in the menu or not.
     '''
@@ -359,11 +359,11 @@ class CogInterpreter:
         self.engine = engine
         self.orb = orb
         #
-        self.pin_containment_mode = orb.init_pin(PinContainmentMode)
+        self.track_containment_mode = orb.init_track(TrackContainmentMode)
     def on_quit(self):
         raise SolentQuitException('Quit message on stream')
     def on_keystroke(self, keycode):
-        if self.pin_containment_mode.is_focus_on_menu():
+        if self.track_containment_mode.is_focus_on_menu():
             if keycode == solent_keycode('tab'):
                 self.b_in_menu = False
                 self.nearcast.game_focus()
@@ -495,7 +495,7 @@ class CogSnakeGame:
         self.engine = engine
         self.orb = orb
         #
-        self.pin_containment_mode = orb.init_pin(PinContainmentMode)
+        self.track_containment_mode = orb.init_track(TrackContainmentMode)
         self.height = None
         self.width = None
         self.spin_snake_game = None
@@ -505,7 +505,7 @@ class CogSnakeGame:
     def at_turn(self, activity):
         if self.spin_snake_game == None:
             return
-        if not self.pin_containment_mode.is_focus_on_game():
+        if not self.track_containment_mode.is_focus_on_game():
             return
         now_t100 = t100()
         if now_t100 - self.tick_t100 > 6:

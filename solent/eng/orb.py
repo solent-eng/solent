@@ -98,7 +98,7 @@ class Orb:
             i_nearcast=i_nearcast)
         #
         self.snoops = []
-        self.pins = []
+        self.tracks = []
         self.cogs = []
         self.pending = deque()
     def at_turn(self, activity):
@@ -134,23 +134,23 @@ class Orb:
         self._add_cog(
             cog=cog)
         return cog
-    def init_pin(self, construct):
+    def init_track(self, construct):
         '''
         construct must have no arguments, and will typically be the __init__
-        method of a pin class. (Limiting arguments to the orb is deliberate.
+        method of a track class. (Limiting arguments to the orb is deliberate.
         It discourages abuse. Their purpose is to listen for things, not to
         act on information. Acting is done by cogs.)
         '''
-        pin = construct(
+        track = construct(
             orb=self)
         #
-        # validate that the pin's on_methods match the schema
-        on_methods = [m for m in dir(pin) if m.startswith('on_')]
+        # validate that the track's on_methods match the schema
+        on_methods = [m for m in dir(track) if m.startswith('on_')]
         for om_name in on_methods:
-            method = getattr(pin, om_name)
+            method = getattr(track, om_name)
             args = inspect.getargspec(method).args
             if args[0] != 'self':
-                raise Exception("pin method %s should have arg 'self'."%(
+                raise Exception("track method %s should have arg 'self'."%(
                     om_name))
             args = args[1:]
             message_h = om_name[3:]
@@ -163,13 +163,13 @@ class Orb:
             if desired_args != args:
                 sb = [ "Nearcast schema message [%s]"%(message_h)
                      , "defines these args: [%s]"%('|'.join(desired_args))
-                     , "but %s.%s"%(pin.__class__.__name__, om_name)
+                     , "but %s.%s"%(track.__class__.__name__, om_name)
                      , "params are inconsistent: [%s]"%('|'.join(args))
                      ]
                 raise Exception(' '.join(sb))
         #
-        self.pins.append(pin)
-        return pin
+        self.tracks.append(track)
+        return track
     def init_test_bridge_cog(self):
         cog = self.nearcast_schema.init_test_bridge_cog(
             cog_h='test_receiver/%s'%(uniq()),
@@ -214,17 +214,17 @@ class Orb:
                     cog_h=cog_h,
                     message_h=message_h,
                     d_fields=d_fields)
-            for pin in self.pins:
-                if rname in dir(pin):
-                    fn = getattr(pin, rname)
+            for track in self.tracks:
+                if rname in dir(track):
+                    fn = getattr(track, rname)
                     try:
                         fn(**d_fields)
                     except SolentQuitException:
                         raise
                     except:
                         log('')
-                        log('!! breaking in orb [%s], pin, %s:%s'%(
-                            self.spin_h, pin.__class__.__name__, rname))
+                        log('!! breaking in orb [%s], track, %s:%s'%(
+                            self.spin_h, track.__class__.__name__, rname))
                         log('')
                         raise
             for cog in self.cogs:

@@ -124,7 +124,7 @@ ROGUEBOX_MFEED_PERI = (24, 80)
 def t100():
     return time.time() * 100
 
-class PinContainmentMode:
+class TrackContainmentMode:
     '''
     Tracks whether we are in the menu or not.
     '''
@@ -164,7 +164,7 @@ class CogInterpreter:
         self.engine = engine
         self.orb = orb
         #
-        self.pin_containment_mode = orb.init_pin(PinContainmentMode)
+        self.track_containment_mode = orb.init_track(TrackContainmentMode)
         self.d_directive = {}
     def on_quit(self):
         raise SolentQuitException('Quit message on stream')
@@ -309,7 +309,7 @@ class CogInterpreter:
         else:
             raise Exception('Unhandled directive %s'%(directive.h))
     def on_keystroke(self, keycode):
-        if self.pin_containment_mode.is_focus_on_menu():
+        if self.track_containment_mode.is_focus_on_menu():
             if keycode == solent_keycode('tab'):
                 self.b_in_menu = False
                 self.nearcast.o_game_focus()
@@ -442,7 +442,7 @@ class CogRoguebox:
         self.engine = engine
         self.orb = orb
         #
-        self.pin_containment_mode = orb.init_pin(PinContainmentMode)
+        self.track_containment_mode = orb.init_track(TrackContainmentMode)
         self.spin_roguelike = None
         self.spin_message_feed = None
         self.cgrid_last = None
@@ -458,7 +458,7 @@ class CogRoguebox:
     def at_turn(self, activity):
         if None == self.spin_roguelike:
             return
-        if not self.pin_containment_mode.is_focus_on_game():
+        if not self.track_containment_mode.is_focus_on_game():
             return
         if self.b_mail_waiting:
             activity.mark(
