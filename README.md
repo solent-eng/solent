@@ -79,7 +79,7 @@ allocation in the engine core. This is still in the early days.
 // Broadcasting
 
 We don't yet have sophisticated redundancy mechanisms in place, and we will
-need that before we 
+need that before we offer network-based broadcasting.
 
 You could get some distance by wiring nodes together with using supplied Gruel
 tools. But that's not at all in the spirit of the system. Where we need to get
