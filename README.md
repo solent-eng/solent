@@ -61,8 +61,8 @@ small staff.
 // Solid at
 
 Solent is now effective for building single-process message-oriented systems.
-If you wanted to build a complex network app or a sophisticated roguelike game
-in a single process, you'd find it to be a sharp tool.
+If you wanted to build a complex network app or roguelike game in a single
+process, you'd find it to be a sharp tool.
 
 // Memory management
 
@@ -78,7 +78,7 @@ allocation in the engine core. This is still in the early days.
 
 // Broadcasting
 
-We don't yet have sophisticated redundancy mechanisms in place, and we will
+We don't yet have solid redundancy mechanisms in place, and we will
 need that before we offer network-based broadcasting.
 
 You could get some distance by wiring nodes together with using supplied Gruel
