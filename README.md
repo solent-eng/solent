@@ -213,8 +213,9 @@ socket up and running and boiled it down to a nice set of options. Kudos."
 (Lead developer of a free software operating system project)
 
 "I'm guessing you're off work, how long have you got for all this (really
-jealous BTW). (,,,) So when I said jealous I meant of your time, you have
-time, so jealous." (Former colleague)
+jealous BTW). (... some evangelism from me about getting involved with the
+project ,,,) So when I said jealous I meant of your time, you have time, so
+jealous." (Former colleague)
 
 "Apart from that you are apparently still not working? I am not exactly sure
 what the problem is - do you need to go in a different direction?" (My mother)
