@@ -119,8 +119,7 @@ bin/arrange_dependencies
 # Demo of the solent.eng concurrency system
 python -m solent.eng.scenarios
 
-# Install pygame (if you want - you can use curses instead), and see those
-# same games now in a pygame window
+# Install pygame (if you want - you can use curses instead).
 pip3 install hg+https://bitbucket.org/pygame/pygame
 
 python -m solent.release.snake --curses
