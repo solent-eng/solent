@@ -217,8 +217,8 @@ class CogLcServer:
             string=s,
             fg='yellow',
             bg='trans')
-        self.spin_line_console.write_to_client(
-            s='%s\n'%(col))
+        self.spin_line_console.send(
+            msg='%s\n'%(col))
 
 class CogInterpretLineConsole:
     def __init__(self, cog_h, orb, engine):
