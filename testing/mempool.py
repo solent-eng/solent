@@ -29,28 +29,26 @@ from solent import mempool_new
 @test
 def should_get_and_return():
     mempool = mempool_new()
-    log('xxx')
-    return True
     #
     # get
     sip_a = mempool.alloc(101)
-    sip_a.arr[0] = '\x00'
-    assert 'a' == sip_a.arr[0]
+    sip_a.arr[0] = 123
+    assert 123 == sip_a.arr[0]
     assert 101 == sip_a.size
     assert 1 == mempool.ltotal
     #
     # clone
     sip_b = mempool.clone(
         sip=sip_a)
-    assert 'a' == sip_a.arr[0]
-    assert 'a' == sip_b.arr[0]
+    assert 123 == sip_a.arr[0]
+    assert 123 == sip_b.arr[0]
     assert 101 == sip_b.size
     assert 2 == mempool.ltotal
     #
     # change the cloned one: check it's different memory
-    sip_b.arr[0] = 'b'
-    assert 'a' == sip_a.arr[0]
-    assert 'b' == sip_b.arr[0]
+    sip_b.arr[0] = 15
+    assert 123 == sip_a.arr[0]
+    assert 15 == sip_b.arr[0]
     #
     # free
     mempool.free(
