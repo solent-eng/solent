@@ -58,7 +58,7 @@ small staff.
 
 "How evolved is it?"
 
-// Solid at
+// Solid functionality
 
 Solent is now effective for building single-process message-oriented systems.
 If you wanted to build a complex network app or roguelike game in a single
@@ -89,6 +89,11 @@ to is sequenced broadcasting with a scribe and failover options.
 
 Digital audio studio, alt-coin exchange, clearing house, strategic monitoring
 platform, static reference data strategy.
+
+"Where can I learn more?"
+
+The Glossary (docs/glossary.md) gives an overview of the platform's major
+concepts.
 
 
 # Community/Contributions
