@@ -67,7 +67,8 @@ class CogTerm(object):
         self.orb = orb
         #
         self.counter = 0
-        self.spin_term = spin_term_new(
+        self.spin_term = self.engine.init_spin(
+            construct=spin_term_new,
 			console_type='pygame',
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)
@@ -84,8 +85,6 @@ class CogTerm(object):
             rest=0,
             s='Press Q to quit (when selection mode is off).',
             cpair=solent_cpair('green'))
-    def close(self):
-        self.spin_term.close()
     def at_turn(self, activity):
         self.spin_term.write(
             drop=6,

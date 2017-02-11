@@ -36,6 +36,8 @@ class SpinMenu:
         #
         self.title = ''
         self.d_menu = od()
+    def at_turn(
+    #
     def set_title(self, text):
         self.title = text
     def has_menu_keycode(self, menu_keycode):

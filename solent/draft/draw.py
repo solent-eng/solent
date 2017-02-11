@@ -205,13 +205,12 @@ class CogTerm:
         self.orb = orb
         #
         self.spin_term = None
-    def close(self):
-        self.spin_term.close()
     def at_turn(self, activity):
         self.spin_term.at_turn(
             activity=activity)
     def on_init(self, console_type, height, width):
-        self.spin_term = spin_term_new(
+        self.spin_term = self.engine.init_spin(
+            construct=spin_term_new,
             console_type=console_type,
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)
@@ -243,8 +242,6 @@ class CogMenu:
         self.orb = orb
         #
         self.spin_menu = None
-    def close(self):
-        pass
     def on_init(self, console_type, height, width):
         self.spin_menu = spin_menu_new(
             height=height,
@@ -317,8 +314,6 @@ class CogDrawGame:
         self.width = None
         self.spin_draw_game = None
         self.tick_t100 = None
-    def close(self):
-        pass
     def at_turn(self, activity):
         if self.spin_draw_game == None:
             return

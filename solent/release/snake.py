@@ -396,7 +396,8 @@ class CogTerm:
             activity=activity)
     #
     def on_init(self, console_type, height, width):
-        self.spin_term = spin_term_new(
+        self.spin_term = self.engine.init_spin(
+            construct=spin_term_new,
             console_type=console_type,
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)

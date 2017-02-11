@@ -46,7 +46,9 @@ MOUSE_EVENTS = (
     solent_keycode('rmouseup'))
 
 class SpinTerm:
-    def __init__(self, console_type, cb_keycode, cb_select):
+    def __init__(self, spin_h, engine, console_type, cb_keycode, cb_select):
+        self.spin_h = spin_h
+        self.engine = engine
         self.console_type = console_type
         self.cb_keycode = cb_keycode
         self.cb_select = cb_select
@@ -63,10 +65,6 @@ class SpinTerm:
         self.select_cgrid = None
         #
         self.lmousedown_coords = None
-    #
-    def close(self):
-        if None != self.console:
-            self.console.close()
     def at_turn(self, activity):
         if self.mode == MODE_NONE:
             return
@@ -88,6 +86,9 @@ class SpinTerm:
                 keycode=keycode)
         #
         self.refresh_console()
+    def at_close(self):
+        if None != self.console:
+            self.console.close()
     #
     def open_console(self, width, height):
         self.width = width
@@ -230,7 +231,7 @@ class SpinTerm:
             self.console.screen_update(
                 cgrid=self.cgrid)
 
-def spin_term_new(console_type, cb_keycode, cb_select):
+def spin_term_new(spin_h, engine, console_type, cb_keycode, cb_select):
     '''
     cb_keycode(keycode)
     cb_select(drop, rest)
@@ -240,6 +241,8 @@ def spin_term_new(console_type, cb_keycode, cb_select):
         # later on.
     '''
     ob = SpinTerm(
+        spin_h=spin_h,
+        engine=engine,
         console_type=console_type,
         cb_keycode=cb_keycode,
         cb_select=cb_select)

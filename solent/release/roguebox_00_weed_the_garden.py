@@ -331,15 +331,13 @@ class CogTerm:
         self.orb = orb
         #
         self.spin_term = None
-    def close(self):
-        if None != self.spin_term:
-            self.spin_term.close()
     def at_turn(self, activity):
         self.spin_term.at_turn(
             activity=activity)
     #
     def on_init(self, console_type, console_height, console_width):
-        self.spin_term = spin_term_new(
+        self.spin_term = self.engine.init_spin(
+            construct=spin_term_new,
             console_type=console_type,
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)
@@ -368,8 +366,6 @@ class CogMenu:
         self.orb = orb
         #
         self.spin_menu = None
-    def close(self):
-        pass
     def on_init(self, console_type, console_height, console_width):
         self.spin_menu = spin_menu_new(
             height=console_height,
@@ -453,8 +449,6 @@ class CogRoguebox:
         self.b_game_started = False
         self.b_mail_waiting = False
         self.b_refresh_needed = False
-    def close(self):
-        pass
     def at_turn(self, activity):
         if None == self.spin_roguelike:
             return
