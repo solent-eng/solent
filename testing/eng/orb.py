@@ -23,7 +23,7 @@ from testing import run_tests
 from testing import test
 from testing.util import clock_fake
 
-from solent.eng import fake_engine_new
+from fake.eng import fake_engine_new
 
 I_NEARCAST_EXAMPLE = '''
     i message h

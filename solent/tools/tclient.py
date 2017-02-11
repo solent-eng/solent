@@ -127,7 +127,9 @@ class CogTerm:
             self.spin_term.at_turn(
                 activity=activity)
     def on_init(self, addr, port):
-        self.spin_term = spin_term_new(
+        self.spin_term = self.engine.init_spin(
+            spin_h='term',
+            construct=spin_term_new,
             console_type=CONSOLE_TYPE,
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)

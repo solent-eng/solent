@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from fake.eng import fake_engine_new
+
 from testing import run_tests
 from testing import test
 from testing.util import clock_fake
@@ -27,7 +29,6 @@ from testing.gruel.server.receiver_cog import receiver_cog_fake
 from solent import uniq
 from solent.eng import activity_new
 from solent.eng import cs
-from solent.eng import fake_engine_new
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_protocol_new
