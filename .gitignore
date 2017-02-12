@@ -2,12 +2,6 @@
 #   specific ignores
 # --------------------------------------------------------
 #
-# Handy: create your launcher during development
-app
-#
-# Handy: symlink to run_tests_on_change
-watch
-#
 # We don't want to commit shared libraries to the tree. If you have particular
 # libraries that you do want in source control, stick them in the
 # artifact/[platform] directory. i.e. This would not be good for tools derived
