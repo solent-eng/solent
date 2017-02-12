@@ -9,6 +9,8 @@
 # * You can call list_messages, and get back a list of current messages
 # * You can call get_cgrid, and it will populate your supplied grid
 #
+# xxx needs a refactor: remove spin from the naming
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #

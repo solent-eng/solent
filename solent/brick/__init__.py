@@ -16,5 +16,5 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .spin_menu import spin_menu_new
+from .brick_menu import brick_menu_new
 

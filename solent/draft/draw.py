@@ -23,13 +23,13 @@
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import uniq
+from solent.brick import brick_menu_new
 from solent.console import cgrid_new
 from solent.eng import engine_new
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
 from solent.term import spin_term_new
-from solent.menu import spin_menu_new
 
 from collections import deque
 import os
@@ -241,9 +241,9 @@ class CogMenu:
         self.engine = engine
         self.orb = orb
         #
-        self.spin_menu = None
+        self.brick_menu = None
     def on_init(self, console_type, height, width):
-        self.spin_menu = spin_menu_new(
+        self.brick_menu = brick_menu_new(
             height=height,
             width=width,
             cb_display_clear=self.menu_display_clear,
@@ -258,16 +258,16 @@ class CogMenu:
             text='quit')
         self.nearcast.menu_focus()
     def on_menu_title(self, text):
-        self.spin_menu.set_title(
+        self.brick_menu.set_title(
             text=text)
     def on_menu_item(self, menu_keycode, text):
-        self.spin_menu.add_menu_item(
+        self.brick_menu.add_menu_item(
             menu_keycode=menu_keycode,
             text=text,
             cb_select=lambda: self.menu_select(
                 menu_keycode=keycode))
     def on_menu_focus(self):
-        self.spin_menu.render_menu()
+        self.brick_menu.render_menu()
     def on_menu_select(self, menu_keycode):
         d = { MENU_KEYCODE_NEW_GAME: self._mi_new_game
             , MENU_KEYCODE_CONTINUE: self._mi_continue
@@ -278,7 +278,7 @@ class CogMenu:
         fn = d[menu_keycode]
         fn()
     def on_game_new(self):
-        if not self.spin_menu.has_menu_keycode(MENU_KEYCODE_CONTINUE):
+        if not self.brick_menu.has_menu_keycode(MENU_KEYCODE_CONTINUE):
             self.nearcast.menu_item(
                 menu_keycode=MENU_KEYCODE_CONTINUE,
                 text='continue')

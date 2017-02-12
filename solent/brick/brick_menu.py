@@ -1,5 +1,5 @@
 #
-# spin_menu
+# brick_menu
 #
 # // overview
 # Provides an easy mechanism for managing a menu.
@@ -27,7 +27,7 @@ from collections import OrderedDict as od
 def menu_entry(text, cb_select):
     return (text, cb_select)
 
-class SpinMenu:
+class BrickMenu:
     def __init__(self, height, width, cb_display_clear, cb_display_write):
         self.height = height
         self.width = width
@@ -36,7 +36,6 @@ class SpinMenu:
         #
         self.title = ''
         self.d_menu = od()
-    def at_turn(
     #
     def set_title(self, text):
         self.title = text
@@ -69,12 +68,12 @@ class SpinMenu:
                 rest=0,
                 s="[%s] %s"%(chr(menu_keycode), text))
 
-def spin_menu_new(height, width, cb_display_clear, cb_display_write):
+def brick_menu_new(height, width, cb_display_clear, cb_display_write):
     '''
     cb_display_clear()
     cb_display_write(drop, rest, s)
     '''
-    ob = SpinMenu(
+    ob = BrickMenu(
         height=height,
         width=width,
         cb_display_clear=cb_display_clear,
