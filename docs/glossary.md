@@ -314,4 +314,50 @@ A spin is a service that can be associated with the engine, and which will
 periodically receive turns in the event loop.
 
 
+= Track
+
+Required knowledge: Engine, Spin, Orb, Cog
+
+Track consumes nearcast messages, but can't sequence them. It's easiest to
+understand this by working to it from the problem it solves.
+
+Imagine you had an application orb, and then a dozen cogs. Several of them
+need to track what mode the application is in. If the app is showing a menu,
+then keystrokes from the terminal should be translated into menu directives.
+If the terminal is currently showing a game board, then keystrokes should be
+translated into game instructions.
+
+You don't want to have each cog having special code to keep track of who has
+the focus. That would be duplication. Better would be to define all the logic
+in a single place. That's what a track is for.
+
+```
+class TrackDisplayState:
+    def __init__(self, orb):
+        self.orb = orb
+        #
+        self.focus = None
+    def on_menu_focus(self):
+        self.focus = 'menu'
+    def on_game_focus(self):
+        self.focus = 'game'
+    #
+    def is_in_menu_focus(self):
+        return self.focus == 'menu'
+    def is_in_game_focus(self):
+        return self.focus == 'game'
+
+class CogGame:
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+        #
+        self.track_display_state = self.orb.init_track(
+            construct=TrackDisplayState)
+    def on_something(self):
+        if self.track_display_state.is_in_game_focus():
+            # etc
+```
+
 
