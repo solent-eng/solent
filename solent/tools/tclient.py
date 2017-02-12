@@ -29,6 +29,7 @@
 
 from solent import solent_cpair
 from solent import solent_keycode
+from solent import SolentQuitException
 from solent.eng import engine_new
 from solent.log import init_logging
 from solent.log import log
@@ -128,7 +129,6 @@ class CogTerm:
                 activity=activity)
     def on_init(self, addr, port):
         self.spin_term = self.engine.init_spin(
-            spin_h='term',
             construct=spin_term_new,
             console_type=CONSOLE_TYPE,
             cb_keycode=self.term_on_keycode,
@@ -265,6 +265,8 @@ def main():
         #
         engine.event_loop()
     except KeyboardInterrupt:
+        pass
+    except SolentQuitException:
         pass
     except:
         traceback.print_exc()
