@@ -7,7 +7,7 @@ popd
 #
 # Networking
 #
-#python -m solent.eng.scenarios
+python -m solent.eng.scenarios
 
 #
 # Console

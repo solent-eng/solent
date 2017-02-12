@@ -385,10 +385,6 @@ class CogTerm:
         self.orb = orb
         #
         self.spin_term = None
-    def close(self):
-        if None == self.spin_term:
-            return
-        self.spin_term.close()
     def at_turn(self, activity):
         if None == self.spin_term:
             return
@@ -427,8 +423,6 @@ class CogMenu:
         self.orb = orb
         #
         self.brick_menu = None
-    def close(self):
-        pass
     def on_init(self, console_type, height, width):
         self.brick_menu = brick_menu_new(
             height=height,
@@ -501,8 +495,6 @@ class CogSnakeGame:
         self.width = None
         self.spin_snake_game = None
         self.tick_t100 = None
-    def close(self):
-        pass
     def at_turn(self, activity):
         if self.spin_snake_game == None:
             return
