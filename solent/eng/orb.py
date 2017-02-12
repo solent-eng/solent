@@ -59,6 +59,35 @@ import inspect
 from pprint import pprint
 import types
 
+class FileSnoop:
+    def __init__(self, orb, nearcast_schema, filename):
+        self.orb = orb
+        self.nearcast_schema = nearcast_schema
+        self.filename = filename
+        #
+        self.b_enabled = True
+        self.f_ptr = open(filename, 'w+')
+        log('Logging to %s'%filename)
+    def close(self):
+        self.f_ptr.close()
+    def disable(self):
+        self.b_enabled = False
+    def on_nearcast_message(self, cog_h, message_h, d_fields):
+        if not self.b_enabled:
+            return
+        def format_message():
+            sb = []
+            sb.append('%s/%s '%(cog_h, message_h))
+            for idx, key in enumerate(self.nearcast_schema[message_h]):
+                if idx > 0:
+                    sb.append(', ')
+                sb.append('%s:%s'%(key, d_fields[key]))
+            sb.append('\n')
+            return ''.join(sb)
+        nice = format_message()
+        self.f_ptr.write(nice)
+        self.f_ptr.flush()
+
 class LogSnoop:
     '''
     Logs any message seen on the associated nearcast.
@@ -72,8 +101,6 @@ class LogSnoop:
         pass
     def disable(self):
         self.b_enabled = False
-    def at_turn(self, activity):
-        pass
     def on_nearcast_message(self, cog_h, message_h, d_fields):
         if not self.b_enabled:
             return
@@ -105,9 +132,6 @@ class Orb:
         #
         self.distribute()
         #
-        for snoop in self.snoops:
-            snoop.at_turn(
-                activity=activity)
         for cog in self.cogs:
             if 'at_turn' in dir(cog):
                 fn_at_turn = getattr(cog, 'at_turn')
@@ -121,6 +145,12 @@ class Orb:
             if 'close' in dir(cog):
                 cog.close()
     #
+    def add_file_snoop(self, filename):
+        self.snoops.append(
+            FileSnoop(
+                orb=self,
+                nearcast_schema=self.nearcast_schema,
+                filename=filename))
     def add_log_snoop(self):
         self.snoops.append(
             LogSnoop(
