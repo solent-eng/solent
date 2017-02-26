@@ -7,7 +7,7 @@ popd
 #
 # Networking
 #
-python -m solent.eng.scenarios
+#python -m solent.eng.scenarios
 
 #
 # Console
@@ -26,7 +26,7 @@ python -m solent.eng.scenarios
 #
 #python -m solent.draft.draw
 #python -m solent.draft.gollop_box
-#python -m solent.draft.gruel_server_sandbox
+python -m solent.draft.gruel_server_sandbox
 #python -m solent.draft.gruel_client_sandbox --pygame
 #python -m solent.draft.mountain_box --pygame
 #python -m solent.draft.roguebox --pygame
