@@ -29,14 +29,9 @@ import sys
 def check_python_version():
     if sys.version_info.major < 3:
         print('''
-          I'm only for python 3. There is a version of the eng networking
-          library maintained for python 2, but it's not offered through pip
-          at the moment. Check it out at github.com/cratuki/eng. If you get
-          into trouble, feel free to contact me using (github username) at
-          (google mail service) dot com.
+          I'm only for python 3.
         ''')
         sys.exit(1)
-
 
 def main():
     check_python_version()
@@ -47,10 +42,10 @@ def main():
     setup(
         name='solent',
         packages=solent_packages,
-        version='0.3',
+        version='0.41',
         description='Sequencer architecture',
-        url='https://github.com/cratuki/solent',
-        download_url='https://github.com/cratuki/solent/tarball/0.3',
+        url='https://github.com/solent-eng/solent',
+        download_url='https://github.com/solent-eng/solent/tarball/0.41',
         keywords=[
             'solent',
             'eng',
