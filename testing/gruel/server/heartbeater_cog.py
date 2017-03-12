@@ -23,7 +23,6 @@ from fake.eng import fake_engine_new
 
 from testing import run_tests
 from testing import test
-from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent import uniq
 from solent.eng import activity_new
@@ -55,12 +54,10 @@ def should_start_on_announce_login_and_stop_on_announce_condrop():
         mtu=engine.mtu)
     #
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     heartbeater_cog = orb.init_cog(
         construct=heartbeater_cog_new)
-    r = orb.init_cog(
-        construct=receiver_cog_fake)
+    r = orb.init_test_bridge_cog()
     #
     # check starting assumptions
     assert 0 == r.count_heartbeat_send()

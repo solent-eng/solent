@@ -39,12 +39,19 @@ class Receiver:
     def __init__(self):
         self.sb = []
         self.b_connected = False
-    def on_connect(self):
+    def on_lc_connect(self, cs_lc_connect):
+        addr = cs_lc_connect.addr
+        port = cs_lc_connect.port
+        #
         self.b_connected = True
-    def on_condrop(self):
+    def on_lc_condrop(self, cs_lc_condrop):
+        msg = cs_lc_condrop.msg
+        #
         self.b_connected = False
-    def on_line(self, line):
-        self.sb.append(line)
+    def on_lc_command(self, cs_lc_command):
+        tokens = cs_lc_command.tokens
+        #
+        self.sb.append(tokens)
 
 class SpinBasicTcpClient:
     def __init__(self, spin_h, engine):
@@ -53,9 +60,9 @@ class SpinBasicTcpClient:
         #
         self.client_sid = None
         self.sb = None
-    def at_turn(self, activity):
+    def eng_turn(self, activity):
         pass
-    def at_close(self):
+    def eng_close(self):
         if self.client_sid != None:
             self.engine.close_tcp_client(
                 client_sid=self.client_sid)
@@ -108,16 +115,16 @@ def should_start_and_stop_without_crashing():
     engine = engine_new(
         mtu=MTU)
     spin_line_console = engine.init_spin(
-        construct=spin_line_console_new)
+        construct=spin_line_console_new,
+        cb_lc_connect=receiver.on_lc_connect,
+        cb_lc_condrop=receiver.on_lc_condrop,
+        cb_lc_command=receiver.on_lc_command)
     engine.cycle()
     #
     # Stage: Start it
     spin_line_console.start(
         ip='localhost',
-        port=5000,
-        cb_connect=receiver.on_connect,
-        cb_condrop=receiver.on_condrop,
-        cb_line=receiver.on_line)
+        port=5000)
     #
     # Verify
     engine.cycle()
@@ -145,13 +152,13 @@ def should_accept_client_and_boot_client_on_stop():
     #
     # step: start
     spin_line_console = engine.init_spin(
-        construct=spin_line_console_new)
+        construct=spin_line_console_new,
+        cb_lc_connect=receiver.on_lc_connect,
+        cb_lc_condrop=receiver.on_lc_condrop,
+        cb_lc_command=receiver.on_lc_command)
     spin_line_console.start(
         ip=ip,
-        port=port,
-        cb_connect=receiver.on_connect,
-        cb_condrop=receiver.on_condrop,
-        cb_line=receiver.on_line)
+        port=port)
     #
     # verify
     engine.cycle()
@@ -193,13 +200,13 @@ def should_transfer_of_text():
     #
     # step: start it
     spin_line_console = engine.init_spin(
-        construct=spin_line_console_new)
+        construct=spin_line_console_new,
+        cb_lc_connect=receiver.on_lc_connect,
+        cb_lc_condrop=receiver.on_lc_condrop,
+        cb_lc_command=receiver.on_lc_command)
     spin_line_console.start(
         ip=ip,
-        port=port,
-        cb_connect=receiver.on_connect,
-        cb_condrop=receiver.on_condrop,
-        cb_line=receiver.on_line)
+        port=port)
     #
     # verify
     engine.cycle()
@@ -221,7 +228,7 @@ def should_transfer_of_text():
     #
     # step: client sends text that does not have a newline
     client.send(
-        msg="abc") # emphasis: no newline
+        msg="abc def") # emphasis: no newline
     #
     # verify: we should not have received a line
     engine.cycle()
@@ -236,7 +243,7 @@ def should_transfer_of_text():
     # verify: we should have seen our first line
     engine.cycle()
     assert 1 == len(receiver.sb)
-    assert receiver.sb[0] == 'abc'
+    assert receiver.sb[0] == ['abc', 'def']
     #
     # step: another line ending
     client.send(
@@ -245,7 +252,7 @@ def should_transfer_of_text():
     # verify
     engine.cycle()
     assert 2 == len(receiver.sb)
-    assert receiver.sb[-1] == 'overflow/second half'
+    assert receiver.sb[-1] == ['overflow/second', 'half']
     #
     # step: multiple lines in one pass
     client.send(
@@ -254,8 +261,8 @@ def should_transfer_of_text():
     # verify
     engine.cycle()
     assert 4 == len(receiver.sb)
-    assert receiver.sb[-2] == 'three'
-    assert receiver.sb[-1] == 'four'
+    assert receiver.sb[-2] == ['three',]
+    assert receiver.sb[-1] == ['four',]
     #
     # step: we write to client
     s = "here is some text\n"

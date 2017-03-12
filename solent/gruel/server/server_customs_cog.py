@@ -106,7 +106,7 @@ class ServerCustomsCog:
         self.nc_nearnote(
             s='clearing state')
     #
-    def at_turn(self, activity):
+    def orb_turn(self, activity):
         if self.state == ServerCustomsState.reject_stage_a:
             # We sit on a plan to reject for several seconds. this
             # prevents users from spamming us with bad logons. After
@@ -146,6 +146,7 @@ class ServerCustomsCog:
                     bb=self.gruel_press.create_docdata_bb(
                         data=bb,
                         b_complete=b_complete))
+    #
     def on_announce_tcp_connect(self, ip, port):
         self._zero()
     def on_announce_tcp_condrop(self):

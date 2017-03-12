@@ -48,7 +48,6 @@ I_NEARCAST_EXAMPLE = '''
 def should_construct():
     engine = fake_engine_new()
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_EXAMPLE)
     #
     return True

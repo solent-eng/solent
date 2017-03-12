@@ -128,8 +128,8 @@ class SpinSimple:
 
     def _init_orb(self):
         self.orb = self.engine.init_orb(
-            spin_h='swamp_monster_orb',
             i_nearcast=I_NEARCAST)
+        self.orb.set_spin_h('swamp_monster_orb')
         #self.orb.add_log_snoop()
 
     def get_supported_directives(self):

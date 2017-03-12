@@ -64,9 +64,9 @@ class SpinReneClient:
         self.client_sid = None
         self.b_have_received_something = None
         self.sb_recv = None
-    def at_turn(self, activity):
+    def eng_turn(self, activity):
         pass
-    def at_close(self):
+    def eng_close(self):
         pass
     #
     def _engine_on_tcp_client_connect(self, cs_tcp_client_connect):
@@ -158,7 +158,6 @@ def should_start_and_stop():
     engine = engine_new(
         mtu=MTU)
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
@@ -199,7 +198,6 @@ def should_handle_client_connect_and_then_boot_client():
     engine = engine_new(
         mtu=MTU)
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
@@ -253,7 +251,6 @@ def should_broadcast_incoming_message_as_gruel_in():
     engine = engine_new(
         mtu=MTU)
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
     bridge = orb.init_test_bridge_cog()
@@ -321,7 +318,6 @@ def should_boot_client_when_told_to():
     engine = engine_new(
         mtu=MTU)
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
     bridge = orb.init_test_bridge_cog()
@@ -371,7 +367,6 @@ def should_boot_client_when_invalid_gruel_is_received():
     engine = engine_new(
         mtu=MTU)
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
     bridge = orb.init_test_bridge_cog()
@@ -431,7 +426,6 @@ def should_ignore_gruel_send_when_no_client():
     engine = engine_new(
         mtu=MTU)
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
@@ -508,7 +502,6 @@ def should_send_gruel_send_data_to_a_connected_client():
     engine = engine_new(
         mtu=MTU)
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     bridge = orb.init_test_bridge_cog()
     tcp_server_cog = orb.init_cog(
@@ -535,8 +528,6 @@ def should_send_gruel_send_data_to_a_connected_client():
     assert False == tcp_server_cog.is_accept_connected()
     #
     # scenario: client connects
-    client_addr = '203.15.93.150'
-    client_port = 6000
     rene = engine.init_spin(
         construct=spin_rene_client_new)
     rene.init()

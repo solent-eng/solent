@@ -58,7 +58,8 @@ class SpinGruelClient:
         self.cb_doc = None
         self.doc_accumulator = None
         self.client_sid = None
-    def at_turn(self, activity):
+    #
+    def eng_turn(self, activity):
         #
         # heartbeat logic
         if self.status == ClientStatus.streaming:
@@ -78,13 +79,13 @@ class SpinGruelClient:
                 l=self,
                 s='processing outbound doc')
             self._send_docpart()
-    def at_close(self):
+    def eng_close(self):
         if None != self.client_sid:
             self.engine.close_client(
                 client_sid=self.client_sid)
+    #
     def send_document(self, doc):
         self.q_outbound_documents.append(doc)
-    #
     def get_status(self):
         '''
         Returns helpful messages that lets its parent class understand

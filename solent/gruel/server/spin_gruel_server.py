@@ -76,14 +76,14 @@ class UplinkCog:
             message_h='stop_service')
 
 class SpinGruelServer:
-    def __init__(self, engine, cb_doc_recv):
+    def __init__(self, spin_h, engine, cb_doc_recv):
+        self.spin_h = spin_h
         self.engine = engine
         self.cb_doc_recv = cb_doc_recv
         #
         self.b_active = False
         #
         self.orb = engine.init_orb(
-            spin_h=__name__,
             i_nearcast=I_NEARCAST_GRUEL_SERVER)
         self.orb.add_log_snoop()
         #
@@ -98,9 +98,10 @@ class SpinGruelServer:
         #
         self.uplink.nc_nearnote(
             s='spin_gruel_server: nearcast_started')
-    def at_turn(self, activity):
-        self.orb.at_turn(
-            activity=activity)
+    def eng_turn(self, activity):
+        pass
+    def eng_close(self):
+        pass
     #
     def get_status(self):
         return self.b_active
@@ -132,8 +133,9 @@ class SpinGruelServer:
         self.cb_doc_recv(
             doc=doc)
 
-def spin_gruel_server_new(engine, cb_doc_recv):
+def spin_gruel_server_new(spin_h, engine, cb_doc_recv):
     ob = SpinGruelServer(
+        spin_h=spin_h,
         engine=engine,
         cb_doc_recv=cb_doc_recv)
     return ob

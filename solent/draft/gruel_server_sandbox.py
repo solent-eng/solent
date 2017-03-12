@@ -48,7 +48,7 @@ I_NEARCAST_SCHEMA = '''
     i field h
 
     message lc_input
-        field line
+        field tokens
     
     message lc_output
         field s
@@ -200,17 +200,19 @@ class CogLcServer:
         self.engine = engine
         #
         self.spin_line_console = engine.init_spin(
-            construct=spin_line_console_new)
+            construct=spin_line_console_new,
+            cb_lc_connect=lambda cs_lc_connect: None,
+            cb_lc_condrop=lambda cs_lc_condrop: None,
+            cb_lc_command=self._on_lc_command)
         self.spin_line_console.start(
             ip=LC_ADDR,
-            port=LC_PORT,
-            cb_connect=lambda: None,
-            cb_condrop=lambda: None,
-            cb_line=self.lc_on_line)
+            port=LC_PORT)
     #
-    def lc_on_line(self, line):
+    def _on_lc_command(self, cs_lc_command):
+        tokens = cs_lc_command.tokens
+        #
         self.nearcast.lc_input(
-            line=line)
+            tokens=tokens)
     #
     def on_lc_output(self, s):
         col = cformat(
@@ -233,15 +235,15 @@ class CogInterpretLineConsole:
             '?': self.cmd_help,
             'help': self.cmd_help}
     #
-    def on_lc_input(self, line):
+    def on_lc_input(self, tokens):
         # This is really primitive not even going to parse it. :)
-        line = line.strip()
-        if line not in self.commands:
+        first = tokens[0]
+        if first in self.commands and 1 == len(tokens):
+            cmd = self.commands[first]
+            cmd()
+        else:
             self.nearcast.lc_output(
                 s='syntax error')
-            return
-        cmd = self.commands[line]
-        cmd()
     #
     def cmd_start(self):
         self.nearcast.start_gruel_server(
@@ -263,24 +265,21 @@ class CogGruelServer:
         self.orb = orb
         self.engine = engine
         #
-        self.spin_gruel_server = spin_gruel_server_new(
-            engine=engine,
+        self.spin_gruel_server = engine.init_spin(
+            construct=spin_gruel_server_new,
             cb_doc_recv=self._gruel_on_doc)
-        #
-        self.at_start()
-    def at_start(self):
         self.spin_gruel_server.start(
             addr=SERVER_ADDR,
             port=SERVER_PORT,
             password=SERVER_PASS)
-    def at_turn(self, activity):
-        self.spin_gruel_server.at_turn(
-            activity=activity)
+    #
     def on_start_gruel_server(self, addr, port, password):
         self.spin_gruel_server.start(
             addr=addr,
             port=port,
             password=password)
+    def on_stop_gruel_server(self):
+        self.spin_gruel_server.stop()
     def on_permit_client_ip(self, ip):
         self.spin_gruel_server.enable_ip(
             ip=ip)
@@ -314,7 +313,6 @@ def main():
         mtu=1500)
     try:
         orb = engine.init_orb(
-            spin_h=__name__,
             i_nearcast=I_NEARCAST_SCHEMA)
         orb.add_log_snoop()
         #

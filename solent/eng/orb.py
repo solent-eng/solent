@@ -14,7 +14,7 @@
 # one another without requiring knowlede of each other's internal state.
 # 2) It bridges power from the engine to groups of cogs. On each pass of its
 # event loop, an engine will run through its list of registered orbs and call
-# orb.at_turn. The orb will then call the at_turn method for any cog that
+# orb.eng_turn. The orb will then call the eng_turn method for any cog that
 # offers it.
 #
 # If you've made it this far, you might appreciate this feature of an orb:
@@ -68,8 +68,9 @@ class FileSnoop:
         self.b_enabled = True
         self.f_ptr = open(filename, 'w+')
         log('Logging to %s'%filename)
-    def close(self):
+    def orb_close(self):
         self.f_ptr.close()
+    #
     def disable(self):
         self.b_enabled = False
     def on_nearcast_message(self, cog_h, message_h, d_fields):
@@ -97,8 +98,6 @@ class LogSnoop:
         self.nearcast_schema = nearcast_schema
         #
         self.b_enabled = True
-    def close(self):
-        pass
     def disable(self):
         self.b_enabled = False
     def on_nearcast_message(self, cog_h, message_h, d_fields):
@@ -128,23 +127,25 @@ class Orb:
         self.tracks = []
         self.cogs = []
         self.pending = deque()
-    def at_turn(self, activity):
+    def eng_turn(self, activity):
         #
         self.distribute()
         #
         for cog in self.cogs:
-            if 'at_turn' in dir(cog):
-                fn_at_turn = getattr(cog, 'at_turn')
-                fn_at_turn(
+            if 'orb_turn' in dir(cog):
+                fn_orb_turn = getattr(cog, 'orb_turn')
+                fn_orb_turn(
                     activity=activity)
-    def at_close(self):
+    def eng_close(self):
         for snoop in self.snoops:
-            if 'close' in dir(snoop):
-                snoop.close()
+            if 'orb_close' in dir(snoop):
+                snoop.orb_close()
         for cog in self.cogs:
-            if 'close' in dir(cog):
-                cog.close()
+            if 'orb_close' in dir(cog):
+                cog.orb_close()
     #
+    def set_spin_h(self, spin_h):
+        self.spin_h = spin_h
     def add_file_snoop(self, filename):
         self.snoops.append(
             FileSnoop(
@@ -272,7 +273,7 @@ class Orb:
                         raise
     def cycle(self, max_turns=20):
         '''
-        This is useful for testing. It keeps calling at_turn until there
+        This is useful for testing. It keeps calling orb_turn until there
         is no more activity left to do. You probably do not want an engine
         using this behaviour, because it would lead to starvation of other
         orbs.
@@ -280,7 +281,8 @@ class Orb:
         turn_counter = 0
         activity = activity_new()
         while True:
-            self.at_turn(
+            log('xxx print %s'%(self.spin_h))
+            self.eng_turn(
                 activity=activity)
             if activity.get():
                 # clears, and then we do another circuit of the while loop

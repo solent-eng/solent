@@ -28,9 +28,9 @@ class SpinRedisClient:
         self.cb_ex_redis = cb_ex_redis
         #
         self.client_sid = None
-    def at_turn(self, activity):
+    def eng_turn(self, activity):
         pass
-    def at_close(self):
+    def eng_close(self):
         pass
     #
     def start(self, ip, port):

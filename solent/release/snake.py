@@ -385,11 +385,6 @@ class CogTerm:
         self.orb = orb
         #
         self.spin_term = None
-    def at_turn(self, activity):
-        if None == self.spin_term:
-            return
-        self.spin_term.at_turn(
-            activity=activity)
     #
     def on_init(self, console_type, height, width):
         self.spin_term = self.engine.init_spin(
@@ -495,7 +490,7 @@ class CogSnakeGame:
         self.width = None
         self.spin_snake_game = None
         self.tick_t100 = None
-    def at_turn(self, activity):
+    def orb_turn(self, activity):
         if self.spin_snake_game == None:
             return
         if not self.track_containment_mode.is_focus_on_game():
@@ -565,8 +560,8 @@ def game(console_type):
         engine.default_timeout = 0.01
         #
         orb = engine.init_orb(
-            spin_h=__name__,
             i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
+        orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)
         orb.init_cog(CogMenu)

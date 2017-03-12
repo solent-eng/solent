@@ -50,7 +50,7 @@ I_NEARCAST_SCHEMA = '''
         i field h
 
     message ex_lc
-        field msg
+        field tokens
     message to_lc
         field msg
 
@@ -81,13 +81,13 @@ class CogLc:
         self.engine = engine
         #
         self.spin_line_console = engine.init_spin(
-            construct=spin_line_console_new)
-        self.spin_line_console.start(
-            ip=LC_ADDR,
-            port=LC_PORT,
+            construct=spin_line_console_new,
             cb_connect=lambda: None,
             cb_condrop=lambda: None,
-            cb_line=self._lc_on_line)
+            cb_line=self._on_lc_command)
+        self.spin_line_console.start(
+            ip=LC_ADDR,
+            port=LC_PORT)
     #
     def on_to_lc(self, msg):
         col = cformat(
@@ -97,17 +97,20 @@ class CogLc:
         self.spin_line_console.send(
             msg='%s\n'%(col))
     #
-    def _lc_on_line(self, line):
+    def _on_lc_command(self, cs_lc_command):
+        tokens = cs_lc_command.tokens
+        #
+        if 0 == len(tokens):
+            return
         self.nearcast.ex_lc(
-            msg=line)
+            msg=tokens)
 
 class CogInterpreter:
     def __init__(self, cog_h, orb, engine):
         self.cog_h = cog_h
         self.orb = orb
         self.engine = engine
-    def on_ex_lc(self, msg):
-        tokens = [l for l in msg.split(' ') if len(l) > 0]
+    def on_ex_lc(self, tokens):
         if '' == msg:
             return
         elif msg == 'connect':
@@ -163,7 +166,6 @@ def main():
         engine.default_timeout = 0.04
         #
         orb = engine.init_orb(
-            spin_h='app',
             i_nearcast=I_NEARCAST_SCHEMA)
         orb.init_cog(CogLc)
         orb.init_cog(CogInterpreter)

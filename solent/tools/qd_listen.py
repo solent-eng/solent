@@ -57,19 +57,20 @@ def usage():
     print('  %s broadcast_addr port'%sys.argv[0])
     sys.exit(1)
 
-class SpinUdpListener:
-    def __init__(self, spin_h, engine, cb_bb):
-        self.spin_h = spin_h
+class CsBb:
+    def __init__(self):
+        self.bb = None
+
+class RailUdpListener:
+    def __init__(self, engine, cb_bb):
         self.engine = engine
         self.cb_bb = cb_bb
+        #
+        self.cs_bb = CsBb()
         #
         self.b_active = False
         self.sub_sid = None
         self.accumulate = []
-    def at_turn(self, activity):
-        pass
-    def at_close(self):
-        pass
     #
     def start(self, ip, port):
         self.b_active = True
@@ -106,8 +107,9 @@ class SpinUdpListener:
         sub_sid = cs_sub_recv.sub_sid
         bb = cs_sub_recv.bb
         #
+        self.cs_bb.bb = bb
         self.cb_bb(
-            bb=bb)
+            cs_bb=self.cs_bb)
 
 def operate_a_udp_broadcast_listener(engine, net_addr, net_port):
     #
@@ -118,18 +120,19 @@ def operate_a_udp_broadcast_listener(engine, net_addr, net_port):
             self.orb = orb
             self.engine = engine
             #
-            self.spin_udp_listener = engine.init_spin(
-                construct=SpinUdpListener,
-                cb_bb=self.spin_on_bb)
-            self.spin_udp_listener.start(
+            self.rail_udp_listener = RailUdpListener(
+                engine=engine,
+                cb_bb=self._on_bb)
+            self.rail_udp_listener.start(
                 ip=net_addr,
                 port=net_port)
-        def spin_on_bb(self, bb):
+        def _on_bb(self, cs_bb):
+            bb = cs_bb.bb
+            #
             hexdump_bytes(
                 arr=bb,
                 title='Received')
     orb = engine.init_orb(
-        spin_h=__name__,
         i_nearcast='')
     orb.init_cog(CogUdpListener)
     engine.event_loop()

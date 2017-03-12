@@ -305,7 +305,7 @@ class CogWorld:
         self.chart_buffer_prev = None
         #
         self.need_to_update_display = False
-    def at_turn(self, activity):
+    def orb_turn(self, activity):
         if self.need_to_update_display:
             activity.mark(
                 l=self,
@@ -442,7 +442,7 @@ class CogPlayer:
         self.pin_meeps = orb.init_pin(PinMeeps)
         self.q_input = deque()
         self.sent_need_input = False
-    def at_turn(self, activity):
+    def orb_turn(self, activity):
         if self.q_input:
             activity.mark(
                 l=self,
@@ -545,8 +545,8 @@ class SpinSwampMonster:
         self.cb_log = cb_log
         #
         self.orb = self.engine.init_orb(
-            spin_h='swamp_monster_orb',
             i_nearcast=I_NEARCAST)
+        self.orb.set_spin_h('swamp_monster_orb')
         self.orb.add_log_snoop()
         self.orb.init_cog(CogWorld)
         self.orb.init_cog(CogLadyOfTheLake)

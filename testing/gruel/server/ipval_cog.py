@@ -42,7 +42,6 @@ import sys
 def should_reject_unauthorised_ip():
     engine = fake_engine_new()
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     r = orb.init_cog(
         construct=receiver_cog_fake)
@@ -65,7 +64,6 @@ def should_reject_unauthorised_ip():
 def should_allow_authorised_ip():
     engine = fake_engine_new()
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     r = orb.init_cog(
         construct=receiver_cog_fake)
@@ -105,7 +103,6 @@ def should_allow_authorised_ip():
 def should_allow_any_ip():
     engine = fake_engine_new()
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     r = orb.init_cog(
         construct=receiver_cog_fake)
