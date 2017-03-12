@@ -177,6 +177,7 @@ def hexdump_bytes(arr, title='hexdump'):
     print('// %s [%s bytes]'%(title, arr_len))
     #
     # Main content
+    idx = 0
     for (idx, b) in enumerate(arr):
         print('%02x'%(b), end=' ')
         if b >= ord(' ') and b <= ord('~'):
