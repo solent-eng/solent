@@ -65,7 +65,8 @@ class SpinTerm:
         self.select_cgrid = None
         #
         self.lmousedown_coords = None
-    def at_turn(self, activity):
+    #
+    def eng_turn(self, activity):
         if self.mode == MODE_NONE:
             return
         #
@@ -86,7 +87,7 @@ class SpinTerm:
                 keycode=keycode)
         #
         self.refresh_console()
-    def at_close(self):
+    def eng_close(self):
         if None != self.console:
             self.console.close()
     #

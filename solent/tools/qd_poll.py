@@ -54,7 +54,7 @@ class CogUdpSender:
         #
         self.pub_sid = None
         self.t_last = None
-    def at_turn(self, activity):
+    def orb_turn(self, activity):
         if self.pub_sid == None:
             return
         now = time.time()
@@ -64,10 +64,11 @@ class CogUdpSender:
             self.engine.send(
                 sid=self.pub_sid,
                 bb=bytes('message at [%s]\n'%now, 'utf8'))
-    def at_close(self):
+    def orb_close(self):
         self.engine.close_broadcast_listener(
             sid=self.pub_sid)
         self.pub_sid = None
+    #
     def on_init(self, addr, port):
         self.engine.open_pub(
             addr=addr,
@@ -111,7 +112,6 @@ def main():
         net_port = int(sys.argv[2])
         #
         orb = engine.init_orb(
-            spin_h=__name__,
             i_nearcast=I_NEARCAST_SCHEMA)
         orb.init_cog(CogUdpSender)
         bridge = orb.init_cog(CogBridge)

@@ -141,25 +141,29 @@ class Engine(object):
                 traceback.print_exc()
         for orb in self.spins.values():
             try:
-                orb.at_close()
+                orb.eng_close()
             except:
                 traceback.print_exc()
     def _add_spin(self, spin_h, spin):
-        at_methods = [m for m in dir(spin) if m.startswith('at_')]
-        m = "Missing method. Spins need at_turn(drive) and at_close()."
-        if 'at_turn' not in at_methods:
+        eng_methods = [m for m in dir(spin) if m.startswith('eng_')]
+        m = "Missing method. Need eng_turn(activity), eng_close()"
+        if 'eng_turn' not in eng_methods:
             raise Exception(m)
-        if 'at_close' not in at_methods:
+        if 'eng_close' not in eng_methods:
             raise Exception(m)
         if spin_h in self.spins:
             raise Exception("Engine already has spin_h %s"%spin_h)
         if spin in self.spins.values():
             raise Exception("Orb is already in engine. Don't double-add.")
         self.spins[spin_h] = spin
-    def init_orb(self, spin_h, i_nearcast):
+    def init_orb(self, i_nearcast):
         '''
         Orb is a special kind of spin that does nearcasting.
         '''
+        # The orb has a method for changing this. It was a hassle and likely
+        # confusing to new users to force the user to be constantly changing
+        # this. Hence, we default it.
+        spin_h = 'orb/%s'%(uniq())
         spin = orb_new(
             spin_h=spin_h,
             engine=self,
@@ -187,7 +191,7 @@ class Engine(object):
         # Caller's callback
         orbs_in_this_loop = list(self.spins.values())
         for orb in orbs_in_this_loop:
-            orb.at_turn(
+            orb.eng_turn(
                 activity=self.activity)
         lst_orb_activity = self.activity.get()
         if lst_orb_activity:
@@ -494,7 +498,7 @@ class Engine(object):
     def _close_metasock(self, sid, reason):
         ms = self._get_ms_for_sid(
             sid=sid)
-        ms.close(reason)
+        ms.eng_close(reason)
         del self.sid_to_metasock[sid]
         #
         # If we are in the middle of a select loop, there is a mechanism

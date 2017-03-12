@@ -5,6 +5,8 @@
 # Cog that sits on the nearcast with methods that make it useful for testing
 # scenarios.
 #
+# xxx needs to be obsoleted in favour of the standard orb approach.
+#
 # // license
 # Copyright 2016, Free Software Foundation.
 #

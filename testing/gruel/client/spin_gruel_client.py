@@ -71,9 +71,10 @@ class SpinReneGruelServer:
         self.accept_sid = None
         self.server_sid = None
         self.received_message_ds = None
-    def at_turn(self, activity):
+    #
+    def eng_turn(self, activity):
         pass
-    def at_close(self):
+    def eng_close(self):
         self._close_everything()
     #
     def is_server_listening(self):
@@ -143,8 +144,8 @@ class SpinReneGruelServer:
         engine = cs_tcp_accept_connect.engine
         server_sid = cs_tcp_accept_connect.server_sid
         accept_sid = cs_tcp_accept_connect.accept_sid
-        client_addr = cs_tcp_accept_connect.client_addr
-        client_port = cs_tcp_accept_connect.client_port
+        accept_addr = cs_tcp_accept_connect.accept_addr
+        accept_port = cs_tcp_accept_connect.accept_port
         #
         self.accept_sid = accept_sid
         self.received_message_ds = []

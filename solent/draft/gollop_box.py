@@ -85,16 +85,15 @@ class CogTerm(object):
             rest=0,
             s='Press Q to quit (when selection mode is off).',
             cpair=solent_cpair('green'))
-    def at_turn(self, activity):
+    #
+    def orb_turn(self, activity):
         self.spin_term.write(
             drop=6,
             rest=2,
             s=self.counter,
             cpair=solent_cpair('blue'))
         self.counter += 1
-        #
-        self.spin_term.at_turn(
-            activity=activity)
+    #
     def term_on_keycode(self, keycode):
         self.nearcast.keystroke(
             keycode=keycode)
@@ -112,7 +111,6 @@ def main():
         engine.default_timeout = 0.04
         #
         orb = engine.init_orb(
-            spin_h=__name__,
             i_nearcast=I_NEARCAST_SCHEMA)
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)

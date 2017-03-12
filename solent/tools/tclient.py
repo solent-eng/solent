@@ -69,12 +69,11 @@ class CogTcpClient:
         self.engine = engine
         #
         self.client_sid = None
-    def at_close(self):
-        self.engine.close_tcp_client(
-            client_sid=self.client_sid)
-    def at_turn(self, activity):
-        if self.client_sid == None:
-            return
+    def orb_close(self):
+        if None != self.client_sid:
+            self.engine.close_tcp_client(
+                client_sid=self.client_sid)
+    #
     def on_init(self, addr, port):
         self.engine.open_tcp_client(
             addr=addr,
@@ -121,12 +120,7 @@ class CogTerm:
         self.line_finder = None
         self.drop = None
         self.rest = None
-    def at_close(self):
-        pass
-    def at_turn(self, activity):
-        if None != self.spin_term:
-            self.spin_term.at_turn(
-                activity=activity)
+    #
     def on_init(self, addr, port):
         self.spin_term = self.engine.init_spin(
             construct=spin_term_new,
@@ -253,7 +247,6 @@ def main():
         net_port = int(sys.argv[2])
         #
         orb = engine.init_orb(
-            spin_h=__name__,
             i_nearcast=I_NEARCAST_SCHEMA)
         orb.add_log_snoop()
         orb.init_cog(CogTcpClient)

@@ -224,10 +224,6 @@ class CogGruelClient:
             construct=spin_gruel_client_new,
             gruel_press=self.gruel_press,
             gruel_puff=self.gruel_puff)
-    def at_turn(self, activity):
-        "Returns a boolean which is True only if there was activity."
-        self.spin_gruel_client.at_turn(
-            activity=activity)
     def on_instruct_gruel_connect(self, server_ip, server_port, password):
         self.spin_gruel_client.order_connect(
             addr=server_ip,
@@ -336,7 +332,7 @@ class CogTerminal:
         self.pane_console = None
         self.pane_announce = None
     #
-    def at_turn(self, activity):
+    def orb_turn(self, activity):
         k = self.console.async_get_keycode()
         if k != None:
             activity.mark(
@@ -344,6 +340,7 @@ class CogTerminal:
                 s='key received')
             self.nearcast.client_keycode(
                 keycode=k)
+    #
     def on_def_console(self, console):
         self.console = console
         self.cgrid = cgrid_new(
@@ -416,7 +413,8 @@ class CogShell:
         self.b_first = True
         self.line_finder = line_finder_new(
             cb_line=self._console_line)
-    def at_turn(self, activity):
+    #
+    def orb_turn(self, activity):
         if self.b_first:
             activity.mark(
                 l=self,
@@ -424,6 +422,7 @@ class CogShell:
             self._console_announce(
                 s='Type "quit" to quit')
             self.b_first = False
+    #
     def on_client_keycode(self, keycode):
         self.line_finder.accept_string(
             s=chr(keycode))
@@ -471,7 +470,6 @@ def wrap_eng(console):
     engine.default_timeout = 0.02
     try:
         orb = engine.init_orb(
-            spin_h=__name__,
             i_nearcast=I_NEARCAST_SCHEMA)
         #
         orb.init_cog(CogGruelClient)

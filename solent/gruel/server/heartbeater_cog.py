@@ -34,14 +34,7 @@ class HeartbeaterCog(object):
         #
         self.b_active = False
         self.t_last_heartbeat = None
-    #
-    def on_announce_login(self, max_packet_size, max_fulldoc_size):
-        self.b_active = True
-        self.t_last_heartbeat = self.engine.clock.now()
-    def on_announce_tcp_condrop(self):
-        self.b_active = False
-        self.t_last_heartbeat = None
-    def at_turn(self, activity):
+    def orb_turn(self, activity):
         if not self.b_active:
             return
         now = self.engine.clock.now()
@@ -53,6 +46,13 @@ class HeartbeaterCog(object):
                 cog=self,
                 message_h='heartbeat_send')
             self.t_last_heartbeat = now
+    #
+    def on_announce_login(self, max_packet_size, max_fulldoc_size):
+        self.b_active = True
+        self.t_last_heartbeat = self.engine.clock.now()
+    def on_announce_tcp_condrop(self):
+        self.b_active = False
+        self.t_last_heartbeat = None
 
 def heartbeater_cog_new(cog_h, orb, engine):
     ob = HeartbeaterCog(

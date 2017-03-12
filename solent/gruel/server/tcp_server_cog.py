@@ -46,9 +46,7 @@ class TcpServerCog:
         #
         self.server_addr = None
         self.server_port = None
-    def at_turn(self, activity):
-        pass
-    def at_close(self):
+    def orb_close(self):
         self.close_everything()
     #
     def on_start_service(self, ip, port, password):
@@ -66,7 +64,6 @@ class TcpServerCog:
         self.close_everything()
     def on_please_tcp_boot(self):
         self._boot_any_accept()
-        # at_turn will take care of bringing the server back
     def on_gruel_send(self, bb):
         if not self.accept_sid:
             return
@@ -87,12 +84,12 @@ class TcpServerCog:
         engine = cs_tcp_accept_connect.engine
         server_sid = cs_tcp_accept_connect.server_sid
         accept_sid = cs_tcp_accept_connect.accept_sid
-        client_addr = cs_tcp_accept_connect.client_addr
-        client_port = cs_tcp_accept_connect.client_port
+        accept_addr = cs_tcp_accept_connect.accept_addr
+        accept_port = cs_tcp_accept_connect.accept_port
         #
         self.nearcast.announce_tcp_connect(
-            ip=client_addr,
-            port=client_port)
+            ip=accept_addr,
+            port=accept_port)
         self.accept_sid = accept_sid
         self._boot_any_server()
     def _engine_on_tcp_accept_condrop(self, cs_tcp_accept_condrop):

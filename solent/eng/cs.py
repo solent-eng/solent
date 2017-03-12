@@ -122,11 +122,11 @@ class CsTcpAcceptConnect:
         self.engine = None
         self.server_sid = None
         self.accept_sid = None
-        self.client_addr = None
-        self.client_port = None
+        self.accept_addr = None
+        self.accept_port = None
     def __repr__(self):
         return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
-            [self.engine, self.server_sid, self.accept_sid, self.client_addr, self.client_port]]))
+            [self.engine, self.server_sid, self.accept_sid, self.accept_addr, self.accept_port]]))
 
 class CsTcpAcceptCondrop:
     "Fired when a TCP server has accepted a client connection."

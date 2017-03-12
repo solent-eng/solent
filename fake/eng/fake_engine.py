@@ -50,9 +50,9 @@ class FakeEngine:
         self.mtu = 500
     def get_clock(self):
         return self.clock
-    def init_orb(self, spin_h, i_nearcast):
+    def init_orb(self, i_nearcast):
         return orb_new(
-            spin_h=spin_h,
+            spin_h='fake_engine/orb/%s'%uniq(),
             engine=self,
             i_nearcast=i_nearcast)
     def send(self, sid, bb):

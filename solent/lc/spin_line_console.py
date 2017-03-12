@@ -23,37 +23,50 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from .cs import CsLcConnect
+from .cs import CsLcCondrop
+from .cs import CsLcCommand
+
 from solent.log import log
+from solent.util.interface_script import parse_line_to_tokens
+
+def tokenise_line(line):
+    tokens = parse_line_to_tokens(line)
+    return tokens
 
 class SpinLineConsole:
-    def __init__(self, spin_h, engine):
+    def __init__(self, spin_h, engine, cb_lc_connect, cb_lc_condrop, cb_lc_command):
         self.spin_h = spin_h
         self.engine = engine
+        self.cb_lc_connect = cb_lc_connect
+        self.cb_lc_condrop = cb_lc_condrop
+        self.cb_lc_command = cb_lc_command
+        #
+        self.cs_lc_connect = CsLcConnect()
+        self.cs_lc_condrop = CsLcCondrop()
+        self.cs_lc_command = CsLcCommand()
         #
         self.b_active = False
         self.ip = None
         self.port = None
-        self.cb_connect = None
-        self.cb_condrop = None
         self.cb_line = None
         self.server_sid = None
         self.accept_sid = None
         self.c_buffer = []
-    def at_turn(self, activity):
+    #
+    def eng_turn(self, activity):
         "Returns a boolean which is True only if there was activity."
         pass
-    def at_close(self):
+    def eng_close(self):
         self.close_everything()
-    def start(self, ip, port, cb_connect, cb_condrop, cb_line):
+    #
+    def start(self, ip, port):
         if self.b_active == True:
             log('ERROR: SpinLineConsole is already active.')
             return
         #
         self.ip = ip
         self.port = port
-        self.cb_connect = cb_connect
-        self.cb_condrop = cb_condrop
-        self.cb_line = cb_line
         #
         self.b_active = True
         self.start_server()
@@ -79,6 +92,19 @@ class SpinLineConsole:
             self.engine.close_tcp_server(
                 server_sid=self.server_sid)
     #
+    def _call_lc_connect(self, addr, port):
+        self.cs_lc_connect.addr = addr
+        self.cs_lc_connect.port = port
+        self.cb_lc_connect(
+            cs_lc_connect=self.cs_lc_connect)
+    def _call_lc_condrop(self, msg):
+        self.cs_lc_condrop.msg = msg
+        self.cb_lc_condrop(
+            cs_lc_condrop=self.cs_lc_condrop)
+    def _call_lc_command(self, tokens):
+        self.cs_lc_command.tokens = tokens
+        self.cb_lc_command(
+            cs_lc_command=self.cs_lc_command)
     def _engine_on_tcp_server_start(self, cs_tcp_server_start):
         engine = cs_tcp_server_start.engine
         server_sid = cs_tcp_server_start.server_sid
@@ -96,18 +122,23 @@ class SpinLineConsole:
         engine = cs_tcp_accept_connect.engine
         server_sid = cs_tcp_accept_connect.server_sid
         accept_sid = cs_tcp_accept_connect.accept_sid
-        client_addr = cs_tcp_accept_connect.client_addr
-        client_port = cs_tcp_accept_connect.client_port
+        accept_addr = cs_tcp_accept_connect.accept_addr
+        accept_port = cs_tcp_accept_connect.accept_port
         #
         self._boot_any_server()
         self.accept_sid = accept_sid
         self.c_buffer = []
+        self._call_lc_connect(
+            addr=accept_addr,
+            port=accept_port)
     def _engine_on_tcp_accept_condrop(self, cs_tcp_accept_condrop):
         engine = cs_tcp_accept_condrop.engine
         accept_sid = cs_tcp_accept_condrop.accept_sid
         message = cs_tcp_accept_condrop.message
         #
         self.accept_sid = None
+        self._call_lc_condrop(
+            msg=message)
         if self.b_active:
             self.start_server()
     def _engine_on_tcp_accept_recv(self, cs_tcp_accept_recv):
@@ -115,13 +146,15 @@ class SpinLineConsole:
         accept_sid = cs_tcp_accept_recv.accept_sid
         bb = cs_tcp_accept_recv.bb
         #
-        for b in bb:
-            c = chr(b)
+        s = bb.decode('utf8')
+        for c in s:
             if c == '\n':
                 line = ''.join(self.c_buffer)
                 self.c_buffer = []
-                self.cb_line(
+                tokens = tokenise_line(
                     line=line)
+                self._call_lc_command(
+                    tokens=tokens)
             elif c == '\r':
                 continue
             else:
@@ -144,9 +177,12 @@ class SpinLineConsole:
     def is_accept_connected(self):
         return self.accept_sid != None
 
-def spin_line_console_new(spin_h, engine):
+def spin_line_console_new(spin_h, engine, cb_lc_connect, cb_lc_condrop, cb_lc_command):
     ob = SpinLineConsole(
         spin_h=spin_h,
-        engine=engine)
+        engine=engine,
+        cb_lc_connect=cb_lc_connect,
+        cb_lc_condrop=cb_lc_condrop,
+        cb_lc_command=cb_lc_command)
     return ob
 

@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from fake.eng import fake_engine_new
+from solent.eng import engine_new
 
 from testing import run_tests
 from testing import test
@@ -60,7 +60,8 @@ def should_construct_and_start_and_stop():
         orb=None,
         engine=None)
     #
-    engine = fake_engine_new()
+    engine = engine_new(
+        mtu=MTU)
     activity = activity_new()
     #
     # scenario: construction
@@ -71,8 +72,8 @@ def should_construct_and_start_and_stop():
     gruel_puff = gruel_puff_new(
         gruel_protocol=gruel_protocol,
         mtu=MTU)
-    spin_gruel_server = spin_gruel_server_new(
-        engine=engine,
+    spin_gruel_server = engine.init_spin(
+        construct=spin_gruel_server_new,
         cb_doc_recv=r.on_doc_recv)
     #
     # scenario: start and stop without crashing

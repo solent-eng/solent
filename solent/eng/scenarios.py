@@ -158,7 +158,7 @@ def scenario_basic_nearcast_example(engine):
             self.engine = engine
             #
             self.turn_counter = 0
-        def at_turn(self, activity):
+        def orb_turn(self, activity):
             self.turn_counter += 1
             if self.turn_counter == 3:
                 activity.mark(
@@ -185,7 +185,7 @@ def scenario_basic_nearcast_example(engine):
             self.engine = engine
             #
             self.turn_counter = 0
-        def at_turn(self, activity):
+        def orb_turn(self, activity):
             self.turn_counter += 1
             if self.turn_counter == 8:
                 activity.mark(
@@ -195,7 +195,6 @@ def scenario_basic_nearcast_example(engine):
                 raise SolentQuitException()
     #
     orb = engine.init_orb(
-        spin_h=__name__,
         i_nearcast=i_nearcast)
     orb.init_cog(CogSender)
     orb.init_cog(CogPrinter)
@@ -306,7 +305,7 @@ def scenario_sub_simple(engine):
             self.engine = engine
             #
             self.turn_counter = 0
-        def at_turn(self, activity):
+        def orb_turn(self, activity):
             self.turn_counter += 1
             if self.turn_counter == 2:
                 activity.mark(
@@ -326,7 +325,6 @@ def scenario_sub_simple(engine):
             log('! received [%s] :)'%(bb))
     #
     orb = engine.init_orb(
-        spin_h=__name__,
         i_nearcast=i_nearcast)
     orb.init_cog(CogEvents)
     orb.init_cog(CogBroadcastListener)
@@ -368,7 +366,7 @@ def scenario_sub_listen_and_unlisten(engine):
             self.engine = engine
             #
             self.turn_counter = 0
-        def at_turn(self, activity):
+        def orb_turn(self, activity):
             self.turn_counter += 1
             if self.turn_counter == 2:
                 activity.mark(
@@ -416,7 +414,6 @@ def scenario_sub_listen_and_unlisten(engine):
         def on_received_from_network(self, bb):
             log('! received [%s] :)'%(bb))
     orb = engine.init_orb(
-        spin_h=__name__,
         i_nearcast=i_nearcast)
     # We are going to create a snoop here. This one logs nearcast messages as
     # they happen.
@@ -431,7 +428,7 @@ def scenario_sub_listen_and_unlisten(engine):
     engine.debug_eloop_on()
     engine.event_loop()
 
-class SimpleEchoServer:
+class SpinEchoServer:
     def __init__(self, spin_h, engine):
         self.spin_h = spin_h
         self.engine = engine
@@ -441,9 +438,9 @@ class SimpleEchoServer:
         self.server_port = None
         self.server_sid = None
         self.accept_sid = None
-    def at_turn(self, activity):
+    def eng_turn(self, activity):
         pass
-    def at_close(self):
+    def eng_close(self):
         self._close_everything()
     #
     def start(self, ip, port):
@@ -484,8 +481,8 @@ class SimpleEchoServer:
         engine = cs_tcp_accept_connect.engine
         server_sid = cs_tcp_accept_connect.server_sid
         accept_sid = cs_tcp_accept_connect.accept_sid
-        client_addr = cs_tcp_accept_connect.client_addr
-        client_port = cs_tcp_accept_connect.client_port
+        accept_addr = cs_tcp_accept_connect.accept_addr
+        accept_port = cs_tcp_accept_connect.accept_port
         #
         log('** /server/accept_connect/accept_sid:%s'%accept_sid)
         self.accept_sid = accept_sid
@@ -555,7 +552,7 @@ def scenario_multiple_tcp_servers(engine):
             self.servers = {}
         def on_start_echo_server(self, spin_h, ip, port):
             echo_server = self.engine.init_spin(
-                construct=SimpleEchoServer)
+                construct=SpinEchoServer)
             self.servers[spin_h] = echo_server
             echo_server.start(
                 ip=ip,
@@ -574,7 +571,7 @@ def scenario_multiple_tcp_servers(engine):
                 3: ('x', '127.0.0.1', 4120),
                 5: ('y', '127.0.0.1', 4121),
                 8: ('z', '127.0.0.1', 4122)}
-        def at_turn(self, activity):
+        def orb_turn(self, activity):
             self.turn_counter += 1
             if self.turn_counter in self.schedule:
                 (spin_h, ip, port) = self.schedule[self.turn_counter]
@@ -587,11 +584,10 @@ def scenario_multiple_tcp_servers(engine):
                     spin_h=spin_h,
                     ip=ip,
                     port=port)
-        def at_close(self):
+        def orb_close(self):
             pass
     #
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=i_nearcast)
     orb.add_log_snoop()
     orb.init_cog(CogEvents)
@@ -625,7 +621,7 @@ def scenario_close_tcp_servers(engine):
             self.servers = {}
         def on_start_echo_server(self, spin_h, ip, port):
             echo_server = self.engine.init_spin(
-                construct=SimpleEchoServer)
+                construct=SpinEchoServer)
             self.servers[spin_h] = echo_server
             echo_server.start(
                 ip=ip,
@@ -639,7 +635,7 @@ def scenario_close_tcp_servers(engine):
             self.orb = orb
             self.engine = engine
             self.turn_counter = 0
-        def at_turn(self, activity):
+        def orb_turn(self, activity):
             open_schedule = {
                 3: ('x', '127.0.0.1', 4120),
                 5: ('y', '127.0.0.1', 4121),
@@ -671,11 +667,10 @@ def scenario_close_tcp_servers(engine):
                     spin_h=spin_h)
             if self.turn_counter == 25:
                 raise SolentQuitException()
-        def at_close(self):
+        def orb_close(self):
             pass
     #
     orb = engine.init_orb(
-        spin_h=__name__,
         i_nearcast=i_nearcast)
     orb.init_cog(CogEvents)
     orb.init_cog(CogServerContainer)
@@ -711,7 +706,7 @@ def scenario_localhost_tcp_client_and_server(engine):
             self.engine = engine
             #
             self.client_sid = None
-        def at_close(self):
+        def orb_close(self):
             if self.client_sid:
                 self.engine.close_client(
                     client_sid=self.client_sid)
@@ -765,9 +760,9 @@ def scenario_localhost_tcp_client_and_server(engine):
             self.server_sid = None
             self.accept_sid = None
             self.spin_echo_server = engine.init_spin(
-                construct=SimpleEchoServer)
-        def at_close(self):
-            log('** server/at_close')
+                construct=SpinEchoServer)
+        def orb_close(self):
+            log('** server/orb_close')
             if self.server_sid:
                 log('*** (stop server)')
                 self._stop_server()
@@ -813,8 +808,8 @@ def scenario_localhost_tcp_client_and_server(engine):
             engine = cs_tcp_accept_connect.engine
             server_sid = cs_tcp_accept_connect.server_sid
             accept_sid = cs_tcp_accept_connect.accept_sid
-            client_addr = cs_tcp_accept_connect.client_addr
-            client_port = cs_tcp_accept_connect.client_port
+            accept_addr = cs_tcp_accept_connect.accept_addr
+            accept_port = cs_tcp_accept_connect.accept_port
             #
             log('** server/accept_connect/accept_sid:%s'%(accept_sid))
             self._stop_server()
@@ -859,7 +854,6 @@ def scenario_localhost_tcp_client_and_server(engine):
                 port=port)
     #
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=i_nearcast)
     orb.init_cog(CogClient)
     orb.init_cog(CogEchoServer)
@@ -898,7 +892,7 @@ def scenario_tcp_client_edge_cases(engine):
             self.engine = engine
             #
             self.client_sid = None
-        def at_close(self):
+        def orb_close(self):
             if self.client_sid:
                 self.engine.close_client(
                     client_sid=self.client_sid)
@@ -953,7 +947,6 @@ def scenario_tcp_client_edge_cases(engine):
                 port=port)
     #
     orb = engine.init_orb(
-        spin_h='app',
         i_nearcast=i_nearcast)
     orb.init_cog(CogClient)
     bridge = orb.init_cog(CogBridge)
@@ -1018,14 +1011,14 @@ def scenario_tcp_client_cannot_connect(engine):
         until we know how to better break those out.)
     ''')
     #
-    class Spin:
+    class SpinClient:
         def __init__(self, spin_h, engine):
             self.spin_h = spin_h
             self.engine = engine
-        def at_turn(self, activity):
+        def eng_turn(self, activity):
             while self.received:
                 log('client|%s'%(self.received.popleft().strip()))
-        def at_close(self):
+        def eng_close(self):
             pass
         #
         def start(self, name, addr, port):
@@ -1066,7 +1059,7 @@ def scenario_tcp_client_cannot_connect(engine):
               }
     for (name, (addr, port)) in details.items():
         spin = engine.init_spin(
-            construct=Spin)
+            construct=SpinClient)
         spin.start(name, addr, port)
     #
     engine.event_loop()
@@ -1091,11 +1084,11 @@ def scenario_tcp_client_mixed_scenarios(engine):
         when the disconnect is initiated from this side.)
     ''')
     #
-    class Spin:
+    class SpinClient:
         def __init__(self, spin_h, engine):
             self.spin_h = spin_h
             self.engine = engine
-        def at_turn(self, activity):
+        def eng_turn(self, activity):
             if self.b_dropped:
                 return
             while self.received:
@@ -1114,7 +1107,7 @@ def scenario_tcp_client_mixed_scenarios(engine):
                     spin_h=self.spin_h)
                 self.sid = None
             self.turn_count += 1
-        def at_close(self):
+        def eng_close(self):
             pass
         #
         def start(self, name, orb, addr, port, close_turn):
@@ -1164,7 +1157,7 @@ def scenario_tcp_client_mixed_scenarios(engine):
               }
     for (name, (addr, port, close_turn)) in details.items():
         spin = engine.init_spin(
-            construct=Spin)
+            construct=SpinClient)
         spin.start(
             name=name,
             orb=spin,
@@ -1186,7 +1179,7 @@ class SpinPublisher:
         self.addr = None
         self.port = None
         self.pub_sid = None
-    def at_turn(self, activity):
+    def eng_turn(self, activity):
         if not self.b_launched:
             return
         #
@@ -1217,7 +1210,7 @@ class SpinPublisher:
                 self.engine.send(
                     sid=self.pub_sid,
                     bb=bb)
-    def at_close(self):
+    def eng_close(self):
         self.b_launched = False
         if self.pub_sid != None:
             self._stop_server()

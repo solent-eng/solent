@@ -331,10 +331,6 @@ class CogTerm:
         self.orb = orb
         #
         self.spin_term = None
-    def at_turn(self, activity):
-        self.spin_term.at_turn(
-            activity=activity)
-    #
     def on_init(self, console_type, console_height, console_width):
         self.spin_term = self.engine.init_spin(
             construct=spin_term_new,
@@ -449,7 +445,7 @@ class CogRoguebox:
         self.b_game_started = False
         self.b_mail_waiting = False
         self.b_refresh_needed = False
-    def at_turn(self, activity):
+    def orb_turn(self, activity):
         if None == self.spin_roguelike:
             return
         if not self.track_containment_mode.is_focus_on_game():
@@ -590,7 +586,6 @@ def game(console_type):
         #engine.debug_eloop_on()
         #
         orb = engine.init_orb(
-            spin_h=__name__,
             i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         #orb.add_log_snoop()
         orb.init_cog(CogInterpreter)

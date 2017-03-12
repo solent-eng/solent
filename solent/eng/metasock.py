@@ -178,8 +178,8 @@ class Metasock(object):
             self.cs_tcp_accept_connect.engine = self.engine
             self.cs_tcp_accept_connect.server_sid = self.parent_sid
             self.cs_tcp_accept_connect.accept_sid = self.sid
-            self.cs_tcp_accept_connect.client_addr = self.addr
-            self.cs_tcp_accept_connect.client_port = self.port
+            self.cs_tcp_accept_connect.accept_addr = self.addr
+            self.cs_tcp_accept_connect.accept_port = self.port
             self.cb_tcp_accept_connect(
                 cs_tcp_accept_connect=self.cs_tcp_accept_connect)
         elif self.ms_type == MS_TYPE_TCP_CLIENT:
@@ -197,7 +197,7 @@ class Metasock(object):
                 cs_tcp_server_start=self.cs_tcp_server_start)
         else:
             raise Exception('Algorithm exception. [%s]'%(self.ms_type))
-    def close(self, message):
+    def eng_close(self, message):
         '''
         Safely attempts to close the socket. This should be called from one
         place and one place only - engine._close_metasock. (It's tightly
