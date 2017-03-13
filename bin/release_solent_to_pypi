@@ -11,11 +11,13 @@ echo "Step: Basics"
 echo "  * You need \$HOME/.pypirc"
 echo "  * Has password details. Craig masters this on host memlab."
 echo ""
+pause
 
 echo ""
-echo "Step: Tweak the version in setup.py"
-echo '  * key version'
-echo "  * key download_url (do not forget this!)"
+echo "Step: Version number"
+echo "  * Tweak setup.py"
+echo "      * key version"
+echo "      * key download_url (do not forget this!)"
 echo ""
 pause
 
@@ -23,6 +25,7 @@ echo ""
 echo "Step: Commit if you haven't already"
 echo '  * git add setup.py'
 echo '  * git status'
+echo '  * git commit'
 echo '  * git push'
 echo ""
 pause
@@ -30,7 +33,7 @@ pause
 echo ""
 echo "Step: Tag and push that version to github"
 echo '  * git tag 0.11 -m "text"'
-echo '  * git push --tags origin master'
+echo '  * git push --tags origin BRANCH'
 echo ""
 pause
 
