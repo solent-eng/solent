@@ -114,6 +114,38 @@ class LogSnoop:
         nice = format_message()
         log(nice)
 
+class BridgeFoundation:
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+
+T_BRIDGE_NEARCAST_METHOD = '''
+def nc_%s(self, %s):
+    self.nearcast.%s(%s)
+'''
+
+def attach_nc_method_to_cog(cog, mname, fnames):
+    cs_fields = ', '.join(fnames)
+    #
+    lines = []
+    for idx, fname in enumerate(fnames):
+        if idx == 0:
+            lines.append('')
+        lines.append('        %s=%s,'%(fname, fname))
+    if lines:
+        # get rid of trailing comma on last line
+        last = lines.pop()
+        last = last[:-1]
+    #
+    code = T_BRIDGE_NEARCAST_METHOD%(
+        mname, cs_fields, mname, '\n'.join(lines))
+    exec(code)
+    fn = locals()['nc_%s'%mname]
+    print('fn %s'%fn)
+    method = types.MethodType(fn, cog)
+    setattr(cog, 'nc_%s'%(mname), method)
+
 class Orb:
     def __init__(self, spin_h, engine, i_nearcast):
         self.spin_h = spin_h
@@ -164,6 +196,19 @@ class Orb:
             engine=self.engine)
         self._add_cog(
             cog=cog)
+        return cog
+    def init_bridge(self):
+        '''
+        Creates a cog that has nc_ methods for each of the messages in the
+        nearcast.
+        '''
+        cog = self.init_cog(
+            construct=BridgeFoundation)
+        for (message_h, fields) in self.nearcast_schema.messages.items():
+            attach_nc_method_to_cog(
+                cog=cog,
+                mname=message_h,
+                fnames=fields)
         return cog
     def init_track(self, construct):
         '''
