@@ -92,6 +92,8 @@ class SpinSimple:
         self.cb_ready_alert = cb_ready_alert
         self.cb_over_alert = cb_over_alert
 
+        self.game_level = 1
+
         self.turn = 0
         self.b_game_alive = False
 
@@ -212,6 +214,7 @@ class SpinSimple:
                 target_spot=tuple(target_spot))
             if 0 == len(self.cpool_weed):
                 self._announce('You win!')
+                self.game_level += 1
                 self._game_over()
 
     def _player_move(self, player_spot, target_spot):
@@ -270,16 +273,11 @@ class SpinSimple:
         #
         # place weeds
         # (we need at least one.)
-        while not self.cpool_weed:
-            for coord in self.cpool_spare:
-                (drop, rest) = coord
-                if drop < 8 or drop > 16:
-                    continue
-                if rest < 34 or rest > 46:
-                    continue
-                if random.random() > 0.98:
-                    self.cpool_spare.remove(coord)
-                    self.cpool_weed.append(coord)
+        log('game level %s'%(self.game_level))
+        for i in range(self.game_level):
+            choice = random.choice(self.cpool_spare)
+            self.cpool_spare.remove(choice)
+            self.cpool_weed.append(choice)
 
     def _render_cgrid(self):
         self.cgrid.clear()

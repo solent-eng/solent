@@ -11,6 +11,19 @@ Solent provides tools for creating sophisticated systems using
 message-broadcast techniques. As far as I know, this is the first version of
 such a system available under a free software license.
 
+There's a tradition of using message-driven techniques to build
+high-availability, high-performance systems using these approaches.
+
+Here is a video by former Nasdaq architect Brian Nigiti, "How To Build an
+Exchange". https://www.youtube.com/watch?v=b1e4t2k2KJY
+
+For another prespective, see Leslie Lamport's work on State Machine
+Replication (`https://en.m.wikipedia.org/wiki/State_machine_replication`)
+
+These ideas have not yet gained widespread use. The creator of solent believes
+that something like solent will prove to be 'The Railroad of the Digital
+Revolution'.
+
 "What is 'message broadcast' all about?"
 
 Mainstream software techniques build systems from nodes or objects. The

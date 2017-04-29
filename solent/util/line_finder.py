@@ -43,8 +43,8 @@ class LineFinder:
         self.sb = []
     def clear(self):
         self.sb = []
-    def accept_bytes(self, barr):
-        for b in barr:
+    def accept_bytes(self, bb):
+        for b in bb:
             self.accept_string(
                 s=chr(b))
     def accept_string(self, s):
