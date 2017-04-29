@@ -7,22 +7,23 @@ free-software license (LGPL).
 
 "What can I get from this that I can't get elsewhere?"
 
-Solent provides tools for creating sophisticated systems using
-message-broadcast techniques. As far as I know, this is the first version of
-such a system available under a free software license.
+Solent is a good foundation for creating sophisticated systems using
+event-driven programming techniques. As far as I know, this is the first
+version of such a system available under a free software license.
 
 There's a tradition of using message-driven techniques to build
 high-availability, high-performance systems using these approaches.
 
-Here is a video by former Nasdaq architect Brian Nigiti, "How To Build an
+Here is a video by former Nasdaq architect Brian Nigito, "How To Build an
 Exchange". https://www.youtube.com/watch?v=b1e4t2k2KJY
 
 For another prespective, see Leslie Lamport's work on State Machine
 Replication (`https://en.m.wikipedia.org/wiki/State_machine_replication`)
 
-These ideas have not yet gained widespread use. The creator of solent believes
-that something like solent will prove to be 'The Railroad of the Digital
+These ideas have not yet gained widespread use. The author believes that
+something like solent will prove to be 'The Railroad of the Digital
 Revolution'.
+
 
 "What is 'message broadcast' all about?"
 
@@ -33,6 +34,7 @@ behaviour of the nodes themselves. As a result, most software is brittle.
 Solent has a different focus. Solent systems are defined in terms of their
 message schema. Nodes emerge as a consequence of the message schema. This
 leads to much better software, particularly at scale.
+
 
 "What is 'sequencer architecture' all about?"
 
@@ -46,6 +48,7 @@ But once we reach this scale, we will also want fault-tolerence.
 Key to this is to have ordered and reliable messaging. Hence, sequencer
 architecture.
 
+
 "What are the advantages again?"
 
 You can build small things quickly. You can easily scale small things into
@@ -54,6 +57,7 @@ large things. You can easily maintain large things.
 Solent is a good approach to building embarassingly concurrent problems.
 Example: simulations, games, trading systems. It's also effective for building
 small staff.
+
 
 "What components does solent have?"
 
@@ -69,15 +73,16 @@ small staff.
 
 * Mechanisms for creating binary distributions (uses pyinstaller)
 
+
 "How evolved is it?"
 
-// Solid functionality
+/Functionality that is already solid
 
 Solent is now effective for building single-process message-oriented systems.
 If you wanted to build a complex network app or roguelike game in a single
 process, you'd find it to be a sharp tool.
 
-// Memory management
+/Memory management
 
 So far, solent development has been sloopy about memory management. Ideally
 we'd be deliberately allocating all memory using either the struct library
@@ -89,7 +94,7 @@ inefficiencies.
 Regardless, we've introduced a memory pool, and started to be deliberate about
 allocation in the engine core. This is still in the early days.
 
-// Broadcasting
+/Broadcasting
 
 We don't yet have solid redundancy mechanisms in place, and we will
 need that before we offer network-based broadcasting.
@@ -98,10 +103,12 @@ You could get some distance by wiring nodes together with using supplied Gruel
 tools. But that's not at all in the spirit of the system. Where we need to get
 to is sequenced broadcasting with a scribe and failover options.
 
+
 "With all that, what are some things it would be a good foundation for?"
 
-Digital audio studio, alt-coin exchange, clearing house, strategic monitoring
-platform, static reference data strategy.
+Digital audio studio, alt-coin exchange, clearing house, monitoring platform,
+reference-data aggregator.
+
 
 "Where can I learn more?"
 
