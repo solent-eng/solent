@@ -12,7 +12,7 @@ popd
 #
 # Release
 #
-#python -m solent.release.snake --pygame
+python -m solent.release.snake --pygame
 #python -m solent.release.roguebox_00_weed_the_garden --pygame
 
 #
@@ -45,7 +45,7 @@ popd
 #python -m solent.draft.mountain_box --pygame
 #python -m solent.draft.oled_ui_demo
 #python -m solent.draft.roguebox --pygame
-python -m solent.draft.sdl
+#python -m solent.draft.sdl
 #python -m solent.draft.turn_based_game --curses
 #python -m solent.draft.turn_based_game --pygame
 

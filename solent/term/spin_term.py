@@ -3,10 +3,14 @@
 #
 # // overview
 # This provides an idea of a 'standard' terminal that can be used in front of
-# solent apps. Note that it is not the same thing as a console. The terminal
-# acts as a layer similar to a TTY that sits between a system and a console.
-# It provides features such as gollop-selection (press escape and use q-c to
-# navigate around, and s to select).
+# solent apps.
+#
+# It provides features such as mouse-selection and gollop-selection (press
+# escape and use q-c to navigate around, and s to select).
+#
+# It's generally more convenient to write to a terminal than it would be to
+# write to a console. You lose flexibility, but it's easy to work with for
+# simple apps.
 #
 # // license
 # Copyright 2016, Free Software Foundation.

@@ -126,10 +126,11 @@ def nc_%s(self, %s):
 '''
 
 def attach_nc_method_to_cog(cog, mname, fnames):
+    nc_name = 'nc_%s'%mname
     cs_fields = ', '.join(fnames)
     #
     lines = []
-    for idx, fname in enumerate(fnames):
+    for (idx, fname) in enumerate(fnames):
         if idx == 0:
             lines.append('')
         lines.append('        %s=%s,'%(fname, fname))
@@ -137,14 +138,14 @@ def attach_nc_method_to_cog(cog, mname, fnames):
         # get rid of trailing comma on last line
         last = lines.pop()
         last = last[:-1]
+        lines.append(last)
     #
     code = T_BRIDGE_NEARCAST_METHOD%(
         mname, cs_fields, mname, '\n'.join(lines))
     exec(code)
-    fn = locals()['nc_%s'%mname]
-    print('fn %s'%fn)
+    fn = locals()[nc_name]
     method = types.MethodType(fn, cog)
-    setattr(cog, 'nc_%s'%(mname), method)
+    setattr(cog, nc_name, method)
 
 class Orb:
     def __init__(self, spin_h, engine, i_nearcast):
@@ -197,7 +198,7 @@ class Orb:
         self._add_cog(
             cog=cog)
         return cog
-    def init_bridge(self):
+    def init_autobridge(self):
         '''
         Creates a cog that has nc_ methods for each of the messages in the
         nearcast.

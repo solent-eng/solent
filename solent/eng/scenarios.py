@@ -251,7 +251,7 @@ class BroadcastListener:
         log('sub recv (len %s)'%(len(bb)))
         #
         self.line_finder.accept_bytes(
-            barr=bb)
+            bb=bb)
 
 def scenario_sub_simple(engine):
     net_addr = '127.255.255.255'
