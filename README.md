@@ -1,29 +1,88 @@
 # Project Overview
 
-"What's the pitch?"
+"What is it?"
 
-Sequencer-architecture platform, currently written in python3, offered under a
-free-software license (LGPL).
+Solent is an application programming toolkit which happens to currently be
+implemented in python3.
+
+Solent describes systems in terms of their messages. This is a contrast to
+monolithic techniques, which focus on functional nodes while leaving messaging
+as an afterthought. For example, the typical centralised database model.
+
+So far, Solent's main accomplishment is a concept called "the Nearcast".
+Application developers can use a DSL to describe a messaging schema. The
+nearcast is the vehicle for these messages. With this defined, it is then
+straightforward to write nodes that attach to the nearcast in order to do its
+work.
+
+By way of example, here is the nearcast schema we use for a clone of the
+classic game, Snake:
+```
+    i message h
+        i field h
+
+    message init
+        field console_type
+        field height
+        field width
+
+    message quit
+
+    message keystroke
+        field keycode
+
+    message game_focus
+    message game_new
+    message game_input
+        field keycode
+
+    message term_clear
+    message term_write
+        field drop
+        field rest
+        field s
+        field cpair
+
+    message menu_focus
+    message menu_title
+        field text
+    message menu_item
+        field menu_keycode
+        field text
+    message menu_select
+        field menu_keycode
+```
+
+(The core mechanics of the game are easily implemented in a single node.)
+
+In its current state, Solent useful for constructing complex network apps. 
+
+At the next level, it will be suited for building full-blown, multi-host
+sequencer architectures. With such a toolkit, a developer could quickly
+implement a world-class stock exchange or clearing house.
+
+LGPL licensed.
 
 
 "What can I get from this that I can't get elsewhere?"
 
 Solent is a good foundation for creating sophisticated systems using
-event-driven programming techniques. As far as I know, this is the first
-version of such a system available under a free software license.
+event-driven programming techniques.
 
 There's a tradition of using message-driven techniques to build
-high-availability, high-performance systems using these approaches.
+high-availability, high-performance systems. For example, here is a video by
+former Nasdaq architect Brian Nigito, "How To Build an Exchange".
+https://www.youtube.com/watch?v=b1e4t2k2KJY
 
-Here is a video by former Nasdaq architect Brian Nigito, "How To Build an
-Exchange". https://www.youtube.com/watch?v=b1e4t2k2KJY
-
-For another prespective, see Leslie Lamport's work on State Machine
-Replication (`https://en.m.wikipedia.org/wiki/State_machine_replication`)
+As far as I know, this is the first time such a system has been offered under
+a free-software license.
 
 These ideas have not yet gained widespread use. The author believes that
 something like solent will prove to be 'The Railroad of the Digital
 Revolution'.
+
+For another prespective, see Leslie Lamport's work on State Machine
+Replication (`https://en.m.wikipedia.org/wiki/State_machine_replication`)
 
 
 "What is 'message broadcast' all about?"
@@ -32,22 +91,18 @@ Mainstream software techniques build systems from nodes or objects. The
 messages that pass between the nodes are generally an afterthought to the
 behaviour of the nodes themselves. As a result, most software is brittle.
 
-Solent has a different focus. Solent systems are defined in terms of their
-message schema. Nodes emerge as a consequence of the message schema. This
-leads to much better software, particularly at scale.
-
 
 "What is 'sequencer architecture' all about?"
 
 Once you have a system of a certain size, you will want to distribute it
 across server farms. Since we have defined the system in terms of messages, it
-is straightforward to move nodes off their local messaging groups (nearcasts)
-to network groups (broadcasts).
+is straightforward to move from local messaging groups (nearcasts) to network
+groups (broadcasts).
 
-But once we reach this scale, we will also want fault-tolerence.
+In order to be fault-tollerant and deterministic, we must have ordered and
+reliable messaging. The messages must be delivered in a deliberately-ordered
+sequence. Hence, sequencer architecture. 
 
-Key to this is to have ordered and reliable messaging. Hence, sequencer
-architecture.
 
 
 "What are the advantages again?"
@@ -55,16 +110,18 @@ architecture.
 You can build small things quickly. You can easily scale small things into
 large things. You can easily maintain large things.
 
-Solent is a good approach to building embarassingly concurrent problems.
-Example: simulations, games, trading systems. It's also effective for building
-small staff.
+Solent is particularly good for addressing embarassingly-concurrent problems.
+Example: simulations, games, trading systems. It's also effective for just
+building small fiddly stuff, such as an application that needed to
+effortlessly juggle several types of network connection at the same time.
+
 
 
 "What components does solent have?"
 
 * Eng: concurrency engine. Uses async networking patterns (e.g. select). Offers TCP client/server and UDP pub/sub. Select loop and scheduling is done for you.
 
-* Nearcast: an in-process mechanism backbone.
+* Nearcast: an in-process messaging backbone.
 
 * Gruel: general-purpose bidirection asynchronous network protocol. (Nasdaq publish a spec for a protocol called SOUP. Somebody who knew about SOUP would hopefully judge Gruel to be a predictable evolution.)
 
@@ -85,9 +142,8 @@ process, you'd find it to be a sharp tool.
 
 /Memory management
 
-So far, solent development has been sloopy about memory management. Ideally
-we'd be deliberately allocating all memory using either the struct library
-or the C bridge.
+So far, solent has not focused on deliberate memory management. Ideally we'd
+allocate all memory and never need the garbage collector.
 
 It's possible that a JITting VM like pypy would manage out the remaining
 inefficiencies.
@@ -97,8 +153,8 @@ allocation in the engine core. This is still in the early days.
 
 /Broadcasting
 
-We don't yet have solid redundancy mechanisms in place, and we will
-need that before we offer network-based broadcasting.
+We don't yet have solid redundancy mechanisms in place, and we will need that
+before we offer network-based broadcasting.
 
 You could get some distance by wiring nodes together with using supplied Gruel
 tools. But that's not at all in the spirit of the system. Where we need to get
@@ -119,16 +175,15 @@ concepts.
 
 "Is it fast?"
 
-Probably not, at the moment.
+Not yet.
 
 The engine currently uses the select() mechanism in Windows and Unix. select()
 is slower than poll on unix, and significantly slower than
 IO-completion-sockets on Windows, kevent on BSD, epoll on linux.
 
-There is nothing inherently slow in its design. Perhaps at some future time we
-will replace the innards of Engine with a solution derived from asyncio,
-twisted or libuv. Or we could rewrite the engine in C++ and then offer python
-wrappers to it.
+There is nothing inherently slow in its design. In time we may replace the
+internals of Engine with a solution taken from asyncio, twisted or libuv. Or
+we may rewrite the engine in C++ and offer python wrappers to it.
 
 
 "How does it compare to system x?"
@@ -143,9 +198,10 @@ over multiple hosts. This will consist of UDP-broadcast with a reliability
 layer over the top of it.
 
 These approaches give rise to a programming style that is message-centric and
-event-driven. This encourages a layering approach that leads to strong code.
+event-driven. This encourages a layering approach that leads to robust,
+discoverable systems.
 
-Hence, the answer to "why didn't you use x" is likely to be, "because
+A simple response to most "why didn't you use x" queries is usually, "because
 nearcasting".
 
 

@@ -2,8 +2,8 @@
 # spin_line_console
 #
 # // overview
-# Creates a TCP server. A user can netcat/telnet to this port to give
-# commands.
+# Creates a TCP server. A user can netcat/telnet to this port, and then
+# interact with a solent application.
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -23,12 +23,21 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .cs import CsLcConnect
-from .cs import CsLcCondrop
-from .cs import CsLcCommand
-
 from solent.log import log
 from solent.util.interface_script import parse_line_to_tokens
+
+class CsLcConnect:
+    def __init__(self):
+        self.addr = None
+        self.port = None
+
+class CsLcCondrop:
+    def __init__(self):
+        self.msg = None
+
+class CsLcCommand:
+    def __init__(self):
+        self.tokens = None
 
 def tokenise_line(line):
     tokens = parse_line_to_tokens(line)
