@@ -23,5 +23,6 @@ from .clock import clock_new
 from .interface_script import init_interface_script_parser
 from .interface_script import SignalConsumer
 from .line_finder import line_finder_new
+from .rail_bytesetter import rail_bytesetter_new
 from .wrap_shared_lib import wrap_so_fn
 

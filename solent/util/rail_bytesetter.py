@@ -28,41 +28,53 @@ from collections import deque
 
 class CsBytesetterPack:
     def __init__(self):
+        self.bytesetter_h = None
         self.bb = None
 
 class CsBytesetterFini:
     def __init__(self):
-        pass
+        self.bytesetter_h = None
 
 class RailBytesetter:
-    def __init__(self, cb_bytesetter_pack, cb_bytesetter_fini, mtu):
+    def __init__(self, mtu, cb_bytesetter_pack, cb_bytesetter_fini):
+        self.mtu = mtu
         self.cb_bytesetter_pack = cb_bytesetter_pack
         self.cb_bytesetter_fini = cb_bytesetter_fini
-        self.mtu = mtu
         #
         self.cs_bytesetter_pack = CsBytesetterPack()
         self.cs_bytesetter_fini = CsBytesetterFini()
         #
+        self.bytesetter_h = None
         self.blst = deque()
         self.bsize = 0
-    def add(self, bb):
+    def zero(self, bytesetter_h):
+        self.bytesetter_h = bytesetter_h
+        #
+        while self.blst:
+            self.blst.pop()
+        self.bsize = 0
+    def write(self, bb):
         self.blst.append(bb)
         self.bsize += len(bb)
         #
         while self.bsize >= self.mtu:
             self._dispatch_pack()
-    def end(self):
+    def flush(self):
         while self.bsize > 0:
             self._dispatch_pack()
-        self._call_bytesetter_fini()
+        self._call_bytesetter_fini(
+            bytesetter_h=self.bytesetter_h)
     #
-    def _call_bytesetter_pack(self, bb):
+    def _call_bytesetter_pack(self, bytesetter_h, bb):
+        self.cs_bytesetter_pack.bytesetter_h = bytesetter_h
         self.cs_bytesetter_pack.bb = bb
         self.cb_bytesetter_pack(
             cs_bytesetter_pack=self.cs_bytesetter_pack)
-    def _call_bytesetter_fini(self):
+    def _call_bytesetter_fini(self, bytesetter_h):
+        self.cs_bytesetter_fini.bytesetter_h = bytesetter_h
         self.cb_bytesetter_fini(
             cs_bytesetter_fini=self.cs_bytesetter_fini)
+    #
     def _dispatch_pack(self):
         mtu = self.mtu
         #
@@ -86,14 +98,14 @@ class RailBytesetter:
             nail = peri
         #
         self._call_bytesetter_pack(
+            bytesetter_h=self.bytesetter_h,
             bb=out)
         #
         self.bsize -= pack_size
 
-def rail_bytesetter_new(cb_bytesetter_pack, cb_bytesetter_fini, mtu):
+def rail_bytesetter_new(mtu, cb_bytesetter_pack, cb_bytesetter_fini):
     ob = RailBytesetter(
+        mtu=mtu,
         cb_bytesetter_pack=cb_bytesetter_pack,
-        cb_bytesetter_fini=cb_bytesetter_fini,
-        mtu=mtu)
+        cb_bytesetter_fini=cb_bytesetter_fini)
     return ob
-

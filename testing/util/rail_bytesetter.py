@@ -44,11 +44,13 @@ def should_work_when_supplied_string_is_aligned():
         cb_bytesetter_pack=r.cb_bytesetter_pack,
         cb_bytesetter_fini=r.cb_bytesetter_fini,
         mtu=mtu)
+    rail_bytesetter.zero(
+        bytesetter_h='does not matter')
     #
     # step: add 20 bytes of information
-    rail_bytesetter.add(
+    rail_bytesetter.write(
         bb=bytes('0123456789012345', 'utf8'))
-    rail_bytesetter.end()
+    rail_bytesetter.flush()
     #
     # verify: we should have had two callbacks
     assert 3 == len(r.events)
@@ -68,9 +70,11 @@ def should_work_when_supplied_string_is_not_aligned():
         cb_bytesetter_pack=r.cb_bytesetter_pack,
         cb_bytesetter_fini=r.cb_bytesetter_fini,
         mtu=mtu)
+    rail_bytesetter.zero(
+        bytesetter_h='does not matter')
     #
     # step: add 20 bytes of information
-    rail_bytesetter.add(
+    rail_bytesetter.write(
         bb=bytes('0123456789012345678901', 'utf8'))
     #
     # verify: we should have had two callbacks
@@ -80,7 +84,7 @@ def should_work_when_supplied_string_is_not_aligned():
         ('pack', '89012345')]
     #
     # step: call end
-    rail_bytesetter.end()
+    rail_bytesetter.flush()
     #
     # verify: we should have had a further two callback, one for
     # last few bytes, and then a 'fini' callback.
@@ -93,4 +97,3 @@ def should_work_when_supplied_string_is_not_aligned():
 if __name__ == '__main__':
     run_tests(
         unders_file=sys.modules['__main__'].__file__)
-

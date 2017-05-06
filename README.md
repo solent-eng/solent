@@ -85,13 +85,6 @@ For another prespective, see Leslie Lamport's work on State Machine
 Replication (`https://en.m.wikipedia.org/wiki/State_machine_replication`)
 
 
-"What is 'message broadcast' all about?"
-
-Mainstream software techniques build systems from nodes or objects. The
-messages that pass between the nodes are generally an afterthought to the
-behaviour of the nodes themselves. As a result, most software is brittle.
-
-
 "What is 'sequencer architecture' all about?"
 
 Once you have a system of a certain size, you will want to distribute it
@@ -104,7 +97,6 @@ reliable messaging. The messages must be delivered in a deliberately-ordered
 sequence. Hence, sequencer architecture. 
 
 
-
 "What are the advantages again?"
 
 You can build small things quickly. You can easily scale small things into
@@ -114,7 +106,6 @@ Solent is particularly good for addressing embarassingly-concurrent problems.
 Example: simulations, games, trading systems. It's also effective for just
 building small fiddly stuff, such as an application that needed to
 effortlessly juggle several types of network connection at the same time.
-
 
 
 "What components does solent have?"
@@ -201,8 +192,8 @@ These approaches give rise to a programming style that is message-centric and
 event-driven. This encourages a layering approach that leads to robust,
 discoverable systems.
 
-A simple response to most "why didn't you use x" queries is usually, "because
-nearcasting".
+The simpler response to most "why didn't you use x" queries is usually,
+"because nearcasting".
 
 
 /NodeJS
