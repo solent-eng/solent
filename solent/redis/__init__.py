@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-
-from .spin_redis_client import spin_redis_client_new
-from .spin_redis_server import spin_redis_server_new
+from .rail_resp_etcher import rail_resp_etcher_new
+from .rail_resp_parser import rail_resp_parser_new
 

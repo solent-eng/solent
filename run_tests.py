@@ -45,17 +45,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-'''
-for script_name in $(find testing -name "[0-9A-Za-z]*.py" | grep -v '__'); do
-    python3 $script_name
-    if [[ "$?" != "0" ]]; then
-        echo ""
-        echo "(run_tests: something looks wrong, making early exit.)"
-        echo ""
-        exit 1
-    fi
-done
-'''
-
-
-
