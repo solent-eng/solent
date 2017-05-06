@@ -97,4 +97,3 @@ def should_work_when_supplied_string_is_not_aligned():
 if __name__ == '__main__':
     run_tests(
         unders_file=sys.modules['__main__'].__file__)
-

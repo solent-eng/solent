@@ -109,4 +109,3 @@ def rail_bytesetter_new(mtu, cb_bytesetter_pack, cb_bytesetter_fini):
         cb_bytesetter_pack=cb_bytesetter_pack,
         cb_bytesetter_fini=cb_bytesetter_fini)
     return ob
-
