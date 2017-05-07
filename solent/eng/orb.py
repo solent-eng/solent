@@ -65,17 +65,12 @@ class FileSnoop:
         self.nearcast_schema = nearcast_schema
         self.filename = filename
         #
-        self.b_enabled = True
         self.f_ptr = open(filename, 'w+')
         log('Logging to %s'%filename)
     def orb_close(self):
         self.f_ptr.close()
     #
-    def disable(self):
-        self.b_enabled = False
     def on_nearcast_message(self, cog_h, message_h, d_fields):
-        if not self.b_enabled:
-            return
         def format_message():
             sb = []
             sb.append('%s/%s '%(cog_h, message_h))
@@ -96,13 +91,10 @@ class LogSnoop:
     def __init__(self, orb, nearcast_schema):
         self.orb = orb
         self.nearcast_schema = nearcast_schema
-        #
-        self.b_enabled = True
-    def disable(self):
-        self.b_enabled = False
+    def orb_close(self):
+        pass
+    #
     def on_nearcast_message(self, cog_h, message_h, d_fields):
-        if not self.b_enabled:
-            return
         def format_message():
             sb = []
             sb.append('[%s/%s/%s] '%(self.orb.spin_h, cog_h, message_h))
@@ -125,7 +117,7 @@ def nc_%s(self, %s):
     self.nearcast.%s(%s)
 '''
 
-def attach_nc_method_to_cog(cog, mname, fnames):
+def attach_bridge_nc_method_to_cog(cog, mname, fnames):
     nc_name = 'nc_%s'%mname
     cs_fields = ', '.join(fnames)
     #
@@ -147,6 +139,30 @@ def attach_nc_method_to_cog(cog, mname, fnames):
     method = types.MethodType(fn, cog)
     setattr(cog, nc_name, method)
 
+ORB_METADATA_H = '_orb_metadata_ns'
+
+class OrbMetadata:
+    def __init__(self):
+        self.has_orb_turn = False
+        self.has_orb_close = False
+        self.consumes = []
+
+def install_orb_metadata(ob):
+    orb_md = OrbMetadata()
+    #
+    d = dir(ob)
+    if 'orb_turn' in d:
+        orb_md.has_orb_turn = True
+    if 'orb_close' in d:
+        orb_md.has_orb_close = True
+    for mname in d:
+        if not mname.startswith('on_'):
+            continue
+        vname = '_'.join(mname.split('_')[1:])
+        orb_md.consumes.append(vname)
+    #
+    setattr(ob, ORB_METADATA_H, orb_md)
+
 class Orb:
     def __init__(self, spin_h, engine, i_nearcast):
         self.spin_h = spin_h
@@ -165,31 +181,31 @@ class Orb:
         self.distribute()
         #
         for cog in self.cogs:
-            if 'orb_turn' in dir(cog):
-                fn_orb_turn = getattr(cog, 'orb_turn')
-                fn_orb_turn(
+            orb_md = getattr(cog, ORB_METADATA_H)
+            if orb_md.has_orb_turn:
+                cog.orb_turn(
                     activity=activity)
     def eng_close(self):
         for snoop in self.snoops:
-            if 'orb_close' in dir(snoop):
-                snoop.orb_close()
+            snoop.orb_close()
         for cog in self.cogs:
-            if 'orb_close' in dir(cog):
+            orb_md = getattr(cog, ORB_METADATA_H)
+            if orb_md.has_orb_close:
                 cog.orb_close()
     #
     def set_spin_h(self, spin_h):
         self.spin_h = spin_h
     def add_file_snoop(self, filename):
-        self.snoops.append(
-            FileSnoop(
-                orb=self,
-                nearcast_schema=self.nearcast_schema,
-                filename=filename))
+        snoop = FileSnoop(
+            orb=self,
+            nearcast_schema=self.nearcast_schema,
+            filename=filename)
+        self.snoops.append(snoop)
     def add_log_snoop(self):
-        self.snoops.append(
-            LogSnoop(
-                orb=self,
-                nearcast_schema=self.nearcast_schema))
+        snoop = LogSnoop(
+            orb=self,
+            nearcast_schema=self.nearcast_schema)
+        self.snoops.append(snoop)
     def init_cog(self, construct):
         cog = construct(
             cog_h=construct.__name__,
@@ -206,7 +222,7 @@ class Orb:
         cog = self.init_cog(
             construct=BridgeFoundation)
         for (message_h, fields) in self.nearcast_schema.messages.items():
-            attach_nc_method_to_cog(
+            attach_bridge_nc_method_to_cog(
                 cog=cog,
                 mname=message_h,
                 fnames=fields)
@@ -244,6 +260,16 @@ class Orb:
                      , "params are inconsistent: [%s]"%('|'.join(args))
                      ]
                 raise Exception(' '.join(sb))
+        #
+        # validate the dev has not attempted to create turn or close methods.
+        if 'orb_turn' in dir(track):
+            raise Exception("Tracks are not allowed to orb_turn. (%s)"%(
+                str(track)))
+        if 'orb_close' in dir(track):
+            raise Exception("Tracks are not allowed to orb_close. (%s)"%(
+                str(track)))
+        #
+        install_orb_metadata(track)
         #
         self.tracks.append(track)
         return track
@@ -285,15 +311,15 @@ class Orb:
         '''
         while self.pending:
             (cog_h, message_h, d_fields) = self.pending.popleft()
-            rname = 'on_%s'%(message_h)
             for snoop in self.snoops:
                 snoop.on_nearcast_message(
                     cog_h=cog_h,
                     message_h=message_h,
                     d_fields=d_fields)
             for track in self.tracks:
-                if rname in dir(track):
-                    fn = getattr(track, rname)
+                orb_md = getattr(track, ORB_METADATA_H)
+                if message_h in orb_md.consumes:
+                    fn = getattr(track, 'on_%s'%(message_h))
                     try:
                         fn(**d_fields)
                     except SolentQuitException:
@@ -305,8 +331,9 @@ class Orb:
                         log('')
                         raise
             for cog in self.cogs:
-                if rname in dir(cog):
-                    fn = getattr(cog, rname)
+                orb_md = getattr(cog, ORB_METADATA_H)
+                if message_h in orb_md.consumes:
+                    fn = getattr(cog, 'on_%s'%message_h)
                     try:
                         fn(**d_fields)
                     except SolentQuitException:
@@ -373,6 +400,8 @@ class Orb:
                      , "fields are inconsistent: [%s]"%(', '.join(args))
                      ]
                 raise Exception(' '.join(sb))
+        #
+        install_orb_metadata(cog)
         #
         self.nearcast_schema.attach_nearcast_dispatcher_on_cog(
             orb=self,

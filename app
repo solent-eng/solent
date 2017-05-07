@@ -26,13 +26,14 @@ popd
 #python -m testing.util.rail_bytesetter
 
 #
-# Networking
-#python -m solent.eng.scenarios
+# Release
+python -m solent.release.snake --curses
+#python -m solent.release.roguebox_00_weed_the_garden --pygame
 
 #
-# Release
-#python -m solent.release.snake --pygame
-#python -m solent.release.roguebox_00_weed_the_garden --pygame
+# Scenarios
+#python -m solent.scenarios.profile_event_loop
+#python -m solent.eng.scenarios
 
 #
 # Tools
@@ -59,7 +60,7 @@ popd
 #python -m solent.draft.gruel_client_sandbox --pygame
 #python -m solent.draft.mountain_box --pygame
 #python -m solent.draft.oled_ui_demo
-python -m solent.draft.redis_client
+#python -m solent.draft.redis_client
 #python -m solent.draft.roguebox --pygame
 #python -m solent.draft.sdl
 #python -m solent.draft.turn_based_game --curses

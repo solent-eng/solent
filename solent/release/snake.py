@@ -561,7 +561,6 @@ def game(console_type):
         #
         orb = engine.init_orb(
             i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
-        orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)
         orb.init_cog(CogMenu)
