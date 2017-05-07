@@ -189,10 +189,12 @@ class Engine(object):
         b_any_activity_at_all = False
         #
         # Caller's callback
-        orbs_in_this_loop = list(self.spins.values())
-        for orb in orbs_in_this_loop:
-            orb.eng_turn(
+        spins_in_this_loop = list(self.spins.values())
+        for spin in spins_in_this_loop:
+            spin.eng_turn(
                 activity=self.activity)
+        #
+        # Determine if there was activity
         lst_orb_activity = self.activity.get()
         if lst_orb_activity:
             self.activity.clear()

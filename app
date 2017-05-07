@@ -26,7 +26,8 @@ popd
 #python -m testing.util.rail_bytesetter
 
 #
-# Networking
+# Scenarios
+python -m solent.scenarios.profile_event_loop
 #python -m solent.eng.scenarios
 
 #
@@ -59,7 +60,7 @@ popd
 #python -m solent.draft.gruel_client_sandbox --pygame
 #python -m solent.draft.mountain_box --pygame
 #python -m solent.draft.oled_ui_demo
-python -m solent.draft.redis_client
+#python -m solent.draft.redis_client
 #python -m solent.draft.roguebox --pygame
 #python -m solent.draft.sdl
 #python -m solent.draft.turn_based_game --curses
