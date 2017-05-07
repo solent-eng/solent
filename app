@@ -26,14 +26,14 @@ popd
 #python -m testing.util.rail_bytesetter
 
 #
-# Scenarios
-python -m solent.scenarios.profile_event_loop
-#python -m solent.eng.scenarios
+# Release
+python -m solent.release.snake --curses
+#python -m solent.release.roguebox_00_weed_the_garden --pygame
 
 #
-# Release
-#python -m solent.release.snake --pygame
-#python -m solent.release.roguebox_00_weed_the_garden --pygame
+# Scenarios
+#python -m solent.scenarios.profile_event_loop
+#python -m solent.eng.scenarios
 
 #
 # Tools

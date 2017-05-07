@@ -65,17 +65,12 @@ class FileSnoop:
         self.nearcast_schema = nearcast_schema
         self.filename = filename
         #
-        self.b_enabled = True
         self.f_ptr = open(filename, 'w+')
         log('Logging to %s'%filename)
     def orb_close(self):
         self.f_ptr.close()
     #
-    def disable(self):
-        self.b_enabled = False
     def on_nearcast_message(self, cog_h, message_h, d_fields):
-        if not self.b_enabled:
-            return
         def format_message():
             sb = []
             sb.append('%s/%s '%(cog_h, message_h))
@@ -96,13 +91,10 @@ class LogSnoop:
     def __init__(self, orb, nearcast_schema):
         self.orb = orb
         self.nearcast_schema = nearcast_schema
-        #
-        self.b_enabled = True
-    def disable(self):
-        self.b_enabled = False
+    def orb_close(self):
+        pass
+    #
     def on_nearcast_message(self, cog_h, message_h, d_fields):
-        if not self.b_enabled:
-            return
         def format_message():
             sb = []
             sb.append('[%s/%s/%s] '%(self.orb.spin_h, cog_h, message_h))
@@ -195,9 +187,7 @@ class Orb:
                     activity=activity)
     def eng_close(self):
         for snoop in self.snoops:
-            orb_md = getattr(snoop, ORB_METADATA_H)
-            if orb_md.has_orb_close:
-                snoop.orb_close()
+            snoop.orb_close()
         for cog in self.cogs:
             orb_md = getattr(cog, ORB_METADATA_H)
             if orb_md.has_orb_close:
@@ -270,6 +260,14 @@ class Orb:
                      , "params are inconsistent: [%s]"%('|'.join(args))
                      ]
                 raise Exception(' '.join(sb))
+        #
+        # validate the dev has not attempted to create turn or close methods.
+        if 'orb_turn' in dir(track):
+            raise Exception("Tracks are not allowed to orb_turn. (%s)"%(
+                str(track)))
+        if 'orb_close' in dir(track):
+            raise Exception("Tracks are not allowed to orb_close. (%s)"%(
+                str(track)))
         #
         install_orb_metadata(track)
         #
