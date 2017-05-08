@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-#
-# roguebox
-#
-# // overview
-# Nearcast that is designed to contain a roguelike game.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,6 +15,9 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Nearcast that is contains a simple roguelike game.
 
 from solent import solent_cpair
 from solent import solent_keycode
@@ -609,16 +605,9 @@ def game(console_type):
             engine.close()
 
 def main():
-    #
-    if '--curses' in sys.argv:
-        console_type = 'curses'
-    elif '--pygame' in sys.argv:
-        console_type = 'pygame'
-    else:
-        print('ERROR: specify either --curses or --pygame')
-        sys.exit(1)
-    #
-    game(console_type)
+    console_type = 'curses'
+    game(
+        console_type=console_type)
 
 if __name__ == '__main__':
     main()

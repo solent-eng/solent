@@ -1,6 +1,3 @@
-#
-# ip_validator (testing)
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -21,12 +18,11 @@
 
 from solent import solent_cpair
 from solent.console import cgrid_new
-
-from testing import run_tests
-from testing import test
-from testing.util import clock_fake
-
 from solent.eng import ip_validator_new
+from solent.test import run_tests
+from solent.test import test
+
+from testing.util import clock_fake
 
 import sys
 
@@ -180,6 +176,5 @@ def should_copy_fine_despite_us_not_supplying_a_nail_param_to_blit():
     return True
 
 if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+    run_tests()
 

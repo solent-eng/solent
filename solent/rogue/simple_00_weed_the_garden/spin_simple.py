@@ -1,9 +1,3 @@
-#
-# spin_simple
-#
-# // overview
-# Simple game developed as part of the evolution of roguebox.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -21,6 +15,9 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Simple game developed as part of the evolution of roguebox.
 
 from solent import solent_cpair
 from solent.console import cgrid_new

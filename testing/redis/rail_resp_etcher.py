@@ -16,11 +16,9 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from testing import run_tests
-from testing import test
-from testing.util import clock_fake
-
 from solent.redis import rail_resp_etcher_new
+from solent.test import run_tests
+from solent.test import test
 
 import sys
 
@@ -178,6 +176,5 @@ def should_handle_arrays():
     return True
 
 if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+    run_tests()
 

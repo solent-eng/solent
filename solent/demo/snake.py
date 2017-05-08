@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-#
-# snake
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -582,13 +578,7 @@ def game(console_type):
             engine.close()
 
 def main():
-    if '--curses' in sys.argv:
-        console_type = 'curses'
-    elif '--pygame' in sys.argv:
-        console_type = 'pygame'
-    else:
-        print('ERROR: specify either --curses or --pygame')
-        sys.exit(1)
+    console_type = 'curses'
     game(
         console_type=console_type)
 

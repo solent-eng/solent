@@ -16,24 +16,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from testing import run_tests
-from testing import test
-
-from solent.eng import scenarios_empty
-
-# /just want a basic test to see that scenarios doesn't crash outright.
-# /next step: get one scenario running from a test
-# /later: this file should evolve to become testing/eng/engine.
-
-@test
-def should_not_crash():
-    # If we can do this, we can at least be confident that there are no
-    # fundamental syntax errors in the scenarios class.
-    scenarios_empty()
-    #
-    return True
-
-if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+from .impl import clear_tests
+from .impl import have_tests
+from .impl import run_tests
+from .impl import test
 

@@ -16,31 +16,31 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-class CsRespHead(object):
+class CsRespHead:
     def __init__(self):
         pass
 
-class CsRespTail(object):
+class CsRespTail:
     def __init__(self):
         pass
 
-class CsRespStr(object):
+class CsRespStr:
     def __init__(self):
         pass
 
-class CsRespErr(object):
+class CsRespErr:
     def __init__(self):
         pass
 
-class CsRespInt(object):
+class CsRespInt:
     def __init__(self):
         pass
 
-class CsRespArrInc(object):
+class CsRespArrInc:
     def __init__(self):
         pass
 
-class CsRespArrDec(object):
+class CsRespArrDec:
     def __init__(self):
         pass
 
@@ -61,6 +61,17 @@ class RailRespAssembler:
         self.cs_resp_int = CsRespInt()
         self.cs_resp_arr_inc = CsRespArrInc()
         self.cs_resp_arr_dec = CsRespArrDec()
+
+def rail_resp_assembler_new(cb_resp_head, cb_resp_tail, cb_resp_str, cb_resp_err, cb_resp_int, cb_resp_arr_inc, cb_resp_arr_dec):
+    ob = RailRespAssembler(
+        cb_resp_head=cb_resp_head,
+        cb_resp_tail=cb_resp_tail,
+        cb_resp_str=cb_resp_str,
+        cb_resp_err=cb_resp_err,
+        cb_resp_int=cb_resp_int,
+        cb_resp_arr_inc=cb_resp_arr_inc,
+        cb_resp_arr_dec=cb_resp_arr_dec)
+    return ob
 
 class CsParseData:
     def __init__(self):
@@ -100,6 +111,7 @@ class RailRespParser:
         self.parse_h = None
         self.state = STATE_IDLE
     def accept(self, s):
+        raise Exception('not yet implemented')
 
 def rail_resp_parser_new(cb_parse_data):
     ob = RailRespParser(

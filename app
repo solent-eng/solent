@@ -27,11 +27,13 @@ popd
 
 #
 # Release
-python -m solent.release.snake --curses
-#python -m solent.release.roguebox_00_weed_the_garden --pygame
+#python -m solent.demo.snake
+#python -m solent.demo.weeds
 
 #
 # Scenarios
+#python -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
+python -m solent.scenarios.eng_20_orb_hosted_tcp_server
 #python -m solent.scenarios.profile_event_loop
 #python -m solent.eng.scenarios
 

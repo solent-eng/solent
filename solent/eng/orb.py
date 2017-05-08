@@ -311,6 +311,7 @@ class Orb:
         '''
         while self.pending:
             (cog_h, message_h, d_fields) = self.pending.popleft()
+            rname = 'on_%s'%message_h
             for snoop in self.snoops:
                 snoop.on_nearcast_message(
                     cog_h=cog_h,
@@ -319,7 +320,7 @@ class Orb:
             for track in self.tracks:
                 orb_md = getattr(track, ORB_METADATA_H)
                 if message_h in orb_md.consumes:
-                    fn = getattr(track, 'on_%s'%(message_h))
+                    fn = getattr(track, rname)
                     try:
                         fn(**d_fields)
                     except SolentQuitException:
@@ -333,7 +334,7 @@ class Orb:
             for cog in self.cogs:
                 orb_md = getattr(cog, ORB_METADATA_H)
                 if message_h in orb_md.consumes:
-                    fn = getattr(cog, 'on_%s'%message_h)
+                    fn = getattr(cog, rname)
                     try:
                         fn(**d_fields)
                     except SolentQuitException:
