@@ -19,11 +19,9 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from testing import run_tests
-from testing import test
-from testing.util import clock_fake
-
 from solent.eng import ip_validator_new
+from solent.test import run_tests
+from solent.test import test
 
 import sys
 
@@ -100,6 +98,5 @@ def should_clear_when_told_to():
     return True
 
 if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+    run_tests()
 

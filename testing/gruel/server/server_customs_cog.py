@@ -21,8 +21,6 @@
 
 from fake.eng import fake_engine_new
 
-from testing import run_tests
-from testing import test
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent import uniq
@@ -35,6 +33,8 @@ from solent.gruel.server.nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.server_customs_cog import server_customs_cog_new
 from solent.gruel.server.server_customs_cog import ServerCustomsState
 from solent.log import log
+from solent.test import run_tests
+from solent.test import test
 
 from enum import Enum
 import sys
@@ -545,6 +545,5 @@ def should_convert_heartbeat_requests_to_gruel():
     return True
 
 if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+    run_tests()
 

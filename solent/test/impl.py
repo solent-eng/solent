@@ -1,10 +1,3 @@
-#
-# libtest
-#
-# // overview
-# Basic bootstrap for a testing system.
-# There's lots wrong with this, but it's effective for the moment.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,6 +15,9 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Simple, effective bootstrap for a testing system.
 
 from os import path
 import sys

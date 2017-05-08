@@ -21,9 +21,6 @@
 
 from fake.util import fake_clock_new
 
-from testing import run_tests
-from testing import test
-
 from solent import uniq
 from solent.eng import activity_new
 from solent.eng import cs
@@ -34,6 +31,8 @@ from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_client_new
 from solent.log import hexdump_bytes
 from solent.log import log
+from solent.test import run_tests
+from solent.test import test
 
 from collections import deque
 import sys
@@ -652,6 +651,5 @@ def should_send_payloads_correctly():
     return True
 
 if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+    run_tests()
 

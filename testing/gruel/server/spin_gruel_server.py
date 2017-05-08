@@ -21,9 +21,6 @@
 
 from solent.eng import engine_new
 
-from testing import run_tests
-from testing import test
-from testing.util import clock_fake
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent import uniq
@@ -35,6 +32,8 @@ from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_server_new
 from solent.log import log
 from solent.log import hexdump_bytes
+from solent.test import run_tests
+from solent.test import test
 
 import sys
 
@@ -89,6 +88,5 @@ def should_construct_and_start_and_stop():
     return True
 
 if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+    run_tests()
 

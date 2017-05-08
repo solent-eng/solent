@@ -19,9 +19,6 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from testing import run_tests
-from testing import test
-
 from solent import uniq
 from solent.eng import activity_new
 from solent.eng import engine_new
@@ -32,6 +29,8 @@ from solent.gruel.gruel_protocol import GruelMessageType
 from solent.gruel.server.nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.tcp_server_cog import tcp_server_cog_new
 from solent.log import log
+from solent.test import run_tests
+from solent.test import test
 
 import sys
 
@@ -559,6 +558,5 @@ def should_send_gruel_send_data_to_a_connected_client():
     return True
 
 if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+    run_tests()
 

@@ -16,11 +16,10 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from testing import run_tests
-from testing import test
-from testing.util import clock_fake
-
+from solent.redis import rail_resp_assembler_new
 from solent.redis import rail_resp_parser_new
+from solent.test import run_tests
+from solent.test import test
 
 import sys
 
@@ -55,7 +54,7 @@ class Receiver:
 def should_parse_message_to_structure():
     r = Receiver()
     #
-    rail_resp_parser = rail_resp_parser_new(
+    rail_resp_assembler = rail_resp_assembler_new(
         cb_resp_head=r.cb_resp_head,
         cb_resp_tail=r.cb_resp_tail,
         cb_resp_str=r.cb_resp_str,
@@ -67,6 +66,5 @@ def should_parse_message_to_structure():
     return True
 
 if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+    run_tests()
 

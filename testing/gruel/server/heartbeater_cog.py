@@ -21,9 +21,6 @@
 
 from fake.eng import fake_engine_new
 
-from testing import run_tests
-from testing import test
-
 from solent import uniq
 from solent.eng import activity_new
 from solent.eng.cs import *
@@ -35,6 +32,8 @@ from solent.gruel.server.heartbeater_cog import heartbeater_cog_new
 from solent.gruel.server.server_customs_cog import server_customs_cog_new
 from solent.gruel.server.server_customs_cog import ServerCustomsState
 from solent.log import log
+from solent.test import run_tests
+from solent.test import test
 
 from enum import Enum
 import sys
@@ -96,6 +95,5 @@ def should_start_on_announce_login_and_stop_on_announce_condrop():
     return True
 
 if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
+    run_tests()
 

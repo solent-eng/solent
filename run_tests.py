@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from testing.libtest import clear_tests
-from testing.libtest import have_tests
-from testing.libtest import run_tests
+from solent.test import clear_tests
+from solent.test import have_tests
+from solent.test import run_tests
 
 import os
 import sys

@@ -17,5 +17,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from .rail_resp_etcher import rail_resp_etcher_new
+
+from .rail_resp_parser import rail_resp_assembler_new
 from .rail_resp_parser import rail_resp_parser_new
 

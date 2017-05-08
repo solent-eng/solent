@@ -19,14 +19,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from testing import run_tests
-from testing import test
-
-from solent.log import log
-
 from solent import solent_cpair
 from solent.console import cgrid_new
+from solent.log import log
 from solent.rogue import spin_message_feed_new
+from solent.test import run_tests
+from solent.test import test
 
 HEIGHT = 3
 WIDTH = 10
@@ -183,7 +181,5 @@ def should_scroll_past_old_messages():
     return True
 
 if __name__ == '__main__':
-    run_tests(
-        unders_file=sys.modules['__main__'].__file__)
-
+    run_tests()
 

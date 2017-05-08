@@ -16,6 +16,3 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .libtest import test
-from .libtest import run_tests
-

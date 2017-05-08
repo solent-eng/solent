@@ -28,5 +28,4 @@ from .activity import activity_new
 from .engine import engine_new as engine_new
 from .engine import engine_new as QuitEvent
 from .ip_validator import ip_validator_new
-from .scenarios import scenarios_empty
 

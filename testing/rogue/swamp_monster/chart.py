@@ -16,11 +16,10 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from testing import run_tests
-from testing import test
-
 from solent.log import log
 from solent.rogue.swamp_monster.chart import chart_new
+from solent.test import run_tests
+from solent.test import test
 
 import sys
 

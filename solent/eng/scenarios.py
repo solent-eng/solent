@@ -123,84 +123,6 @@ import time
 import traceback
 import unittest
 
-def scenario_basic_nearcast_example(engine):
-    '''
-    // What's happening here?
-
-    We define a nearcast schema. The cogs can use this to communicate between
-    one another. In this schema, there is a single type of message defined,
-    the nearcast_note. It has two fields.
-
-    CogSender will be instantiated. It will count turns of the event
-    loop. On turn #3 it nearcasts.
-
-    CogPrint will be instantiated. It has a method that watches for messages
-    of type nearcast_note, and then prints them out.
-
-    CogQuitter will be instantiated. It counts turns, and quits a while
-    longer than the other activity.
-
-    '''
-    # this is a dsl for defining nearcasts
-    i_nearcast = '''
-        i message h
-        i field h
-
-        message nearcast_note
-            field field_a
-            field field_b
-    '''
-    #
-    class CogSender:
-        def __init__(self, cog_h, orb, engine):
-            self.cog_h = cog_h
-            self.orb = orb
-            self.engine = engine
-            #
-            self.turn_counter = 0
-        def orb_turn(self, activity):
-            self.turn_counter += 1
-            if self.turn_counter == 3:
-                activity.mark(
-                    l=self,
-                    s="reached the important turn")
-                self.orb.nearcast(
-                    cog=self,
-                    message_h='nearcast_note',
-                    field_a='text in a',
-                    field_b='text in b')
-                log('%s sent nearcast note'%(self.cog_h))
-    class CogPrinter:
-        def __init__(self, cog_h, orb, engine):
-            self.cog_h = cog_h
-            self.orb = orb
-            self.engine = engine
-        def on_nearcast_note(self, field_a, field_b):
-            log('%s received nearcast_note [%s] [%s]'%(
-                self.cog_h, field_a, field_b))
-    class CogQuitter:
-        def __init__(self, cog_h, orb, engine):
-            self.cog_h = cog_h
-            self.orb = orb
-            self.engine = engine
-            #
-            self.turn_counter = 0
-        def orb_turn(self, activity):
-            self.turn_counter += 1
-            if self.turn_counter == 8:
-                activity.mark(
-                    l=self,
-                    s='last turn, quitting')
-                log('quitting')
-                raise SolentQuitException()
-    #
-    orb = engine.init_orb(
-        i_nearcast=i_nearcast)
-    orb.init_cog(CogSender)
-    orb.init_cog(CogPrinter)
-    orb.init_cog(CogQuitter)
-    engine.event_loop()
-
 #
 # This class provides broadcast listen functionality. It's easy to
 # embed this within a cog.
@@ -1274,10 +1196,11 @@ def main():
     engine = engine_new(
         mtu=1492)
     try:
+
         #
-        # Comment these in or out as you want to test scenarios.
-        #
-        scenario_basic_nearcast_example(engine)
+        # done: eng_20_tcp_server
+        # new: eng_21_line_console
+        # new: eng_22_multiple_tcp_servers
         #scenario_sub_simple(engine)
         #scenario_sub_listen_and_unlisten(engine)
         #scenario_multiple_tcp_servers(engine)
@@ -1296,10 +1219,6 @@ def main():
         traceback.print_exc()
     finally:
         engine.close()
-
-def scenarios_empty():
-    # use this in testing
-    pass
 
 if __name__ == '__main__':
     main()
