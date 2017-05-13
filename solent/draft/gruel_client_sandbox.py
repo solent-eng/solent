@@ -37,7 +37,7 @@ from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_client_new
 from solent.log import init_logging
 from solent.log import log
-from solent.util import line_finder_new
+from solent.util import rail_line_finder_new
 
 from collections import deque
 from collections import OrderedDict as od
@@ -411,7 +411,7 @@ class CogShell:
         self.engine = engine
         #
         self.b_first = True
-        self.line_finder = line_finder_new(
+        self.rail_line_finder = rail_line_finder_new(
             cb_line=self._console_line)
     #
     def orb_turn(self, activity):
@@ -424,7 +424,7 @@ class CogShell:
             self.b_first = False
     #
     def on_client_keycode(self, keycode):
-        self.line_finder.accept_string(
+        self.rail_line_finder.accept_string(
             s=chr(keycode))
         if keycode == solent_keycode('newline'):
             self.nearcast.term_console_newline()

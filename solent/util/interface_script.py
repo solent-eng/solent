@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.util.line_finder import line_finder_new
+from solent.util.rail_line_finder import rail_line_finder_new
 
 import inspect
 
@@ -107,11 +107,11 @@ class InterfaceScriptParser(object):
         # on_signal(iname, values) -> None
         self.cb_signal = cb_signal
         #
-        self.finder = line_finder_new(
+        self.rail_line_finder = rail_line_finder_new(
             cb_line=self._on_line)
         self.interfaces = {}
     def parse(self, s):
-        self.finder.accept_string(
+        self.rail_line_finder.accept_string(
 			s=s)
     def _on_line(self, line):
         tokens = parse_line_to_tokens(line)

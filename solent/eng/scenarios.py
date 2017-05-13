@@ -114,7 +114,7 @@ from solent.eng import engine_new
 from solent.eng import QuitEvent
 from solent.log import init_logging
 from solent.log import log
-from solent.util import line_finder_new
+from solent.util import rail_line_finder_new
 
 from collections import deque
 import logging
@@ -134,7 +134,7 @@ class BroadcastListener:
         self.cb_on_line = cb_on_line
         #
         self.sub_sid = None
-        self.line_finder = line_finder_new(
+        self.rail_line_finder = rail_line_finder_new(
             cb_line=self.cb_on_line)
     def start(self, ip, port):
         self.engine.open_sub(
@@ -155,7 +155,7 @@ class BroadcastListener:
         log('sub %s started %s:%s'%(sub_sid, addr, port))
         #
         self.sub_sid = sub_sid
-        self.line_finder.clear()
+        self.rail_line_finder.clear()
     def _engine_on_sub_stop(self, cs_sub_stop):
         engine = cs_sub_stop.engine
         sub_sid = cs_sub_stop.sub_sid
@@ -164,7 +164,7 @@ class BroadcastListener:
         log('sub stopped %s'%sub_sid)
         #
         self.sub_sid = None
-        self.line_finder.clear()
+        self.rail_line_finder.clear()
     def _engine_on_sub_recv(self, cs_sub_recv):
         engine = cs_sub_recv.engine
         sub_sid = cs_sub_recv.sub_sid
@@ -172,7 +172,7 @@ class BroadcastListener:
         #
         log('sub recv (len %s)'%(len(bb)))
         #
-        self.line_finder.accept_bytes(
+        self.rail_line_finder.accept_bytes(
             bb=bb)
 
 def scenario_sub_simple(engine):

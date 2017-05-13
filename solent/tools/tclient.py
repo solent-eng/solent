@@ -1,14 +1,5 @@
 #!/usr/bin/python -B
 #
-# tclient
-#
-# // overview
-# Simple tcp client tool. You could think of it as being similar to netcat.
-# The motive for writing it is that I do not have something to hand on
-# Windows, and I'm working through the engine scenarios for that platform.
-# For the moment I'm just hard-coding it to pygame. If you're in unix,
-# you probably have something else handy.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -26,6 +17,13 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Simple tcp client tool. You could think of it as being similar to netcat.
+# The motive for writing it is that I do not have something to hand on
+# Windows, and I'm working through the engine scenarios for that platform.
+# For the moment I'm just hard-coding it to pygame. If you're in unix,
+# you probably have something else handy.
 
 from solent import solent_cpair
 from solent import solent_keycode
@@ -35,7 +33,7 @@ from solent.log import init_logging
 from solent.log import log
 from solent.log import hexdump_bytes
 from solent.term import spin_term_new
-from solent.util import line_finder_new
+from solent.util import rail_line_finder_new
 
 import sys
 import time
@@ -117,7 +115,7 @@ class CogTerm:
         self.engine = engine
         #
         self.spin_term = None
-        self.line_finder = None
+        self.rail_line_finder = None
         self.drop = None
         self.rest = None
     #
@@ -134,7 +132,7 @@ class CogTerm:
         self.rest = 0
         self.spin_term.refresh_console()
     def on_net_connect(self):
-        self.line_finder = line_finder_new(
+        self.rail_line_finder = rail_line_finder_new(
             cb_line=self.lfinder_on_line)
         #
         self.spin_term.clear()
@@ -147,7 +145,7 @@ class CogTerm:
         self.rest = 0
         self.spin_term.refresh_console()
     def on_net_condrop(self, message):
-        self.line_finder = None
+        self.rail_line_finder = None
         #
         self.spin_term.clear()
         self.spin_term.write(
@@ -166,14 +164,14 @@ class CogTerm:
         self.spin_term.refresh_console()
     #
     def term_on_keycode(self, keycode):
-        if None == self.line_finder:
+        if None == self.rail_line_finder:
             return
         #
         cpair = solent_cpair('orange')
         # This backspace mechanism is far from perfect.
         if keycode == solent_keycode('backspace'):
-            self.line_finder.backspace()
-            s = self.line_finder.get()
+            self.rail_line_finder.backspace()
+            s = self.rail_line_finder.get()
             idx = len(s)%CONSOLE_WIDTH
             s = s[-1*idx:]
             self.spin_term.write(
@@ -183,7 +181,7 @@ class CogTerm:
                 cpair=cpair)
             self.rest = len(s)
         else:
-            self.line_finder.accept_bytes([keycode])
+            self.rail_line_finder.accept_bytes([keycode])
             self._print(
                 keycode=keycode,
                 cpair=cpair)

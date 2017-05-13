@@ -33,7 +33,8 @@ popd
 #
 # Scenarios
 #python -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
-python -m solent.scenarios.eng_20_orb_hosted_tcp_server
+#python -m solent.scenarios.eng_20_orb_hosted_tcp_server
+python -m solent.scenarios.eng_21_line_console
 #python -m solent.scenarios.profile_event_loop
 #python -m solent.eng.scenarios
 

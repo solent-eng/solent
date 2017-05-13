@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-#
-# line finder
-#
-# // overview
-# Useful when you are looking to identify a line of text as it comes. This
-# class can be run against streams, and issues a callback each time it finds
-# a line.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -24,6 +15,11 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Useful when you are looking to identify a line of text as it comes. This
+# class can be run against streams, and issues a callback each time it finds
+# a line.
 
 from solent import solent_keycode
 from solent.log import log
@@ -35,7 +31,7 @@ ENDINGS = (
     solent_keycode('newline'),
     solent_keycode('eot'))
 
-class LineFinder:
+class RailLineFinder:
     "When you get to the end of a line, callback."
     def __init__(self, cb_line):
         self.cb_line = cb_line
@@ -66,8 +62,8 @@ class LineFinder:
         if self.sb:
             self.sb.pop()
 
-def line_finder_new(cb_line):
-    ob = LineFinder(
+def rail_line_finder_new(cb_line):
+    ob = RailLineFinder(
         cb_line=cb_line)
     return ob
 
