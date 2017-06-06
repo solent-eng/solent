@@ -26,19 +26,25 @@ from solent.log import log
 
 import types
 
-ENDINGS = (
+STANDARD_ENDINGS = (
     solent_keycode('nul'),
     solent_keycode('newline'),
     solent_keycode('eot'))
 
+class CsFoundLine:
+    def __init__(self):
+        self.msg = None
+
 class RailLineFinder:
     "When you get to the end of a line, callback."
-    def __init__(self, cb_line):
-        self.cb_line = cb_line
+    def __init__(self, cb_found_line, endings):
+        self.cb_found_line = cb_found_line
+        self.endings = endings
+        #
+        self.cs_found_line = CsFoundLine()
         #
         self.sb = []
-    def clear(self):
-        self.sb = []
+    #
     def accept_bytes(self, bb):
         for b in bb:
             self.accept_string(
@@ -47,9 +53,11 @@ class RailLineFinder:
         if not isinstance(s, str):
             raise Exception('Wrong type supplied [%s]'%(type(s)))
         for c in s:
-            if ord(c) in ENDINGS:
-                self.cb_line(''.join(self.sb))
-                self.sb = []
+            if ord(c) in self.endings:
+                msg = ''.join(self.sb)
+                self._call_found_line(
+                    msg=msg)
+                self.clear()
             else:
                 self.sb.append(c)
     def get(self):
@@ -58,12 +66,24 @@ class RailLineFinder:
         a terminal while you do.'''
         return ''.join(self.sb)
     def backspace(self):
-        'useful for backspace'
         if self.sb:
             self.sb.pop()
+    def flush(self):
+        msg = ''.join(self.sb)
+        line = self._call_found_line(
+            msg=msg)
+        self.clear()
+    def clear(self):
+        self.sb = []
+    #
+    def _call_found_line(self, msg):
+        self.cs_found_line.msg = msg
+        self.cb_found_line(
+            cs_found_line=self.cs_found_line)
 
-def rail_line_finder_new(cb_line):
+def rail_line_finder_new(cb_found_line):
     ob = RailLineFinder(
-        cb_line=cb_line)
+        cb_found_line=cb_found_line,
+        endings=STANDARD_ENDINGS)
     return ob
 

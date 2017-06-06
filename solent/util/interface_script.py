@@ -108,12 +108,14 @@ class InterfaceScriptParser(object):
         self.cb_signal = cb_signal
         #
         self.rail_line_finder = rail_line_finder_new(
-            cb_line=self._on_line)
+            cb_found_line=self.cb_found_line)
         self.interfaces = {}
     def parse(self, s):
         self.rail_line_finder.accept_string(
 			s=s)
-    def _on_line(self, line):
+    def cb_found_line(self, cs_found_line):
+        line = cs_found_line.msg
+        #
         tokens = parse_line_to_tokens(line)
         if not tokens:
             return

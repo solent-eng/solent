@@ -125,10 +125,7 @@ class CogTcpServer:
         self.engine.close_tcp_server(
             server_sid=self.server_sid)
 
-def app():
-    engine = engine_new(
-        mtu=MTU)
-    #
+def app(engine):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
     orb.init_cog(CogTcpServer)
@@ -139,12 +136,17 @@ def app():
     engine.event_loop()
 
 def main():
+    engine = engine_new(
+        mtu=MTU)
     try:
-        app()
+        run_scenario(
+            engine=engine)
     except KeyboardInterrupt:
         pass
     except SolentQuitException:
         pass
+    finally:
+        engine.close()
 
 if __name__ == '__main__':
     main()

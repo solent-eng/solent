@@ -1,10 +1,5 @@
 #!/usr/bin/python -B
 #
-# qd_poll
-#
-# // overview
-# Simple UDP broadcaster.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,9 +17,12 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Simple UDP broadcaster. Regularly broadcasts a small UDP message. Useful for
+# producing a stream of data with which to test/validate a UDP subscriber.
 
 from solent.eng import engine_new
-from solent.log import init_logging
 from solent.log import log
 from solent.log import hexdump_bytes
 
@@ -32,6 +30,10 @@ import sys
 import time
 import traceback
 
+
+# --------------------------------------------------------
+#   model
+# --------------------------------------------------------
 I_NEARCAST_SCHEMA = '''
     i message h
         i field h
@@ -40,11 +42,6 @@ I_NEARCAST_SCHEMA = '''
         field addr
         field port
 '''
-
-def usage():
-    print('Usage:')
-    print('  %s broadcast_addr port'%sys.argv[0])
-    sys.exit(1)
 
 class CogUdpSender:
     def __init__(self, cog_h, orb, engine):
@@ -64,26 +61,23 @@ class CogUdpSender:
             self.engine.send(
                 sid=self.pub_sid,
                 bb=bytes('message at [%s]\n'%now, 'utf8'))
-    def orb_close(self):
-        self.engine.close_broadcast_listener(
-            sid=self.pub_sid)
-        self.pub_sid = None
     #
     def on_init(self, addr, port):
         self.engine.open_pub(
             addr=addr,
             port=port,
-            cb_pub_start=self._engine_on_pub_start,
-            cb_pub_stop=self._engine_on_pub_stop)
+            cb_pub_start=self.cb_pub_start,
+            cb_pub_stop=self.cb_pub_stop)
         self.t_last = 0
-    def _engine_on_pub_start(self, cs_pub_start):
+    #
+    def cb_pub_start(self, cs_pub_start):
         engine = cs_pub_start.engine
         pub_sid = cs_pub_start.pub_sid
         addr = cs_pub_start.addr
         port = cs_pub_start.port
         #
         self.pub_sid = pub_sid
-    def _engine_on_pub_stop(self, cs_pub_stop):
+    def cb_pub_stop(self, cs_pub_stop):
         engine = cs_pub_stop.engine
         pub_sid = cs_pub_stop.pub_sid
         message = cs_pub_stop.message
@@ -100,34 +94,44 @@ class CogBridge:
             addr=addr,
             port=port)
 
-def main():
-    if 3 != len(sys.argv):
-        usage()
-    #
-    init_logging()
+
+# --------------------------------------------------------
+#   launch
+# --------------------------------------------------------
+def app(net_addr, net_port):
     engine = engine_new(
         mtu=1492)
+    orb = engine.init_orb(
+        i_nearcast=I_NEARCAST_SCHEMA)
+    orb.init_cog(CogUdpSender)
+    #
+    bridge = orb.init_cog(CogBridge)
+    bridge.nc_init(
+        addr=net_addr,
+        port=net_port)
+    #
+    engine.event_loop()
+
+def usage():
+    print('Usage:')
+    print('  %s broadcast_addr port'%sys.argv[0])
+    sys.exit(1)
+
+def main():
+    if 3 != len(sys.argv) or '--help' in sys.argv:
+        usage()
+    net_addr = sys.argv[1]
+    net_port = int(sys.argv[2])
+    #
     try:
-        net_addr = sys.argv[1]
-        net_port = int(sys.argv[2])
-        #
-        orb = engine.init_orb(
-            i_nearcast=I_NEARCAST_SCHEMA)
-        orb.init_cog(CogUdpSender)
-        bridge = orb.init_cog(CogBridge)
-        bridge.nc_init(
-            addr=net_addr,
-            port=net_port)
-        #
-        engine.event_loop()
+        app(
+            net_addr=net_addr,
+            net_port=net_port)
     except KeyboardInterrupt:
         pass
     except:
         traceback.print_exc()
-    finally:
-        engine.close()
 
 if __name__ == '__main__':
     main()
-
 

@@ -25,7 +25,6 @@ from setuptools import find_packages
 import os
 import sys
 
-
 def check_python_version():
     if sys.version_info.major < 3:
         print('''
@@ -42,16 +41,16 @@ def main():
     setup(
         name='solent',
         packages=solent_packages,
-        version='0.41',
-        description='Sequencer architecture',
+        version='0.44',
+        description='Toolkit for creating message-driven systems',
         url='https://github.com/solent-eng/solent',
-        download_url='https://github.com/solent-eng/solent/tarball/0.41',
+        download_url='https://github.com/solent-eng/solent/tarball/0.44',
         keywords=[
             'solent',
             'eng',
+            'console',
             'term',
             'networking',
-            'roguelikes',
             'async'],
         classifiers=[],
         include_package_data=True,

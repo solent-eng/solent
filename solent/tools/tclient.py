@@ -133,7 +133,7 @@ class CogTerm:
         self.spin_term.refresh_console()
     def on_net_connect(self):
         self.rail_line_finder = rail_line_finder_new(
-            cb_line=self.lfinder_on_line)
+            cb_found_line=self.cb_found_line)
         #
         self.spin_term.clear()
         self.spin_term.write(
@@ -188,7 +188,9 @@ class CogTerm:
         self.spin_term.refresh_console()
     def term_on_select(self, drop, rest):
         pass
-    def lfinder_on_line(self, line):
+    def cb_found_line(self, cs_found_line):
+        line = cs_found_line.msg
+        #
         self.nearcast.net_send(
             bb=bytes('%s\n'%line, 'utf8'))
     #

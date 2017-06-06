@@ -402,6 +402,14 @@ class Orb:
                      ]
                 raise Exception(' '.join(sb))
         #
+        # validate against easily-made stupid errors
+        if 'eng_turn' in dir(cog):
+            raise Exception("Use orb_turn, not eng_turn. (%s)"%(
+                str(cog)))
+        if 'eng_close' in dir(cog):
+            raise Exception("Use orb_close, not eng_close. (%s)"%(
+                str(cog)))
+        #
         install_orb_metadata(cog)
         #
         self.nearcast_schema.attach_nearcast_dispatcher_on_cog(

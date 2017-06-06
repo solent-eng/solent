@@ -412,7 +412,7 @@ class CogShell:
         #
         self.b_first = True
         self.rail_line_finder = rail_line_finder_new(
-            cb_line=self._console_line)
+            cb_found_line=self.cb_found_line)
     #
     def orb_turn(self, activity):
         if self.b_first:
@@ -437,7 +437,9 @@ class CogShell:
     def _console_announce(self, s):
         self.nearcast.term_announce(
             s=s)
-    def _console_line(self, line):
+    def cb_found_line(self, cs_found_line):
+        line = cs_found_line.msg
+        #
         if line in ('q', 'quit'):
             raise SolentQuitException()
         elif line == 'start':

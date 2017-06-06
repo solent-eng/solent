@@ -15,45 +15,10 @@ nearcast is the vehicle for these messages. With this defined, it is then
 straightforward to write nodes that attach to the nearcast in order to do its
 work.
 
-By way of example, here is the nearcast schema we use for a clone of the
-classic game, Snake:
-```
-    i message h
-        i field h
-
-    message init
-        field console_type
-        field height
-        field width
-
-    message quit
-
-    message keystroke
-        field keycode
-
-    message game_focus
-    message game_new
-    message game_input
-        field keycode
-
-    message term_clear
-    message term_write
-        field drop
-        field rest
-        field s
-        field cpair
-
-    message menu_focus
-    message menu_title
-        field text
-    message menu_item
-        field menu_keycode
-        field text
-    message menu_select
-        field menu_keycode
-```
-
-(The core mechanics of the game are easily implemented in a single node.)
+If you look at solent.demo you can see the design for some simple apps. In
+particular, look at the value of `I_NEARCAST` for the snake game. (This is the
+messaging schema for that game.) The core mechanics of the game are easily
+implemented in a single node connected to this nearcast, CogSnakeGame.
 
 In its current state, Solent useful for constructing complex network apps. 
 
@@ -61,7 +26,10 @@ At the next level, it will be suited for building full-blown, multi-host
 sequencer architectures. With such a toolkit, a developer could quickly
 implement a world-class stock exchange or clearing house.
 
-LGPL licensed.
+LGPL licensed, except for solent.scenarios, which should be considered
+MIT-license. The intention here is that you should not be affected by LGPL
+obligations if you are copying blocks from documentation. (Directories with
+special licensing arrangements will be specifically marked.)
 
 
 "What can I get from this that I can't get elsewhere?"
@@ -313,7 +281,7 @@ We aim for this system to be multi-platform with no dependencies on other
 libraries.
 
 
-# Quickstart (unix systems)
+# Quickstart
 
 This will get you seeing some basic stuff
 
@@ -328,51 +296,29 @@ bin/arrange_dependencies
 # virtual env active
 (cd venv; . bin/activate; cd ..)
 
-# Demo of the solent.eng concurrency system
-python -m solent.eng.scenarios
+# Look at and run particular usage scenarios
+ls solent/scenarios
+python -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
 
-# Install pygame (if you want - you can use curses instead).
+python -m solent.demo.snake
+python -m solent.demo.weeds
+```
+
+If you want to understand the network layer, look at solent.scenarios.
+
+If you find the pygame stuff, and want to play with an alternate UI, you can
+install pygame like this. For the moment, I haven't documented how to enable
+this.
+```
+# Install pygame
 pip3 install hg+https://bitbucket.org/pygame/pygame
-
-python -m solent.release.snake --curses
-python -m solent.release.snake --pygame
-
-python -m solent.release.roguebox_00_weed_the_garden --curses
-python -m solent.release.roguebox_00_weed_the_garden --pygame
 ```
 
-If you want to understand the network layer, look at solent.eng.scenarios.
 
+# Release to pypi
 
-# Quickstart (Windows)
+Run `bin/release_solent_to_pypi` and follow the instructions.
 
-Install git for windows (from https://git-for-windows.github.io).
-
-Install python 3.6 (other versions of python3 may work). On the launch screen,
-select the option to add it to your PATH. Virtual env comes bundled in recent
-releases of python.
-
-Once you are in your git-for-windows shell, you can clone the repository,
-create a virtual environment, and activate it. In these steps, be sure to use
-the package virtualenv and not the reduced version of it that bundles with
-recent versions of python (venv), as they behave differently. For example, you
-don't get a unixy activate script with the venv module.
-
-```bash
-git clone https://github.com/cratuki/solent
-
-cd solent
-
-python -m virtualenv venv
-
-. venv/bin/activate
-
-pip install pygame
-
-python -m solent.release.snake --pygame
-
-python -m solent.release.roguebox_00_weed_the_garden --pygame
-```
 
 # Creating an installer/distribution
 
