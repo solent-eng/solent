@@ -58,7 +58,6 @@ class SpinLineConsole:
         self.b_active = False
         self.ip = None
         self.port = None
-        self.cb_line = None
         self.server_sid = None
         self.accept_sid = None
         self.c_buffer = []

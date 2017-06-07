@@ -39,7 +39,7 @@ MTU = 1500
 
 
 # --------------------------------------------------------
-#   :game
+#   game
 # --------------------------------------------------------
 def create_spot(drop, rest):
     return (drop, rest)
@@ -277,13 +277,13 @@ def spin_snake_game_new(height, width, cb_display_clear, cb_display_write):
 
 
 # --------------------------------------------------------
-#   :containment
+#   containment
 # --------------------------------------------------------
 #
 # Containment consists of a menu system, a terminal, and a cog that
 # encapsulates the game.
 #
-I_CONTAINMENT_NEARCAST_SCHEMA = '''
+I_NEARCAST = '''
     i message h
         i field h
 
@@ -556,7 +556,7 @@ def game(console_type):
         engine.default_timeout = 0.01
         #
         orb = engine.init_orb(
-            i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
+            i_nearcast=I_NEARCAST)
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogTerm)
         orb.init_cog(CogMenu)

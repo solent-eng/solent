@@ -16,16 +16,25 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 #
-# // Overview
-# Here, we host a TCP server within a nearcast. A quirk of this server is
-# that it closes whenever it /accepts/ a connection. Hence, you can only
-# have one client connected at a time. This is done for simplicity.
-# Technically it's not a blocking TCP connection, but it behaves in a
-# similar way to one.
+# // overview
+# Here, we host a TCP server for a line console. A single client is able to
+# connect. At this point, the server takes down its listen interface. This is
+# not a blocking server, but shows the same behaviour to clients.
+#
+# There is an advance on the previous module in this series. Consider what
+# would happen if the user submitted a long line, where the length exceeded
+# the size of a single payload. Here, we filter all input through
+# rail_line_finder. This calls back at the termination of a line, rather than
+# making unreliable inferences about messages within payloads.
+#
+# This module serves an illustrative purpose. But if ever you need a netcat
+# server such as this, please example solent.lc.spin_line_console. You may
+# find it does what you need.
 
 from solent import SolentQuitException
 from solent.eng import engine_new
 from solent.log import log
+from solent.util import rail_line_finder_new
 
 I_NEARCAST = '''
     i message h
@@ -33,6 +42,9 @@ I_NEARCAST = '''
 
     message init
     message exit
+
+    message user_line
+        field msg
 '''
 
 MTU = 1400
@@ -40,7 +52,7 @@ MTU = 1400
 TCP_SERVER_ADDR = '0.0.0.0'
 TCP_SERVER_PORT = 8000
 
-class CogTcpServer:
+class CogAppConsole:
     def __init__(self, cog_h, orb, engine):
         self.cog_h = cog_h
         self.orb = orb
@@ -51,6 +63,9 @@ class CogTcpServer:
         self.tcp_server_port = None
         self.server_sid = None
         self.accept_sid = None
+        #
+        self.rail_line_finder = rail_line_finder_new(
+            cb_found_line=self.cb_found_line)
     def orb_close(self):
         if self.server_sid:
             self._stop_server()
@@ -66,7 +81,13 @@ class CogTcpServer:
         self._start_server()
     def on_exit(self):
         self.b_active = False
+        self._stop_server()
     #
+    def cb_found_line(self, cs_found_line):
+        msg = cs_found_line.msg
+        #
+        self.nearcast.user_line(
+            msg=msg)
     def cb_tcp_server_start(self, cs_tcp_server_start):
         engine = cs_tcp_server_start.engine
         server_sid = cs_tcp_server_start.server_sid
@@ -94,6 +115,7 @@ class CogTcpServer:
         self.engine.close_tcp_server(
             server_sid=self.server_sid)
         self.accept_sid = accept_sid
+        self.rail_line_finder.clear()
     def cb_tcp_accept_condrop(self, cs_tcp_accept_condrop):
         engine = cs_tcp_accept_condrop.engine
         server_sid = cs_tcp_accept_condrop.server_sid
@@ -110,7 +132,8 @@ class CogTcpServer:
         bb = cs_tcp_accept_recv.bb
         #
         msg = bb.decode('utf8')
-        log('cb_tcp_accept_recv [%s]'%(msg))
+        self.rail_line_finder.accept_string(
+            s=msg)
     #
     def _start_server(self):
         self.engine.open_tcp_server(
@@ -125,10 +148,19 @@ class CogTcpServer:
         self.engine.close_tcp_server(
             server_sid=self.server_sid)
 
-def app(engine):
+class CogPrinter:
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+    def on_user_line(self, msg):
+        log("Received line [%s]"%msg)
+
+def run_scenario(engine):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
-    orb.init_cog(CogTcpServer)
+    orb.init_cog(CogAppConsole)
+    orb.init_cog(CogPrinter)
     #
     bridge = orb.init_autobridge()
     bridge.nc_init()

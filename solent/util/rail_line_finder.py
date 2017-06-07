@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-#
-# line finder
-#
-# // overview
-# Useful when you are looking to identify a line of text as it comes. This
-# class can be run against streams, and issues a callback each time it finds
-# a line.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -24,25 +15,36 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Useful when you are looking to identify a line of text as it comes. This
+# class can be run against streams, and issues a callback each time it finds
+# a line.
 
 from solent import solent_keycode
 from solent.log import log
 
 import types
 
-ENDINGS = (
+STANDARD_ENDINGS = (
     solent_keycode('nul'),
     solent_keycode('newline'),
     solent_keycode('eot'))
 
-class LineFinder:
+class CsFoundLine:
+    def __init__(self):
+        self.msg = None
+
+class RailLineFinder:
     "When you get to the end of a line, callback."
-    def __init__(self, cb_line):
-        self.cb_line = cb_line
+    def __init__(self, cb_found_line, endings):
+        self.cb_found_line = cb_found_line
+        self.endings = endings
+        #
+        self.cs_found_line = CsFoundLine()
         #
         self.sb = []
-    def clear(self):
-        self.sb = []
+    #
     def accept_bytes(self, bb):
         for b in bb:
             self.accept_string(
@@ -51,9 +53,11 @@ class LineFinder:
         if not isinstance(s, str):
             raise Exception('Wrong type supplied [%s]'%(type(s)))
         for c in s:
-            if ord(c) in ENDINGS:
-                self.cb_line(''.join(self.sb))
-                self.sb = []
+            if ord(c) in self.endings:
+                msg = ''.join(self.sb)
+                self._call_found_line(
+                    msg=msg)
+                self.clear()
             else:
                 self.sb.append(c)
     def get(self):
@@ -62,12 +66,24 @@ class LineFinder:
         a terminal while you do.'''
         return ''.join(self.sb)
     def backspace(self):
-        'useful for backspace'
         if self.sb:
             self.sb.pop()
+    def flush(self):
+        msg = ''.join(self.sb)
+        line = self._call_found_line(
+            msg=msg)
+        self.clear()
+    def clear(self):
+        self.sb = []
+    #
+    def _call_found_line(self, msg):
+        self.cs_found_line.msg = msg
+        self.cb_found_line(
+            cs_found_line=self.cs_found_line)
 
-def line_finder_new(cb_line):
-    ob = LineFinder(
-        cb_line=cb_line)
+def rail_line_finder_new(cb_found_line):
+    ob = RailLineFinder(
+        cb_found_line=cb_found_line,
+        endings=STANDARD_ENDINGS)
     return ob
 

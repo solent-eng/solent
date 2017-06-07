@@ -113,12 +113,9 @@ class CogQuitter:
             log('quitting')
             raise SolentQuitException()
 
-def app():
-    engine = engine_new(
-        mtu=MTU)
+def run_scenario(engine):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
-    #
     orb.init_cog(CogSender)
     orb.init_cog(CogPrinter)
     orb.init_cog(CogQuitter)
@@ -126,12 +123,17 @@ def app():
     engine.event_loop()
 
 def main():
+    engine = engine_new(
+        mtu=MTU)
     try:
-        app()
+        run_scenario(
+            engine=engine)
     except KeyboardInterrupt:
         pass
     except SolentQuitException:
         pass
+    finally:
+        engine.close()
 
 if __name__ == '__main__':
     main()
