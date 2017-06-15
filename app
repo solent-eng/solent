@@ -36,8 +36,8 @@ popd
 #python -m solent.scenarios.eng_20_orb_hosted_tcp_server
 #python -m solent.scenarios.eng_21_line_console
 #python -m solent.scenarios.eng_40_simple_udp_sub
-python -m solent.scenarios.eng_41_simple_udp_pub
-#python -m solent.scenarios.profile_event_loop
+#python -m solent.scenarios.eng_41_simple_udp_pub
+python -m solent.scenarios.eng_90_command_console
 
 #
 # Tools
@@ -69,4 +69,8 @@ python -m solent.scenarios.eng_41_simple_udp_pub
 #python -m solent.draft.sdl
 #python -m solent.draft.turn_based_game --curses
 #python -m solent.draft.turn_based_game --pygame
+
+#
+# Other
+#python -m solent.eng.profile_event_loop
 

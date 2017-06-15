@@ -334,8 +334,6 @@ class Engine(object):
             message = cs_ms_close.message
             #
             sock_ignore_list.append(ms.sock)
-            log('metasock %s closed [reason: %s]'%(
-                cs_ms_close.ms.sid, cs_ms_close.message))
         self.cb_ms_close = cb_ms_close
         #
         # Groundwork for the select
@@ -512,6 +510,9 @@ class Engine(object):
             self.cs_ms_close.message = reason
             self.cb_ms_close(
                 cs_ms_close=self.cs_ms_close)
+        #
+        log('metasock %s closed [reason: %s]'%(
+            ms.sid, reason))
 
 def engine_new(mtu):
     ob = Engine(
