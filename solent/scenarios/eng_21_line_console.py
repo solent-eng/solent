@@ -31,10 +31,10 @@
 # server such as this, please example solent.lc.spin_line_console. You may
 # find it does what you need.
 
+from solent import Engine
 from solent import SolentQuitException
-from solent.eng import engine_new
 from solent.log import log
-from solent.util import rail_line_finder_new
+from solent.util import RailLineFinder
 
 I_NEARCAST = '''
     i message h
@@ -64,7 +64,8 @@ class CogAppConsole:
         self.server_sid = None
         self.accept_sid = None
         #
-        self.rail_line_finder = rail_line_finder_new(
+        self.rail_line_finder = RailLineFinder()
+        self.rail_line_finder.zero(
             cb_found_line=self.cb_found_line)
     def orb_close(self):
         if self.server_sid:
@@ -168,7 +169,7 @@ def run_scenario(engine):
     engine.event_loop()
 
 def main():
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     try:
         run_scenario(

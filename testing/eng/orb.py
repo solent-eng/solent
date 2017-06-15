@@ -1,6 +1,3 @@
-#
-# orb (testing)
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #

@@ -1,6 +1,3 @@
-#
-# spin_line_console (testing)
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,12 +19,12 @@
 from solent import uniq
 from solent.eng import activity_new
 from solent.eng import cs
-from solent.eng import engine_new
-from solent.lc import spin_line_console_new
+from solent import Engine
 from solent.log import log
 from solent.log import hexdump_bytes
 from solent.test import run_tests
 from solent.test import test
+from solent.util import SpinLineConsole
 
 import sys
 
@@ -110,10 +107,10 @@ class SpinBasicTcpClient:
 def should_start_and_stop_without_crashing():
     receiver = Receiver()
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     spin_line_console = engine.init_spin(
-        construct=spin_line_console_new,
+        construct=SpinLineConsole,
         cb_lc_connect=receiver.on_lc_connect,
         cb_lc_condrop=receiver.on_lc_condrop,
         cb_lc_command=receiver.on_lc_command)
@@ -144,13 +141,13 @@ def should_accept_client_and_boot_client_on_stop():
     ip = 'localhost'
     port = 5000
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     receiver = Receiver()
     #
     # step: start
     spin_line_console = engine.init_spin(
-        construct=spin_line_console_new,
+        construct=SpinLineConsole,
         cb_lc_connect=receiver.on_lc_connect,
         cb_lc_condrop=receiver.on_lc_condrop,
         cb_lc_command=receiver.on_lc_command)
@@ -192,13 +189,13 @@ def should_transfer_of_text():
     ip = 'localhost'
     port = 5000
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     receiver = Receiver()
     #
     # step: start it
     spin_line_console = engine.init_spin(
-        construct=spin_line_console_new,
+        construct=SpinLineConsole,
         cb_lc_connect=receiver.on_lc_connect,
         cb_lc_condrop=receiver.on_lc_condrop,
         cb_lc_command=receiver.on_lc_command)

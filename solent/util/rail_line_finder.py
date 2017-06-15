@@ -22,7 +22,6 @@
 # a line.
 
 from solent import solent_keycode
-from solent.log import log
 
 import types
 
@@ -37,13 +36,15 @@ class CsFoundLine:
 
 class RailLineFinder:
     "When you get to the end of a line, callback."
-    def __init__(self, cb_found_line, endings):
-        self.cb_found_line = cb_found_line
-        self.endings = endings
-        #
-        self.cs_found_line = CsFoundLine()
+    def __init__(self):
+        self.endings = STANDARD_ENDINGS
         #
         self.sb = []
+        self.cs_found_line = CsFoundLine()
+    def zero(self, cb_found_line):
+        self.cb_found_line = cb_found_line
+        #
+        self.sb.clear()
     #
     def accept_bytes(self, bb):
         for b in bb:
@@ -80,10 +81,4 @@ class RailLineFinder:
         self.cs_found_line.msg = msg
         self.cb_found_line(
             cs_found_line=self.cs_found_line)
-
-def rail_line_finder_new(cb_found_line):
-    ob = RailLineFinder(
-        cb_found_line=cb_found_line,
-        endings=STANDARD_ENDINGS)
-    return ob
 

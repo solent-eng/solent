@@ -1,6 +1,3 @@
-#
-# tcp_server_cog (testing)
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -21,7 +18,7 @@
 
 from solent import uniq
 from solent.eng import activity_new
-from solent.eng import engine_new
+from solent import Engine
 from solent.gruel import gruel_protocol_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
@@ -154,7 +151,7 @@ def create_sid():
 # --------------------------------------------------------
 @test
 def should_start_and_stop():
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
@@ -194,7 +191,7 @@ def should_start_and_stop():
 
 @test
 def should_handle_client_connect_and_then_boot_client():
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
@@ -247,7 +244,7 @@ def should_handle_client_connect_and_then_boot_client():
 
 @test
 def should_broadcast_incoming_message_as_gruel_in():
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
@@ -314,7 +311,7 @@ def should_broadcast_incoming_message_as_gruel_in():
 
 @test
 def should_boot_client_when_told_to():
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
@@ -363,7 +360,7 @@ def should_boot_client_when_told_to():
 @test
 def should_boot_client_when_invalid_gruel_is_received():
     activity = activity_new()
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
@@ -422,7 +419,7 @@ def should_ignore_gruel_send_when_no_client():
         gruel_protocol=gruel_protocol,
         mtu=MTU)
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
@@ -498,7 +495,7 @@ def should_send_gruel_send_data_to_a_connected_client():
         gruel_protocol=gruel_protocol,
         mtu=MTU)
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)

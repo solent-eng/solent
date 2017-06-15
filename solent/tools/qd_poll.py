@@ -1,5 +1,3 @@
-#!/usr/bin/python -B
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,7 +20,7 @@
 # Simple UDP broadcaster. Regularly broadcasts a small UDP message. Useful for
 # producing a stream of data with which to test/validate a UDP subscriber.
 
-from solent.eng import engine_new
+from solent import Engine
 from solent.log import log
 from solent.log import hexdump_bytes
 
@@ -99,7 +97,7 @@ class CogBridge:
 #   launch
 # --------------------------------------------------------
 def app(net_addr, net_port):
-    engine = engine_new(
+    engine = Engine(
         mtu=1492)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_SCHEMA)

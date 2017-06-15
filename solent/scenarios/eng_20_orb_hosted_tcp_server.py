@@ -23,8 +23,8 @@
 # Technically it's not a blocking TCP connection, but it behaves in a
 # similar way to one.
 
+from solent import Engine
 from solent import SolentQuitException
-from solent.eng import engine_new
 from solent.log import log
 
 I_NEARCAST = '''
@@ -136,7 +136,7 @@ def app(engine):
     engine.event_loop()
 
 def main():
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     try:
         run_scenario(

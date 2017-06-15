@@ -65,6 +65,8 @@ RCP_MODE_EXPECT_INIT_LINE = uniq()
 RCP_MODE_EXPECT_FIELD_OR_TERM = uniq()
 
 PATTERN_CLINE = re.compile('^ *class Cs[a-zA-Z0-9]*:$')
+PATTERN_COMMENT = re.compile('^ *#')
+PATTERN_STRING = re.compile('^ *"')
 PATTERN_INIT = re.compile('^ *def __init__\(self\):$')
 PATTERN_FIELD = re.compile('^ *self.[a-z0-9_]* = None$')
 
@@ -96,6 +98,14 @@ class RailCsParser:
                 name=cs_name[2:])
             self.mode = RCP_MODE_EXPECT_INIT_LINE
         elif self.mode == RCP_MODE_EXPECT_INIT_LINE:
+            if PATTERN_COMMENT.match(line):
+                # That's fine.
+                return
+            if PATTERN_STRING.match(line):
+                # That's fine. Although: we are not handling the multi-line
+                # scenario here. If this becomes a significant tool we can do
+                # that later.
+                return
             if not PATTERN_INIT.match(line):
                 self._error_and_reset(
                     msg='Expected init line. Instead got |%s|'%(

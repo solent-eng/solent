@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-#
-# gruel_client_sandbox
-#
-# // brief
-# Draft terminal that can speak to a solent server. This is interesting
-# because it shows use of the terminal in a nearcast context, as well as
-# acting as a demonstration of a gruel client.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -24,20 +15,25 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // brief
+# Draft terminal that can speak to a solent server. This is interesting
+# because it shows use of the terminal in a nearcast context, as well as
+# acting as a demonstration of a gruel client.
 
+from solent import Engine
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
 from solent.console import cgrid_new
 from solent.console import console_new
-from solent.eng import engine_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_client_new
 from solent.log import init_logging
 from solent.log import log
-from solent.util import rail_line_finder_new
+from solent.util import RailLineFinder
 
 from collections import deque
 from collections import OrderedDict as od
@@ -411,7 +407,8 @@ class CogShell:
         self.engine = engine
         #
         self.b_first = True
-        self.rail_line_finder = rail_line_finder_new(
+        self.rail_line_finder = RailLineFinder()
+        self.rail_line_finder.zero(
             cb_found_line=self.cb_found_line)
     #
     def orb_turn(self, activity):
@@ -467,7 +464,7 @@ class CogPrimer:
 
 def wrap_eng(console):
     init_logging()
-    engine = engine_new(
+    engine = Engine(
         mtu=1500)
     engine.default_timeout = 0.02
     try:

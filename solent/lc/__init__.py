@@ -20,5 +20,5 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .spin_line_console import spin_line_console_new
+from .spin_line_console import SpinLineConsole
 

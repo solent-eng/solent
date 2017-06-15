@@ -22,7 +22,7 @@ popd
 # --------------------------------------------------------
 #
 # Test launchers
-#python -m run_tests
+python -m run_tests
 #python -m testing.util.rail_bytesetter
 
 #
@@ -37,7 +37,7 @@ popd
 #python -m solent.scenarios.eng_21_line_console
 #python -m solent.scenarios.eng_40_simple_udp_sub
 #python -m solent.scenarios.eng_41_simple_udp_pub
-python -m solent.scenarios.eng_90_command_console
+#python -m solent.scenarios.eng_90_command_console
 
 #
 # Tools

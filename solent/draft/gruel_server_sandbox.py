@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-#
-# Gruel server sandbox
-#
-# // brief
-# Demonstrates an application that incorporated a gruel server.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,13 +15,18 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // brief
+# Gruel server sandbox
+#
+# Demonstrates an application that incorporated a gruel server.
 
-from solent.eng import engine_new
+from solent import Engine
 from solent.gruel import spin_gruel_server_new
-from solent.lc import spin_line_console_new
 from solent.log import cformat
 from solent.log import init_logging
 from solent.log import log
+from solent.util import SpinLineConsole
 
 from collections import deque
 import traceback
@@ -200,7 +198,7 @@ class CogLcServer:
         self.engine = engine
         #
         self.spin_line_console = engine.init_spin(
-            construct=spin_line_console_new,
+            construct=SpinLineConsole,
             cb_lc_connect=lambda cs_lc_connect: None,
             cb_lc_condrop=lambda cs_lc_condrop: None,
             cb_lc_command=self._on_lc_command)
@@ -309,7 +307,7 @@ class CogBridge:
 
 def main():
     init_logging()
-    engine = engine_new(
+    engine = Engine(
         mtu=1500)
     try:
         orb = engine.init_orb(

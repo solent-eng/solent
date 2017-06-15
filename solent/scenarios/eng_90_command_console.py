@@ -40,10 +40,10 @@
 #   *   How could you modify this so that a user who connects to the
 #       application console needs to enter a password?
 
+from solent import Engine
 from solent import SolentQuitException
-from solent.eng import engine_new
 from solent.log import log
-from solent.util import rail_line_finder_new
+from solent.util import RailLineFinder
 
 import traceback
 
@@ -235,7 +235,8 @@ class CogAppConsole:
         self.server_sid = None
         self.accept_sid = None
         #
-        self.rail_line_finder = rail_line_finder_new(
+        self.rail_line_finder = RailLineFinder()
+        self.rail_line_finder.zero(
             cb_found_line=self.cb_found_line)
         self.rail_command_shell = RailCommandShell()
     def orb_close(self):
@@ -437,7 +438,7 @@ CONSOLE_ADDR = '0.0.0.0'
 CONSOLE_PORT = 8000
 
 def main():
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     try:
         contain_event_loop(

@@ -22,7 +22,8 @@
 from .clock import clock_new
 from .interface_script import init_interface_script_parser
 from .interface_script import SignalConsumer
-from .rail_bytesetter import rail_bytesetter_new
-from .rail_line_finder import rail_line_finder_new
+from .rail_bytesetter import RailBytesetter
+from .rail_line_finder import RailLineFinder
+from .spin_line_console import SpinLineConsole
 from .wrap_shared_lib import wrap_so_fn
 

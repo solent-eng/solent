@@ -21,7 +21,7 @@
 # https://redis.io/topics/protocol
 #
 
-from solent.util import rail_bytesetter_new
+from solent.util import RailBytesetter
 
 class CsEtchHead(object):
     def __init__(self):
@@ -52,10 +52,7 @@ class RailRespEtcher:
         self.cs_etch_tail = CsEtchTail()
         self.cs_etch_pack = CsEtchPack()
         #
-        self.rail_bytesetter = rail_bytesetter_new(
-            mtu=mtu,
-            cb_bytesetter_pack=self.cb_bytesetter_pack,
-            cb_bytesetter_fini=self.cb_bytesetter_fini)
+        self.rail_bytesetter = RailBytesetter()
         #
         self.etch_h = None
         self.state = STATE_IDLE
@@ -70,6 +67,9 @@ class RailRespEtcher:
         self.array_depth = 0
         #
         self.rail_bytesetter.zero(
+            mtu=self.mtu,
+            cb_bytesetter_pack=self.cb_bytesetter_pack,
+            cb_bytesetter_fini=self.cb_bytesetter_fini,
             bytesetter_h='does not matter')
         #
         self._call_etch_head(

@@ -1,6 +1,3 @@
-#
-# spin_gruel_server (testing)
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -19,7 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import engine_new
+from solent import Engine
 
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
@@ -59,7 +56,7 @@ def should_construct_and_start_and_stop():
         orb=None,
         engine=None)
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     activity = activity_new()
     #

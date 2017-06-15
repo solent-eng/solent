@@ -19,16 +19,16 @@
 # // overview
 # Simple sandbox for demonstrating that we can communicate with a redis server.
 
+from solent import Engine
 from solent import solent_cpair
 from solent import uniq
-from solent.eng import engine_new
 from solent.exceptions import SolentQuitException
-from solent.lc import spin_line_console_new
 from solent.log import cformat
 from solent.log import init_logging
 from solent.log import log
 from solent.term import spin_term_new
 from solent.redis import rail_resp_etcher_new
+from solent.util import SpinLineConsole
 
 from collections import deque
 import os
@@ -80,7 +80,7 @@ class CogLineConsole:
         self.engine = engine
         #
         self.spin_line_console = engine.init_spin(
-            construct=spin_line_console_new,
+            construct=SpinLineConsole,
             cb_lc_connect=lambda cs_lc_connect: None,
             cb_lc_condrop=lambda cs_lc_condrop: None,
             cb_lc_command=self.cb_lc_command)
@@ -267,7 +267,7 @@ def main():
     #
     engine = None
     try:
-        engine = engine_new(
+        engine = Engine(
             mtu=MTU)
         #
         orb = engine.init_orb(

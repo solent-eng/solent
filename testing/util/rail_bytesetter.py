@@ -18,7 +18,7 @@
 
 from solent.test import run_tests
 from solent.test import test
-from solent.util import rail_bytesetter_new
+from solent.util import RailBytesetter
 
 import sys
 
@@ -38,11 +38,11 @@ def should_work_when_supplied_string_is_aligned():
     r = Receiver()
     #
     mtu = 8
-    rail_bytesetter = rail_bytesetter_new(
+    rail_bytesetter = RailBytesetter()
+    rail_bytesetter.zero(
         cb_bytesetter_pack=r.cb_bytesetter_pack,
         cb_bytesetter_fini=r.cb_bytesetter_fini,
-        mtu=mtu)
-    rail_bytesetter.zero(
+        mtu=mtu,
         bytesetter_h='does not matter')
     #
     # step: add 20 bytes of information
@@ -64,11 +64,11 @@ def should_work_when_supplied_string_is_not_aligned():
     r = Receiver()
     #
     mtu = 8
-    rail_bytesetter = rail_bytesetter_new(
+    rail_bytesetter = RailBytesetter()
+    rail_bytesetter.zero(
         cb_bytesetter_pack=r.cb_bytesetter_pack,
         cb_bytesetter_fini=r.cb_bytesetter_fini,
-        mtu=mtu)
-    rail_bytesetter.zero(
+        mtu=mtu,
         bytesetter_h='does not matter')
     #
     # step: add 20 bytes of information
