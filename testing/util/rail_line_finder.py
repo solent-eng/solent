@@ -19,7 +19,7 @@
 from solent.test import run_tests
 from solent.test import test
 
-from solent.util.rail_line_finder import rail_line_finder_new
+from solent.util.rail_line_finder import RailLineFinder
 
 class Receiver:
     def __init__(self):
@@ -32,7 +32,8 @@ class Receiver:
 @test
 def should_do_basics():
     receiver = Receiver()
-    rail_line_finder = rail_line_finder_new(
+    rail_line_finder = RailLineFinder()
+    rail_line_finder.zero(
         cb_found_line=receiver.cb_found_line)
     #
     rail_line_finder.accept_string(

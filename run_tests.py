@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from solent.test import clear_tests
 from solent.test import have_tests
 from solent.test import run_tests

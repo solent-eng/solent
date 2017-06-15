@@ -1,5 +1,3 @@
-#!/usr/bin/python -B
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -28,12 +26,12 @@
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
-from solent.eng import engine_new
+from solent import Engine
 from solent.log import init_logging
 from solent.log import log
 from solent.log import hexdump_bytes
 from solent.term import spin_term_new
-from solent.util import rail_line_finder_new
+from solent.util import RailLineFinder
 
 import sys
 import time
@@ -132,7 +130,8 @@ class CogTerm:
         self.rest = 0
         self.spin_term.refresh_console()
     def on_net_connect(self):
-        self.rail_line_finder = rail_line_finder_new(
+        self.rail_line_finder = RailLineFinder()
+        self.rail_line_finder.zero(
             cb_found_line=self.cb_found_line)
         #
         self.spin_term.clear()
@@ -240,7 +239,7 @@ def main():
         usage()
     #
     init_logging()
-    engine = engine_new(
+    engine = Engine(
         mtu=1492)
     try:
         net_addr = sys.argv[1]

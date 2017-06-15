@@ -28,6 +28,7 @@ from .keycode import solent_keycode
 
 from .mempool import mempool_new
 
+from .paths import are_we_in_a_pyinstaller_bundle
 from .paths import dget_root
 from .paths import dget_static
 from .paths import dget_wres
@@ -37,12 +38,8 @@ from .ref import ref_lookup
 from .ref import ref_acquire
 from .ref import ref_release
 
-def are_we_in_a_pyinstaller_bundle():
-    # In pyinstaller bundles, there is a magic variable called frozen
-    # attached to sys.
-    import sys
-    if getattr(sys, 'frozen', False):
-        return True
-    else:
-        return False
+# We are always doing this, it is convenient to have it exposed in the base.
+from .eng import Engine
+# same
+from .log import log
 

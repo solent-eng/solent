@@ -1,6 +1,3 @@
-#
-# spin_gruel_client (testing)
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -21,10 +18,10 @@
 
 from fake.util import fake_clock_new
 
+from solent import Engine
 from solent import uniq
 from solent.eng import activity_new
 from solent.eng import cs
-from solent.eng import engine_new
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_protocol_new
@@ -184,7 +181,7 @@ class SpinReneGruelServer:
 
 @test
 def should_start_at_dormant_status():
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
@@ -220,7 +217,7 @@ def should_successfully_connect_and_log_in():
         gruel_protocol=gruel_protocol,
         mtu=MTU)
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     #
     # step: start our fake gruel server
@@ -288,7 +285,7 @@ def should_callback_and_go_dormant_on_failed_connection():
         gruel_protocol=gruel_protocol,
         mtu=MTU)
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     #
     # step: spin_gruel_client connects to our non-existent rene server
@@ -328,7 +325,7 @@ def should_callback_and_go_dormant_on_failed_login():
         gruel_protocol=gruel_protocol,
         mtu=MTU)
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     #
     # step: start our fake gruel server
@@ -399,7 +396,7 @@ def should_send_and_receive_heartbeats():
         gruel_protocol=gruel_protocol,
         mtu=MTU)
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     engine.clock = fake_clock
     #
@@ -489,7 +486,7 @@ def should_receive_payloads_correctly():
         gruel_protocol=gruel_protocol,
         mtu=MTU)
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     engine.clock = fake_clock
     #
@@ -584,7 +581,7 @@ def should_send_payloads_correctly():
         gruel_protocol=gruel_protocol,
         mtu=MTU)
     #
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     engine.enable_nodelay()
     engine.clock = fake_clock

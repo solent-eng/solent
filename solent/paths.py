@@ -20,6 +20,14 @@ import enum
 import os
 import sys
 
+def are_we_in_a_pyinstaller_bundle():
+    # In pyinstaller bundles, there is a magic variable called frozen
+    # attached to sys.
+    if getattr(sys, 'frozen', False):
+        return True
+    else:
+        return False
+
 def dget_root(*args):
     '''
     Retrieve the root directory for the project. This requires different

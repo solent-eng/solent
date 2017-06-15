@@ -36,23 +36,20 @@ class CsBytesetterFini:
         self.bytesetter_h = None
 
 class RailBytesetter:
-    def __init__(self, mtu, cb_bytesetter_pack, cb_bytesetter_fini):
+    def __init__(self):
+        self.blst = deque()
+        self.cs_bytesetter_pack = CsBytesetterPack()
+        self.cs_bytesetter_fini = CsBytesetterFini()
+    def zero(self, mtu, cb_bytesetter_pack, cb_bytesetter_fini, bytesetter_h):
         self.mtu = mtu
         self.cb_bytesetter_pack = cb_bytesetter_pack
         self.cb_bytesetter_fini = cb_bytesetter_fini
-        #
-        self.cs_bytesetter_pack = CsBytesetterPack()
-        self.cs_bytesetter_fini = CsBytesetterFini()
-        #
-        self.bytesetter_h = None
-        self.blst = deque()
-        self.bsize = 0
-    def zero(self, bytesetter_h):
         self.bytesetter_h = bytesetter_h
         #
-        while self.blst:
-            self.blst.pop()
+        self.blst.clear()
+        #
         self.bsize = 0
+    #
     def write(self, bb):
         self.blst.append(bb)
         self.bsize += len(bb)
@@ -103,9 +100,3 @@ class RailBytesetter:
         #
         self.bsize -= pack_size
 
-def rail_bytesetter_new(mtu, cb_bytesetter_pack, cb_bytesetter_fini):
-    ob = RailBytesetter(
-        mtu=mtu,
-        cb_bytesetter_pack=cb_bytesetter_pack,
-        cb_bytesetter_fini=cb_bytesetter_fini)
-    return ob

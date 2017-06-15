@@ -39,8 +39,8 @@
 # 
 # CogQuitter counts turns, and quits a while longer than the other activity.
 
+from solent import Engine
 from solent import SolentQuitException
-from solent.eng import engine_new
 from solent.log import log
 
 MTU = 1400
@@ -123,7 +123,7 @@ def run_scenario(engine):
     engine.event_loop()
 
 def main():
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     try:
         run_scenario(

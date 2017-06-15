@@ -185,12 +185,3 @@ class SpinLineConsole:
     def is_accept_connected(self):
         return self.accept_sid != None
 
-def spin_line_console_new(spin_h, engine, cb_lc_connect, cb_lc_condrop, cb_lc_command):
-    ob = SpinLineConsole(
-        spin_h=spin_h,
-        engine=engine,
-        cb_lc_connect=cb_lc_connect,
-        cb_lc_condrop=cb_lc_condrop,
-        cb_lc_command=cb_lc_command)
-    return ob
-

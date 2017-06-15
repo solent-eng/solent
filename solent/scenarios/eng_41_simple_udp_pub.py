@@ -1,5 +1,5 @@
+from solent import Engine
 from solent import SolentQuitException
-from solent.eng import engine_new
 from solent.log import log
 
 import time
@@ -87,7 +87,7 @@ ADDR = '127.255.255.255'
 PORT = 50000
 
 def app():
-    engine = engine_new(
+    engine = Engine(
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)

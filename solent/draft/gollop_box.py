@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-#
-# gollop box
-#
-# // overview
-# Sandbox used for developing gollop-style selection within spin_term.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,10 +15,13 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Sandbox used for developing gollop-style selection within spin_term.
 
+from solent import Engine
 from solent import solent_cpair
 from solent import uniq
-from solent.eng import engine_new
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
@@ -106,7 +102,7 @@ def main():
     #
     engine = None
     try:
-        engine = engine_new(
+        engine = Engine(
             mtu=MTU)
         engine.default_timeout = 0.04
         #

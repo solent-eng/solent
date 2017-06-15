@@ -19,12 +19,12 @@
 # // overview
 # Nearcast that is contains a simple roguelike game.
 
+from solent import Engine
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import uniq
 from solent.brick import brick_menu_new
 from solent.console import cgrid_new
-from solent.eng import engine_new
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
@@ -576,7 +576,7 @@ def game(console_type):
     #
     engine = None
     try:
-        engine = engine_new(
+        engine = Engine(
             mtu=MTU)
         engine.set_default_timeout(0.04)
         #engine.debug_eloop_on()

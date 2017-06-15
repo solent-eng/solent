@@ -1,6 +1,3 @@
-#
-# setup.py
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -25,6 +22,8 @@ from setuptools import find_packages
 import os
 import sys
 
+SOLENT_VERSION = 0.45
+
 def check_python_version():
     if sys.version_info.major < 3:
         print('''
@@ -41,10 +40,11 @@ def main():
     setup(
         name='solent',
         packages=solent_packages,
-        version='0.44',
+        version=SOLENT_VERSION,
         description='Toolkit for creating message-driven systems',
         url='https://github.com/solent-eng/solent',
-        download_url='https://github.com/solent-eng/solent/tarball/0.44',
+        download_url='https://github.com/solent-eng/solent/tarball/%s'%(
+            SOLENT_VERSION),
         keywords=[
             'solent',
             'eng',

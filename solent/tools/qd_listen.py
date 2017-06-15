@@ -1,5 +1,3 @@
-#!/usr/bin/python -B
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,7 +20,7 @@
 # Quick-and-dirty udp-broadcast listener. This tool is used for testing
 # scenarios.
 
-from solent.eng import engine_new
+from solent import Engine
 from solent.log import log
 from solent.log import hexdump_bytes
 
@@ -112,7 +110,7 @@ class CogUdpListener(object):
             title='Received')
 
 def app(net_addr, net_port):
-    engine = engine_new(
+    engine = Engine(
         mtu=1492)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)

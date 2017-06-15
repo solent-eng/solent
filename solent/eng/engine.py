@@ -60,10 +60,6 @@ import socket
 import time
 import traceback
 
-class QuitEvent(Exception):
-    def __init__(self, message=None):
-        self.message = message
-
 def eloop_debug(msg):
     log('(@) %s'%msg)
 
@@ -236,12 +232,9 @@ class Engine(object):
         initiative to the engine.
         '''
         timeout = 0
-        try:
-            while True:
-                timeout = self.turn(
-                    timeout=timeout)
-        except QuitEvent as e:
-            log('QuitEvent [%s]'%(e.message))
+        while True:
+            timeout = self.turn(
+                timeout=timeout)
     def send(self, sid, bb):
         '''This is called send to correspond to user intent.
 
@@ -334,8 +327,6 @@ class Engine(object):
             message = cs_ms_close.message
             #
             sock_ignore_list.append(ms.sock)
-            log('metasock %s closed [reason: %s]'%(
-                cs_ms_close.ms.sid, cs_ms_close.message))
         self.cb_ms_close = cb_ms_close
         #
         # Groundwork for the select
@@ -512,9 +503,7 @@ class Engine(object):
             self.cs_ms_close.message = reason
             self.cb_ms_close(
                 cs_ms_close=self.cs_ms_close)
-
-def engine_new(mtu):
-    ob = Engine(
-        mtu=mtu)
-    return ob
+        #
+        log('metasock %s closed [reason: %s]'%(
+            ms.sid, reason))
 

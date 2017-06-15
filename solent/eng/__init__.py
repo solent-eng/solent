@@ -25,7 +25,10 @@ if sys.version_info.major < 3:
     sys.exit(1)
 
 from .activity import activity_new
-from .engine import engine_new as engine_new
-from .engine import engine_new as QuitEvent
+
+from .engine import Engine
+# legacy
+from .engine import Engine as engine_new
+
 from .ip_validator import ip_validator_new
 
