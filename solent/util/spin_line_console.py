@@ -26,6 +26,10 @@
 from solent.log import log
 from solent.util.interface_script import parse_line_to_tokens
 
+def tokenise_line(line):
+    tokens = parse_line_to_tokens(line)
+    return tokens
+
 class CsLcConnect:
     def __init__(self):
         self.addr = None
@@ -38,10 +42,6 @@ class CsLcCondrop:
 class CsLcCommand:
     def __init__(self):
         self.tokens = None
-
-def tokenise_line(line):
-    tokens = parse_line_to_tokens(line)
-    return tokens
 
 class SpinLineConsole:
     def __init__(self, spin_h, engine, cb_lc_connect, cb_lc_condrop, cb_lc_command):
