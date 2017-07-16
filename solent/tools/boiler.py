@@ -186,7 +186,7 @@ def render_callback_def(cname, fields):
     sb.append('#')
     sb.append('\n')
     sb.append('        ')
-    sb.append("log('xxx')")
+    sb.append("log('xxx cb_%s')"%(cname))
     sb.append('\n')
     print(''.join(sb))
 
