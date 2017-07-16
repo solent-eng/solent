@@ -173,7 +173,7 @@ class Orb:
             i_nearcast=i_nearcast)
         #
         self.snoops = []
-        self.tracks = []
+        self.tracks = {} # construct vs instance
         self.cogs = []
         self.pending = deque()
     def eng_turn(self, activity):
@@ -227,13 +227,28 @@ class Orb:
                 mname=message_h,
                 fnames=fields)
         return cog
-    def init_track(self, construct):
+    def init_testbridge(self):
+        cog = self.nearcast_schema.init_test_bridge_cog(
+            cog_h='test_receiver/%s'%(uniq()),
+            orb=self,
+            engine=self.engine)
+        return cog
+    def reference_track(self, construct):
         '''
-        construct must have no arguments, and will typically be the __init__
-        method of a track class. (Limiting arguments to the orb is deliberate.
-        It discourages abuse. Their purpose is to listen for things, not to
-        act on information. Acting is done by cogs.)
+        Construct must have no arguments, and will typically be class
+        that matches the Track convention.
+
+        If a track already exists for this constructor, this will return
+        that existing Track.
+        
+        Limiting arguments to the orb is deliberate. It discourages abuse.
+        Their purpose is to listen for things, not to act on information.
+        Their state should change only as a result of the message stream. This
+        trait is what allows us to reuse a single track across multiple cogs.
         '''
+        if construct in self.tracks:
+            return self.tracks[construct]
+        #
         track = construct(
             orb=self)
         #
@@ -271,14 +286,8 @@ class Orb:
         #
         install_orb_metadata(track)
         #
-        self.tracks.append(track)
+        self.tracks[construct] = track
         return track
-    def init_test_bridge_cog(self):
-        cog = self.nearcast_schema.init_test_bridge_cog(
-            cog_h='test_receiver/%s'%(uniq()),
-            orb=self,
-            engine=self.engine)
-        return cog
     def nearcast(self, cog, message_h, **d_fields):
         '''
         You probably don't need to call this directly. When cogs are
@@ -317,7 +326,7 @@ class Orb:
                     cog_h=cog_h,
                     message_h=message_h,
                     d_fields=d_fields)
-            for track in self.tracks:
+            for (construct, track) in self.tracks.items():
                 orb_md = getattr(track, ORB_METADATA_H)
                 if message_h in orb_md.consumes:
                     fn = getattr(track, rname)

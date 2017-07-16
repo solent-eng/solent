@@ -3,7 +3,7 @@
 #
 # // overview
 # This should only be used by unit tests. And you probably never want to
-# construct it directly. Rather, use init_test_bridge_cog in the orb.
+# construct it directly. Rather, use init_testbridge in the orb.
 #
 # The function test_bridge_cog_class_new inspects a nearcast schema, and uses
 # this information to dynamically create a cog. The cog it creates will listen

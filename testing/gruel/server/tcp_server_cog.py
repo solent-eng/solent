@@ -155,7 +155,7 @@ def should_start_and_stop():
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
-    bridge = orb.init_test_bridge_cog()
+    bridge = orb.init_testbridge()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     #
@@ -195,7 +195,7 @@ def should_handle_client_connect_and_then_boot_client():
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
-    bridge = orb.init_test_bridge_cog()
+    bridge = orb.init_testbridge()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     #
@@ -249,10 +249,9 @@ def should_broadcast_incoming_message_as_gruel_in():
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
-    bridge = orb.init_test_bridge_cog()
+    bridge = orb.init_testbridge()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
-    bridge = orb.init_test_bridge_cog()
     #
     addr = '127.0.0.1'
     port = 5000
@@ -316,7 +315,7 @@ def should_boot_client_when_told_to():
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
-    bridge = orb.init_test_bridge_cog()
+    bridge = orb.init_testbridge()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     #
@@ -365,7 +364,7 @@ def should_boot_client_when_invalid_gruel_is_received():
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     #
-    bridge = orb.init_test_bridge_cog()
+    bridge = orb.init_testbridge()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     engine.cycle()
@@ -423,7 +422,7 @@ def should_ignore_gruel_send_when_no_client():
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
-    bridge = orb.init_test_bridge_cog()
+    bridge = orb.init_testbridge()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     #
@@ -499,7 +498,7 @@ def should_send_gruel_send_data_to_a_connected_client():
         mtu=MTU)
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
-    bridge = orb.init_test_bridge_cog()
+    bridge = orb.init_testbridge()
     tcp_server_cog = orb.init_cog(
         construct=tcp_server_cog_new)
     #

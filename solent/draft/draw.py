@@ -170,7 +170,8 @@ class CogInterpreter:
         self.engine = engine
         self.orb = orb
         #
-        self.track_containment_mode = orb.init_track(TrackContainmentMode)
+        self.track_containment_mode = orb.reference_track(
+            construct=TrackContainmentMode)
     def on_quit(self):
         raise SolentQuitException('Quit message on stream')
     def on_keystroke(self, keycode):
@@ -303,7 +304,8 @@ class CogDrawGame:
         self.engine = engine
         self.orb = orb
         #
-        self.track_containment_mode = orb.init_track(TrackContainmentMode)
+        self.track_containment_mode = orb.reference_track(
+            construct=TrackContainmentMode)
         self.height = None
         self.width = None
         self.spin_draw_game = None

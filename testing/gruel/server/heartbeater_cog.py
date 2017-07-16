@@ -56,7 +56,7 @@ def should_start_on_announce_login_and_stop_on_announce_condrop():
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     heartbeater_cog = orb.init_cog(
         construct=heartbeater_cog_new)
-    r = orb.init_test_bridge_cog()
+    r = orb.init_testbridge()
     #
     # check starting assumptions
     assert 0 == r.count_heartbeat_send()
