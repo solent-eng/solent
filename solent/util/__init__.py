@@ -25,5 +25,6 @@ from .interface_script import SignalConsumer
 from .rail_bytesetter import RailBytesetter
 from .rail_line_finder import RailLineFinder
 from .spin_line_console import SpinLineConsole
+from .spin_selection_ui import SpinSelectionUi
 from .wrap_shared_lib import wrap_so_fn
 

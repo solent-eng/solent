@@ -30,7 +30,7 @@ from solent.log import init_logging
 from solent.log import log
 from solent.rogue import spin_message_feed_new
 from solent.rogue.simple_01_coordinates_and_ecs import spin_simple_new
-from solent.term import spin_term_new
+from solent.util import SpinSelectionUi
 
 from collections import deque
 import os
@@ -331,7 +331,7 @@ class CogTerm:
     #
     def on_init(self, console_type, console_height, console_width):
         self.spin_term = self.engine.init_spin(
-            construct=spin_term_new,
+            construct=SpinSelectionUi,
             console_type=console_type,
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)

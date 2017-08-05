@@ -34,6 +34,7 @@ CONSOLE_TYPE_APPLE = 'apple_ios'
 CONSOLE_TYPE_CURSES = 'curses'
 CONSOLE_TYPE_PYGAME = 'pygame'
 CONSOLE_TYPE_WAYLAND = 'wayland'
+CONSOLE_TYPE_WINDOWS = 'windows'
 CONSOLE_TYPE_WSOCKET = 'websockets'
 
 def console_new(console_type, height, width, **kwargs):
@@ -50,15 +51,21 @@ def console_new(console_type, height, width, **kwargs):
         raise Exception("Not yet implemented.")
     elif console_type == CONSOLE_TYPE_CURSES:
         import solent.console.curses as m
-        return m.curses_console_new(
+        return m.create(
             width=width,
             height=height)
     elif console_type == CONSOLE_TYPE_PYGAME:
         import solent.console.pygame as m
-        return m.pygame_console_new(
+        return m.create(
             width=width,
             height=height)
     elif console_type == CONSOLE_TYPE_WAYLAND:
+        raise Exception("Not yet implemented.")
+    elif console_type == CONSOLE_TYPE_WINDOWS:
+        import solent.console.windows as m
+        return m.console_new(
+            width=width,
+            height=height)
         raise Exception("Not yet implemented.")
     elif console_type == CONSOLE_TYPE_WSOCKET:
         raise Exception("Not yet implemented.")

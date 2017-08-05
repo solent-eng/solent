@@ -250,7 +250,7 @@ class GridDisplay(object):
 # --------------------------------------------------------
 CONSOLE = None
 
-def curses_console_new(width, height):
+def create(width, height):
     global CONSOLE
     if None != CONSOLE:
         raise Exception('curses console is singleton. (cannot run more than one)')

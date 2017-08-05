@@ -1,17 +1,3 @@
-#
-# spin_term
-#
-# // overview
-# This provides an idea of a 'standard' terminal that can be used in front of
-# solent apps.
-#
-# It provides features such as mouse-selection and gollop-selection (press
-# escape and use q-c to navigate around, and s to select).
-#
-# It's generally more convenient to write to a terminal than it would be to
-# write to a console. You lose flexibility, but it's easy to work with for
-# simple apps.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -29,6 +15,17 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# This provides an idea of a 'standard' terminal that can be used in front of
+# solent apps. The key thing it offers of a console is selection:
+# * Via mouse, in consoles that support this
+# * Via gollop-style selection (press escape and use q-c to navigate around,
+# and s to select)
+#
+# For fast business utilities, it is probably more convenient to start with
+# an instance of this span than a console.
+#
 
 from solent import solent_cpair
 from solent import solent_keycode
@@ -49,7 +46,7 @@ MOUSE_EVENTS = (
     solent_keycode('rmousedown'),
     solent_keycode('rmouseup'))
 
-class SpinTerm:
+class SpinSelectionUi:
     def __init__(self, spin_h, engine, console_type, cb_keycode, cb_select):
         self.spin_h = spin_h
         self.engine = engine
@@ -235,21 +232,3 @@ class SpinTerm:
         elif self.mode == MODE_STANDARD:
             self.console.screen_update(
                 cgrid=self.cgrid)
-
-def spin_term_new(spin_h, engine, console_type, cb_keycode, cb_select):
-    '''
-    cb_keycode(keycode)
-    cb_select(drop, rest)
-        # We are avoiding more complex forms of selection (e.g. left and
-        # right mouse) because we want the interface to be viable as a
-        # touch interface. We will probably need to support left dragging
-        # later on.
-    '''
-    ob = SpinTerm(
-        spin_h=spin_h,
-        engine=engine,
-        console_type=console_type,
-        cb_keycode=cb_keycode,
-        cb_select=cb_select)
-    return ob
-
