@@ -16,5 +16,13 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .curses_console import create
+from .snake import game
+
+def main():
+    console_type = 'windows'
+    game(
+        console_type=console_type)
+
+if __name__ == '__main__':
+    main()
 
