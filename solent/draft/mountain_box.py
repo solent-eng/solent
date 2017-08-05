@@ -1,14 +1,3 @@
-#!/usr/bin/python
-#
-# mountain box
-#
-# // overview
-# had an idea for a game whilst at irdc: there is no player. rather, there is
-# jut an AI that has intent. the ai has to work out how to do the things that
-# it wants to do. For example, it might want to build a boat. So first it will
-# need a boathouse. And in order to get that, it will need wood and tools.
-# it may even need to cultivate new trees in order to get the wood.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -26,6 +15,14 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# had an idea for a game whilst at irdc: there is no player. rather, there is
+# jut an AI that has intent. the ai has to work out how to do the things that
+# it wants to do. For example, it might want to build a boat. So first it will
+# need a boathouse. And in order to get that, it will need wood and tools.
+# it may even need to cultivate new trees in order to get the wood.
+#
 
 from solent import solent_cpair
 from solent import solent_keycode
@@ -451,5 +448,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 

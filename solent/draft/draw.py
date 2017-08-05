@@ -25,7 +25,7 @@ from solent.console import cgrid_new
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
-from solent.term import spin_term_new
+from solent.util import SpinSelectionUi
 
 from collections import deque
 import os
@@ -205,7 +205,7 @@ class CogTerm:
     #
     def on_init(self, console_type, height, width):
         self.spin_term = self.engine.init_spin(
-            construct=spin_term_new,
+            construct=SpinSelectionUi,
             console_type=console_type,
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)

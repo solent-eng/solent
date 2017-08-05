@@ -43,7 +43,7 @@ python -m run_tests
 # Tools
 #python -m solent.tools.qd_listen 127.255.255.255 50000
 #python -m solent.tools.qd_poll 127.255.255.255 50000
-#python -m solent.tools.tclient localhost 5001
+#python -m solent.tools.tclient localhost 5001 # nc -l -p 5001
 
 #
 # Wrapping C

@@ -30,8 +30,8 @@ from solent import Engine
 from solent.log import init_logging
 from solent.log import log
 from solent.log import hexdump_bytes
-from solent.term import spin_term_new
 from solent.util import RailLineFinder
+from solent.util import SpinSelectionUi
 
 import sys
 import time
@@ -119,7 +119,7 @@ class CogTerm:
     #
     def on_init(self, addr, port):
         self.spin_term = self.engine.init_spin(
-            construct=spin_term_new,
+            construct=SpinSelectionUi,
             console_type=CONSOLE_TYPE,
             cb_keycode=self.term_on_keycode,
             cb_select=self.term_on_select)
