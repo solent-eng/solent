@@ -17,4 +17,5 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from .curses_console import create
+from .curses_console import curses_async_get_keycode
 

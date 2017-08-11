@@ -54,9 +54,13 @@ I_NEARCAST_SCHEMA = '''
         field bb
 '''
 
-CONSOLE_TYPE = 'pygame'
+#CONSOLE_TYPE = 'pygame'
+CONSOLE_TYPE = 'curses'
 CONSOLE_WIDTH = 78
 CONSOLE_HEIGHT = 24
+
+if CONSOLE_TYPE == 'curses':
+    from solent.console.curses import curses_async_get_keycode
 
 class CogTcpClient:
     def __init__(self, cog_h, orb, engine):
@@ -118,6 +122,17 @@ class CogTerm:
         self.rest = None
     #
     def on_init(self, addr, port):
+        if CONSOLE_TYPE == 'curses':
+            # We deliberately set this high, because we are only waiting on things
+            # that are selectable (network and stdin). We would not want to
+            # implement this with pygame as the ui, because that does not use file
+            # decriptors for input.
+            self.engine.set_default_timeout(2.0)
+            self.engine.add_custom_fd_read(
+                cfd_h='curses',
+                fd=sys.stdin,
+                cb_eng_custom_fd_read=self.cb_eng_custom_fd_read)
+        #
         self.spin_term = self.engine.init_spin(
             construct=SpinSelectionUi,
             console_type=CONSOLE_TYPE,
@@ -162,11 +177,43 @@ class CogTerm:
                 cpair=solent_cpair('grey'))
         self.spin_term.refresh_console()
     #
+    def cb_eng_custom_fd_read(self, cs_eng_custom_fd_read):
+        cfd_h = cs_eng_custom_fd_read.cfd_h
+        fd = cs_eng_custom_fd_read.fd
+        #
+        if cfd_h == 'curses':
+            keycode = curses_async_get_keycode()
+        else:
+            raise Exception("Not sure what to do this (%s)."%(cfd_h))
+        #
+        self._received_keycode(
+            keycode=keycode)
     def cb_selui_keycode(self, cs_selui_keycode):
         keycode = cs_selui_keycode.keycode
         #
+        self._received_keycode(
+            keycode=keycode)
+    def cb_selui_lselect(self, cs_selui_lselect):
+        # This will never be called in curses mode, because the term is
+        # subverted by the custom fd we are registering with the engine.
+        drop = cs_selui_lselect.drop
+        rest = cs_selui_lselect.rest
+        c = cs_selui_lselect.c
+        cpair = cs_selui_lselect.cpair
+        #
+        pass
+    def cb_found_line(self, cs_found_line):
+        line = cs_found_line.msg
+        #
+        self.nearcast.net_send(
+            bb=bytes('%s\n'%line, 'utf8'))
+    #
+    def _received_keycode(self, keycode):
         if None == self.rail_line_finder:
             return
+        #
+        if keycode == 17:
+            raise SolentQuitException()
         #
         cpair = solent_cpair('orange')
         # This backspace mechanism is far from perfect.
@@ -187,19 +234,6 @@ class CogTerm:
                 keycode=keycode,
                 cpair=cpair)
         self.spin_term.refresh_console()
-    def cb_selui_lselect(self, cs_selui_lselect):
-        drop = cs_selui_lselect.drop
-        rest = cs_selui_lselect.rest
-        c = cs_selui_lselect.c
-        cpair = cs_selui_lselect.cpair
-        #
-        pass
-    def cb_found_line(self, cs_found_line):
-        line = cs_found_line.msg
-        #
-        self.nearcast.net_send(
-            bb=bytes('%s\n'%line, 'utf8'))
-    #
     def _print(self, keycode, cpair):
         if keycode == solent_keycode('backspace') and self.rest > 0:
             self.rest -= 1
@@ -241,6 +275,19 @@ def usage():
     print('  %s addr port'%sys.argv[0])
     sys.exit(1)
 
+def launch(engine, net_addr, net_port):
+    orb = engine.init_orb(
+        i_nearcast=I_NEARCAST_SCHEMA)
+    orb.add_log_snoop()
+    orb.init_cog(CogTcpClient)
+    orb.init_cog(CogTerm)
+    bridge = orb.init_cog(CogBridge)
+    bridge.nc_init(
+        addr=net_addr,
+        port=net_port)
+    #
+    engine.event_loop()
+
 def main():
     if 3 != len(sys.argv):
         usage()
@@ -252,17 +299,10 @@ def main():
         net_addr = sys.argv[1]
         net_port = int(sys.argv[2])
         #
-        orb = engine.init_orb(
-            i_nearcast=I_NEARCAST_SCHEMA)
-        orb.add_log_snoop()
-        orb.init_cog(CogTcpClient)
-        orb.init_cog(CogTerm)
-        bridge = orb.init_cog(CogBridge)
-        bridge.nc_init(
-            addr=net_addr,
-            port=net_port)
-        #
-        engine.event_loop()
+        launch(
+            engine=engine,
+            net_addr=net_addr,
+            net_port=net_port)
     except KeyboardInterrupt:
         pass
     except SolentQuitException:
