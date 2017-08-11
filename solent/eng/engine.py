@@ -88,6 +88,11 @@ class CsMsClose:
         return '(%s%s)'%(self.__class__.__name__, '|'.join([str(x) for x in
             [self.ms, self.sid, self.message]]))
 
+class CsEngCustomFdRead:
+    def __init__(self):
+        self.cfd_h = None
+        self.fd = None
+
 class Engine(object):
     def __init__(self, mtu):
         self.mtu = mtu
@@ -106,6 +111,10 @@ class Engine(object):
         #
         self.cb_ms_close = None
         self.cs_ms_close = CsMsClose()
+        #
+        # fd vs (cfd_h, cb_eng_custom_fd_read)
+        self.d_eng_custom_read = {}
+        self.cs_eng_custom_fd_read = CsEngCustomFdRead()
     def enable_nodelay(self):
         self.b_nodelay = True
     def disable_nodelay(self):
@@ -118,10 +127,10 @@ class Engine(object):
         return self.clock
     def get_mtu(self):
         return self.mtu
-    def set_default_timeout(self, value):
-        self.default_timeout = value
     def set_mtu(self, mtu):
         self.mtu = mtu
+    def set_default_timeout(self, value):
+        self.default_timeout = value
     def create_sid(self):
         next = self.sid_counter
         self.sid_counter += 1
@@ -279,6 +288,8 @@ class Engine(object):
         #
         self.mempool.free(
             sip=sip)
+    def add_custom_fd_read(self, cfd_h, fd, cb_eng_custom_fd_read):
+        self.d_eng_custom_read[fd] = (cfd_h, cb_eng_custom_fd_read)
     def _call_select(self, timeout=0):
         "Return True or False depending on whether or not there was activity."
         #
@@ -340,6 +351,8 @@ class Engine(object):
             if ms.desire_for_writable_select_list():
                 wlist.append(ms.sock)
             xlist.append(ms.sock)
+        for fd in self.d_eng_custom_read:
+            rlist.append(fd)
         #
         # Select
         rlist, wlist, xlist = select.select(rlist, wlist, xlist, timeout)
@@ -358,6 +371,15 @@ class Engine(object):
                     reason=e.message)
         for sock in rlist:
             if sock in sock_ignore_list:
+                continue
+            if sock in self.d_eng_custom_read:
+                tpl = self.d_eng_custom_read[sock]
+                fd = sock
+                (cfd_h, cb_eng_custom_fd_read) = tpl
+                self._call_eng_custom_fd_read(
+                    cfd_h=cfd_h,
+                    fd=fd,
+                    cb_eng_custom_fd_read=cb_eng_custom_fd_read)
                 continue
             ms = sock_to_metasock[sock]
             try:
@@ -477,6 +499,11 @@ class Engine(object):
         self._close_metasock(
             sid=client_sid,
             reason='close_tcp_client %s'%client_sid)
+    def _call_eng_custom_fd_read(self, cfd_h, fd, cb_eng_custom_fd_read):
+        self.cs_eng_custom_fd_read.cfd_h = cfd_h
+        self.cs_eng_custom_fd_read.fd = fd
+        cb_eng_custom_fd_read(
+            cs_eng_custom_fd_read=self.cs_eng_custom_fd_read)
     def _map_sid_to_metasock(self, sid, ms):
         '''
         We need to call this from the metasock factories. It must happen after
