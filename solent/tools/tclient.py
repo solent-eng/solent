@@ -201,6 +201,7 @@ class CogTerm:
         c = cs_selui_lselect.c
         cpair = cs_selui_lselect.cpair
         #
+        pass
     def cb_found_line(self, cs_found_line):
         line = cs_found_line.msg
         #
