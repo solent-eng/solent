@@ -66,8 +66,8 @@ class CogTerm(object):
         self.spin_term = self.engine.init_spin(
             construct=SpinSelectionUi,
 			console_type='pygame',
-            cb_keycode=self.term_on_keycode,
-            cb_select=self.term_on_select)
+            cb_selui_keycode=self.cb_selui_keycode,
+            cb_selui_lselect=self.cb_selui_lselect)
         self.spin_term.open_console(
             width=CONSOLE_WIDTH,
             height=CONSOLE_HEIGHT)
@@ -90,12 +90,19 @@ class CogTerm(object):
             cpair=solent_cpair('blue'))
         self.counter += 1
     #
-    def term_on_keycode(self, keycode):
+    def cb_selui_keycode(self, cs_selui_keycode):
+        keycode = cs_selui_keycode.keycode
+        #
         self.nearcast.keystroke(
             keycode=keycode)
-    def term_on_select(self, drop, rest):
+    def cb_selui_lselect(self, cs_selui_lselect):
+        drop = cs_selui_lselect.drop
+        rest = cs_selui_lselect.rest
+        c = cs_selui_lselect.c
+        cpair = cs_selui_lselect.cpair
+        #
         # user makes a selection
-        log('xxx term_on_select drop %s rest %s'%(drop, rest))
+        log('xxx cb_selui_lselect drop %s rest %s'%(drop, rest))
 
 def main():
     init_logging()

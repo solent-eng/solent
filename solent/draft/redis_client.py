@@ -28,7 +28,6 @@ from solent.log import init_logging
 from solent.log import log
 from solent.redis import rail_resp_etcher_new
 from solent.util import SpinLineConsole
-from solent.util import SpinSelectionUi
 
 from collections import deque
 import os
