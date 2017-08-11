@@ -333,8 +333,8 @@ class CogTerm:
         self.spin_term = self.engine.init_spin(
             construct=SpinSelectionUi,
             console_type=console_type,
-            cb_keycode=self.term_on_keycode,
-            cb_select=self.term_on_select)
+            cb_selui_keycode=self.cb_selui_keycode,
+            cb_selui_lselect=self.cb_selui_lselect)
         self.spin_term.open_console(
             width=console_width,
             height=console_height)
@@ -347,10 +347,17 @@ class CogTerm:
             s=s,
             cpair=cpair)
     #
-    def term_on_keycode(self, keycode):
+    def cb_selui_keycode(self, cs_selui_keycode):
+        keycode = cs_selui_keycode.keycode
+        #
         self.nearcast.keystroke(
             keycode=keycode)
-    def term_on_select(self, drop, rest):
+    def cb_selui_lselect(self, cs_selui_lselect):
+        drop = cs_selui_lselect.drop
+        rest = cs_selui_lselect.rest
+        c = cs_selui_lselect.c
+        cpair = cs_selui_lselect.cpair
+        #
         pass
 
 class CogMenu:

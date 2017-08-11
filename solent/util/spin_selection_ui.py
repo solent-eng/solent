@@ -46,13 +46,27 @@ MOUSE_EVENTS = (
     solent_keycode('rmousedown'),
     solent_keycode('rmouseup'))
 
+class CsSeluiKeycode:
+    def __init__(self):
+        self.keycode = None
+
+class CsSeluiLselect:
+    def __init__(self):
+        self.drop = None
+        self.rest = None
+        self.c = None
+        self.cpair = None
+
 class SpinSelectionUi:
-    def __init__(self, spin_h, engine, console_type, cb_keycode, cb_select):
+    def __init__(self, spin_h, engine, console_type, cb_selui_keycode, cb_selui_lselect):
         self.spin_h = spin_h
         self.engine = engine
         self.console_type = console_type
-        self.cb_keycode = cb_keycode
-        self.cb_select = cb_select
+        self.cb_selui_keycode = cb_selui_keycode
+        self.cb_selui_lselect = cb_selui_lselect
+        #
+        self.cs_selui_keycode = CsSeluiKeycode()
+        self.cs_selui_lselect = CsSeluiLselect()
         #
         self.width = None
         self.height = None
@@ -142,9 +156,14 @@ class SpinSelectionUi:
             if keycode == solent_keycode('esc'):
                 self.to_mode_standard()
             elif keycode in (solent_keycode('newline'), solent_keycode('s')):
-                self.cb_select(
+                (c, cpair) = self.cgrid.get(
                     drop=self.select_drop,
                     rest=self.select_rest)
+                self._call_selui_lselect(
+                    drop=self.select_drop,
+                    rest=self.select_rest,
+                    c=c,
+                    cpair=cpair)
                 self.to_mode_standard()
             else:
                 # we let the user navigate the cursor using arrow keys, vi
@@ -197,14 +216,19 @@ class SpinSelectionUi:
                     (ddrop, drest) = self.lmousedown_coords
                     (udrop, urest) = self.lmouseup_coords
                     if (ddrop, drest) == (udrop, urest):
-                        self.cb_select(
+                        (c, cpair) = self.cgrid.get(
                             drop=udrop,
                             rest=urest)
+                        self._call_selui_lselect(
+                            drop=udrop,
+                            rest=urest,
+                            c=c,
+                            cpair=cpair)
                 elif keycode in MOUSE_EVENTS:
                     pass
                 else:
                     # we pass the keystroke back in a callback
-                    self.cb_keycode(
+                    self._call_selui_keycode(
                         keycode=keycode)
     def refresh_console(self):
         if self.mode == MODE_NONE:
@@ -232,3 +256,16 @@ class SpinSelectionUi:
         elif self.mode == MODE_STANDARD:
             self.console.screen_update(
                 cgrid=self.cgrid)
+    #
+    def _call_selui_keycode(self, keycode):
+        self.cs_selui_keycode.keycode = keycode
+        self.cb_selui_keycode(
+            cs_selui_keycode=self.cs_selui_keycode)
+    def _call_selui_lselect(self, drop, rest, c, cpair):
+        self.cs_selui_lselect.drop = drop
+        self.cs_selui_lselect.rest = rest
+        self.cs_selui_lselect.c = c
+        self.cs_selui_lselect.cpair = cpair
+        self.cb_selui_lselect(
+            cs_selui_lselect=self.cs_selui_lselect)
+
