@@ -20,7 +20,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import solent_cpair
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.log import log
 from solent.rogue import spin_message_feed_new
 from solent.test import run_tests
@@ -40,7 +40,7 @@ def should_construct():
 
 @test
 def should_handle_simple_prints():
-    cgrid = cgrid_new(
+    cgrid = Cgrid(
         height=HEIGHT,
         width=WIDTH)
     mfeed = spin_message_feed_new(
@@ -76,7 +76,7 @@ def should_handle_simple_prints():
 
 @test
 def should_handle_long_lines():
-    cgrid = cgrid_new(
+    cgrid = Cgrid(
         height=HEIGHT,
         width=WIDTH)
     mfeed = spin_message_feed_new(
@@ -110,7 +110,7 @@ def should_handle_long_lines():
 
 @test
 def should_scroll():
-    cgrid = cgrid_new(
+    cgrid = Cgrid(
         height=HEIGHT,
         width=WIDTH)
     mfeed = spin_message_feed_new(
@@ -145,7 +145,7 @@ def should_scroll():
 
 @test
 def should_scroll_past_old_messages():
-    cgrid = cgrid_new(
+    cgrid = Cgrid(
         height=HEIGHT,
         width=WIDTH)
     mfeed = spin_message_feed_new(

@@ -27,7 +27,7 @@
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import uniq
-from solent.console import console_new
+from solent.console import Console
 from solent.draft.turnlib.algobunny_mind import algobunny_mind_new
 from solent.draft.turnlib.cursor import cursor_new
 from solent.draft.turnlib.menu import menu_new
@@ -37,7 +37,7 @@ from solent.draft.turnlib.rogue_plane import rogue_plane_new
 from solent.draft.turnlib.initiative import initiative_new
 from solent.exceptions import SolentQuitException
 from solent.console import e_boxtype
-from solent.console import cgrid_new
+from solent.console import Cgrid
 
 from collections import deque
 import os
@@ -259,7 +259,7 @@ class Husk(object):
         #
         # Later on we could use something like pyfiglet for this. Better would
         # be a single distinct font, similar to what Gollop did with rebelstar.
-        self.title_cgrid = cgrid_new(
+        self.title_cgrid = Cgrid(
             width=len(self.title),
             height=1)
         self.title_cgrid.put(
@@ -305,7 +305,7 @@ class Husk(object):
             longest_line = max( [longest_line, len(l)] )
         #
         # prepare the menu border
-        self.menu_cgrid = cgrid_new(
+        self.menu_cgrid = Cgrid(
             width=longest_line+4,
             height=len(lines)+2)
         horiz = ' '*(longest_line+4)
@@ -405,7 +405,7 @@ class Husk(object):
                     time.sleep(0.1)
 
 def husk_new(console):
-    cgrid = cgrid_new(
+    cgrid = Cgrid(
         width=console.width,
         height=console.height)
     ob = Husk(
@@ -428,7 +428,7 @@ def main():
         sys.exit(1)
     #
     try:
-        console = console_new(
+        console = Console(
             console_type=console_type,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)

@@ -25,7 +25,7 @@
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import dget_static
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.console import iconsole_new
 from solent.console import keystream_new
 from solent.log import log
@@ -102,7 +102,7 @@ class GridDisplay(object):
         self.height = height
         self.font = font
         #
-        self.internal_cgrid = cgrid_new(
+        self.internal_cgrid = Cgrid(
             width=width,
             height=height)
         (self.cwidth, self.cheight) = font.size('@')

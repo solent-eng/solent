@@ -21,7 +21,7 @@
 
 from solent import solent_cpair
 from solent import solent_keycode
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.console import iconsole_new
 from solent.console import keystream_new
 
@@ -254,7 +254,7 @@ def create(width, height):
     global CONSOLE
     if None != CONSOLE:
         raise Exception('curses console is singleton. (cannot run more than one)')
-    cgrid = cgrid_new(
+    cgrid = Cgrid(
         width=width,
         height=height)
     #

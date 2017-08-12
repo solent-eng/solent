@@ -27,7 +27,7 @@ from solent import solent_cpair
 from solent import solent_cpair_pairs
 from solent import solent_keycode
 from solent import uniq
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.console import console_new
 from solent.exceptions import SolentQuitException
 
@@ -41,7 +41,7 @@ C_GAME_WIDTH = 78
 C_GAME_HEIGHT = 25
 
 def event_loop(console):
-    cgrid = cgrid_new(
+    cgrid = Cgrid(
         width=console.width,
         height=console.height)
     cgrid.put(
@@ -91,7 +91,7 @@ def main():
     #
     console = None
     try:
-        console = console_new(
+        console = Console(
             console_type=console_type,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)

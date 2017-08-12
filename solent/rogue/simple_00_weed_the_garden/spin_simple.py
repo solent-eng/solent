@@ -20,7 +20,7 @@
 # Simple game developed as part of the evolution of roguebox.
 
 from solent import solent_cpair
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.log import log
 from solent.rogue import directive_new
 
@@ -102,7 +102,7 @@ class SpinSimple:
         self.supported_directives = None
         self._init_supported_directives()
 
-        self.cgrid = cgrid_new(
+        self.cgrid = Cgrid(
             height=grid_height,
             width=grid_width)
         self.q_mail_messages = deque()

@@ -17,7 +17,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import solent_cpair
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.eng import ip_validator_new
 from solent.test import run_tests
 from solent.test import test
@@ -46,11 +46,11 @@ def cgrid_populate(cgrid, c):
 
 @test
 def should_create_two_simple_grids():
-    grid_a = cgrid_new(5, 5)
+    grid_a = Cgrid(5, 5)
     cgrid_populate(grid_a, '-')
     cgrid_console_print(grid_a)
     #
-    grid_b = cgrid_new(3, 3)
+    grid_b = Cgrid(3, 3)
     cgrid_populate(grid_b, '|')
     cgrid_console_print(grid_b)
     #
@@ -58,10 +58,10 @@ def should_create_two_simple_grids():
 
 @test
 def should_copy_one_grid_onto_another():
-    grid_a = cgrid_new(5, 5)
+    grid_a = Cgrid(5, 5)
     cgrid_populate(grid_a, '*')
     #
-    grid_b = cgrid_new(3, 3)
+    grid_b = Cgrid(3, 3)
     grid_b.put(0, 0, 'a', DEFAULT_CPAIR)
     grid_b.put(0, 1, 'b', DEFAULT_CPAIR)
     grid_b.put(0, 2, 'c', DEFAULT_CPAIR)
@@ -79,7 +79,7 @@ def should_copy_one_grid_onto_another():
 
 @test
 def should_do_a_truncated_copy_on_the_right_side():
-    grid_a = cgrid_new(5, 5)
+    grid_a = Cgrid(5, 5)
     zyx = [chr(i+65) for i in range(26)]
     zyx.reverse()
     for i in range(25):
@@ -92,7 +92,7 @@ def should_do_a_truncated_copy_on_the_right_side():
             s=l.lower(),
             cpair=DEFAULT_CPAIR)
     #
-    grid_b = cgrid_new(3, 3)
+    grid_b = Cgrid(3, 3)
     grid_b.put(0, 0, '0', DEFAULT_CPAIR)
     grid_b.put(0, 1, '1', DEFAULT_CPAIR)
     grid_b.put(0, 2, '2', DEFAULT_CPAIR)
@@ -112,7 +112,7 @@ def should_do_a_truncated_copy_on_the_right_side():
 
 @test
 def should_do_a_truncated_copy_on_the_bottom_border():
-    grid_a = cgrid_new(5, 5)
+    grid_a = Cgrid(5, 5)
     zyx = [chr(i+65) for i in range(26)]
     zyx.reverse()
     for i in range(25):
@@ -125,7 +125,7 @@ def should_do_a_truncated_copy_on_the_bottom_border():
             s=l.lower(),
             cpair=DEFAULT_CPAIR)
     #
-    grid_b = cgrid_new(3, 3)
+    grid_b = Cgrid(3, 3)
     grid_b.put(0, 0, '0', DEFAULT_CPAIR)
     grid_b.put(0, 1, '1', DEFAULT_CPAIR)
     grid_b.put(0, 2, '2', DEFAULT_CPAIR)
@@ -145,7 +145,7 @@ def should_do_a_truncated_copy_on_the_bottom_border():
 
 @test
 def should_copy_fine_despite_us_not_supplying_a_nail_param_to_blit():
-    grid_a = cgrid_new(5, 5)
+    grid_a = Cgrid(5, 5)
     zyx = [chr(i+65) for i in range(26)]
     zyx.reverse()
     for i in range(25):
@@ -158,7 +158,7 @@ def should_copy_fine_despite_us_not_supplying_a_nail_param_to_blit():
             s=l.lower(),
             cpair=DEFAULT_CPAIR)
     #
-    grid_b = cgrid_new(3, 3)
+    grid_b = Cgrid(3, 3)
     grid_b.put(0, 0, '0', DEFAULT_CPAIR)
     grid_b.put(0, 1, '1', DEFAULT_CPAIR)
     grid_b.put(0, 2, '2', DEFAULT_CPAIR)

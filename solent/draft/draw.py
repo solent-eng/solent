@@ -21,7 +21,7 @@ from solent import solent_cpair
 from solent import solent_keycode
 from solent import uniq
 from solent.brick import brick_menu_new
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log

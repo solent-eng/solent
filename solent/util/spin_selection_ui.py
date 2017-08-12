@@ -30,8 +30,8 @@
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import uniq
-from solent.console import cgrid_new
-from solent.console import console_new
+from solent.console import Cgrid
+from solent.console import Console
 from solent.log import log
 
 import time
@@ -109,13 +109,13 @@ class SpinSelectionUi:
     def open_console(self, width, height):
         self.width = width
         self.height = height
-        self.cgrid = cgrid_new(
+        self.cgrid = Cgrid(
             width=width,
             height=height)
-        self.select_cgrid = cgrid_new(
+        self.select_cgrid = Cgrid(
             width=width,
             height=height)
-        self.console = console_new(
+        self.console = Console(
             console_type=self.console_type,
             width=width,
             height=height)
