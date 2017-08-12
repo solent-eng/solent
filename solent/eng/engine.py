@@ -55,10 +55,13 @@ from solent.log import log
 from solent.util.clock import clock_new
 
 from collections import OrderedDict as od
+import platform
 import select
 import socket
 import time
 import traceback
+
+PLATFORM_SYSTEM = platform.system()
 
 def eloop_debug(msg):
     log('(@) %s'%msg)
@@ -300,7 +303,7 @@ class Engine(object):
         # xlist gets every socket in it. So if we get past this conditional,
         # there should not be further circumstances in which the Windows error
         # circumstance can be triggered.]
-        if 0 == len(self.sid_to_metasock):
+        if 0 == len(self.sid_to_metasock) and not self.d_eng_custom_read:
             time.sleep(timeout)
             return False
         #
