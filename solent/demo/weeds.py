@@ -24,7 +24,7 @@ from solent import solent_cpair
 from solent import solent_keycode
 from solent import uniq
 from solent.brick import brick_menu_new
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
@@ -491,10 +491,10 @@ class CogRoguebox:
             width=ROGUEBOX_MFEED_WIDTH,
             cpair_new=solent_cpair('teal'),
             cpair_old=solent_cpair('blue'))
-        self.cgrid_last = cgrid_new(
+        self.cgrid_last = Cgrid(
             width=console_width,
             height=console_height)
-        self.cgrid_next = cgrid_new(
+        self.cgrid_next = Cgrid(
             width=console_width,
             height=console_height)
         #

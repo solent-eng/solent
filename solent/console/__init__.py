@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .cgrid import cgrid_new
+from .cgrid import Cgrid
 from .iconsole import iconsole_new
 from .keystream import keystream_new
 
@@ -37,7 +37,11 @@ CONSOLE_TYPE_WAYLAND = 'wayland'
 CONSOLE_TYPE_WINDOWS = 'windows'
 CONSOLE_TYPE_WSOCKET = 'websockets'
 
-def console_new(console_type, height, width, **kwargs):
+# This is a function masquerading as an object. It constructs an
+# object internally. The reason for this design is that it makes it
+# easy to switch apps between pygame/curses/etc through changing only
+# a string within the user's code.
+def Console(console_type, height, width, **kwargs):
     '''
     Import the console type you want to use from the package. e.g.
     CONSOLE_TYPE_CURSES. This mechanism allows us the codebase to run even if

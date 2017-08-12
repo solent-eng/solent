@@ -28,6 +28,7 @@ from solent.util import SpinSelectionUi
 
 from collections import deque
 import os
+import platform
 import random
 import sys
 import time
@@ -585,8 +586,15 @@ def game(console_type):
         if engine != None:
             engine.close()
 
+PLATFORM_SYSTEM = platform.system()
+
 def main():
     console_type = 'curses'
+    if '--pygame' in sys.argv:
+        console_type = 'pygame'
+    if PLATFORM_SYSTEM == 'Windows':
+        console_type = 'pygame'
+    #
     game(
         console_type=console_type)
 

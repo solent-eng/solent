@@ -25,8 +25,8 @@ from solent import Engine
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
-from solent.console import cgrid_new
-from solent.console import console_new
+from solent.console import Cgrid
+from solent.console import Console
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_protocol_new
@@ -339,7 +339,7 @@ class CogTerminal:
     #
     def on_def_console(self, console):
         self.console = console
-        self.cgrid = cgrid_new(
+        self.cgrid = Cgrid(
             width=console.width,
             height=console.height)
         self.pane_plot = PanePlot()
@@ -499,7 +499,7 @@ def main():
         sys.exit(1)
     #
     try:
-        console = console_new(
+        console = Console(
             console_type=console_type,
             width=80,
             height=25)

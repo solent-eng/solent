@@ -52,7 +52,7 @@ class Spot(object):
     def __repr__(self):
         return 'spot[%s/%s]'%(self.c, self.cpair)
 
-class CellGrid(object):
+class Cgrid(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
@@ -147,10 +147,4 @@ class CellGrid(object):
                 drop=dst_drop,
                 rest=dst_rest,
                 spots=src_spots)
-
-def cgrid_new(width, height):
-    ob = CellGrid(
-        width=width,
-        height=height)
-    return ob
 

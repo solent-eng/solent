@@ -27,7 +27,7 @@ from .glyph import glyph_new
 from .scope import scope_new
 
 from solent import solent_cpair
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.exceptions import SolentQuitException
 
 from collections import deque
@@ -140,7 +140,7 @@ class RogueInteraction(object):
             return
 
 def rogue_interaction_new(console, cursor):
-    cgrid = cgrid_new(
+    cgrid = Cgrid(
         width=console.width,
         height=console.height)
     logbook = logbook_new(

@@ -24,7 +24,7 @@ from solent import solent_cpair
 from solent import solent_keycode
 from solent import uniq
 from solent.brick import brick_menu_new
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.exceptions import SolentQuitException
 from solent.log import init_logging
 from solent.log import log
@@ -498,10 +498,10 @@ class CogRoguebox:
         if console_width < ROGUEBOX_GAMEBOX_WIDTH:
             raise Exception("console width %s too small for game width %s."%(
                 console_width, ROGUEBOX_GAMEBOX_WIDTH))
-        self.cgrid_last = cgrid_new(
+        self.cgrid_last = Cgrid(
             width=console_width,
             height=console_height)
-        self.cgrid_next = cgrid_new(
+        self.cgrid_next = Cgrid(
             width=console_width,
             height=console_height)
         #

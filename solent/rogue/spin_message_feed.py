@@ -29,7 +29,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.console import cgrid_new
+from solent.console import Cgrid
 from solent.log import log
 
 from collections import deque
@@ -41,7 +41,7 @@ class SpinMessageFeed:
         self.cpair_new = cpair_new
         self.cpair_old = cpair_old
         #
-        self.cgrid = cgrid_new(
+        self.cgrid = Cgrid(
             height=height,
             width=width)
         self.q_lines = deque()
