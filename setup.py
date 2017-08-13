@@ -22,7 +22,7 @@ from setuptools import find_packages
 import os
 import sys
 
-SOLENT_VERSION = 0.46
+SOLENT_VERSION = 0.47
 
 def check_python_version():
     if sys.version_info.major < 3:
