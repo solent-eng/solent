@@ -15,9 +15,7 @@ pause
 
 echo ""
 echo "Step: Version number"
-echo "  * Tweak setup.py"
-echo "      * key version"
-echo "      * key download_url (do not forget this!)"
+echo "  * Tweak SOLENT_VERSION in setup.py"
 echo ""
 pause
 
