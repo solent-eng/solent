@@ -175,10 +175,14 @@ class Orb:
         self.snoops = []
         self.tracks = {} # construct vs instance
         self.cogs = []
-        self.pending = deque()
+        self.ready_to_nearcast = deque()
     def eng_turn(self, activity):
         #
-        self.distribute()
+        if self.ready_to_nearcast:
+            activity.mark(
+                l=self,
+                s='orb messages')
+            self.distribute()
         #
         for cog in self.cogs:
             orb_md = getattr(cog, ORB_METADATA_H)
@@ -315,14 +319,14 @@ class Orb:
         # then actually send them out later on in distribute. Otherwise we can
         # end up in a situation where actors have hijacked activity away from
         # the event loop, and a starvation scenario.
-        self.pending.append( (cog_h, message_h, d_fields) )
+        self.ready_to_nearcast.append( (cog_h, message_h, d_fields) )
     def distribute(self):
         '''
         The engine event loop will call this. Messages which have been
         buffered to be nearcast are sent out to the cogs.
         '''
-        while self.pending:
-            (cog_h, message_h, d_fields) = self.pending.popleft()
+        while self.ready_to_nearcast:
+            (cog_h, message_h, d_fields) = self.ready_to_nearcast.popleft()
             rname = 'on_%s'%message_h
             for snoop in self.snoops:
                 snoop.on_nearcast_message(
