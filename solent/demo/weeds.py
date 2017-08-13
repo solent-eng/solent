@@ -160,8 +160,7 @@ class CogInterpreter:
         self.engine = engine
         self.orb = orb
         #
-        self.track_containment_mode = orb.reference_track(
-            construct=TrackContainmentMode)
+        self.track_containment_mode = orb.track(TrackContainmentMode)
         self.d_directive = {}
     def on_quit(self):
         raise SolentQuitException('Quit message on stream')
@@ -436,8 +435,7 @@ class CogRoguebox:
         self.engine = engine
         self.orb = orb
         #
-        self.track_containment_mode = orb.reference_track(
-            construct=TrackContainmentMode)
+        self.track_containment_mode = orb.track(TrackContainmentMode)
         self.spin_roguelike = None
         self.spin_message_feed = None
         self.cgrid_last = None
