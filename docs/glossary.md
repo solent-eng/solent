@@ -353,14 +353,14 @@ class CogGame:
         self.orb = orb
         self.engine = engine
         #
-        self.track_display_state = self.orb.reference_track(
+        self.track_display_state = self.orb.track(
             construct=TrackDisplayState)
     def on_something(self):
         if self.track_display_state.is_in_game_focus():
             # etc
 ```
 
-Note that if two cogs call `reference_track` against the same track
-constructor, they will get back the same /instance/ of that track. This avoids
-us duplicating the memory consumption for the track's responsibilities.
+Note that if two cogs call `track` against the same track constructor, they
+will get back the same /instance/ of that track. This avoids us duplicating
+the memory consumption for the track's responsibilities.
 

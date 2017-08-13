@@ -233,7 +233,7 @@ class Orb:
             orb=self,
             engine=self.engine)
         return cog
-    def reference_track(self, construct):
+    def track(self, construct):
         '''
         Construct must have no arguments, and will typically be class
         that matches the Track convention.
@@ -249,13 +249,16 @@ class Orb:
         if construct in self.tracks:
             return self.tracks[construct]
         #
-        track = construct(
+        if not inspect.isclass(construct):
+            raise Exception("Supply a class, not an instance of it.")
+        #
+        track_inst = construct(
             orb=self)
         #
         # validate that the track's on_methods match the schema
-        on_methods = [m for m in dir(track) if m.startswith('on_')]
+        on_methods = [m for m in dir(track_inst) if m.startswith('on_')]
         for om_name in on_methods:
-            method = getattr(track, om_name)
+            method = getattr(track_inst, om_name)
             args = inspect.getargspec(method).args
             if args[0] != 'self':
                 raise Exception("track method %s should have arg 'self'."%(
@@ -271,23 +274,23 @@ class Orb:
             if desired_args != args:
                 sb = [ "Nearcast schema message [%s]"%(message_h)
                      , "defines these args: [%s]"%('|'.join(desired_args))
-                     , "but %s.%s"%(track.__class__.__name__, om_name)
+                     , "but %s.%s"%(track_inst.__class__.__name__, om_name)
                      , "params are inconsistent: [%s]"%('|'.join(args))
                      ]
                 raise Exception(' '.join(sb))
         #
         # validate the dev has not attempted to create turn or close methods.
-        if 'orb_turn' in dir(track):
+        if 'orb_turn' in dir(track_inst):
             raise Exception("Tracks are not allowed to orb_turn. (%s)"%(
-                str(track)))
-        if 'orb_close' in dir(track):
+                str(track_inst)))
+        if 'orb_close' in dir(track_inst):
             raise Exception("Tracks are not allowed to orb_close. (%s)"%(
-                str(track)))
+                str(track_inst)))
         #
-        install_orb_metadata(track)
+        install_orb_metadata(track_inst)
         #
-        self.tracks[construct] = track
-        return track
+        self.tracks[construct] = track_inst
+        return track_inst
     def nearcast(self, cog, message_h, **d_fields):
         '''
         You probably don't need to call this directly. When cogs are
