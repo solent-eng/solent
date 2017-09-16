@@ -35,8 +35,7 @@ from .tcp_server_cog import tcp_server_cog_new
 from solent import ns
 from solent import uniq
 from solent.gruel import gruel_press_new
-from solent.log import hexdump_bytes
-from solent.log import log
+from solent import log
 
 from collections import deque
 from collections import OrderedDict as od

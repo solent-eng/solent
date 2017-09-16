@@ -21,11 +21,9 @@ popd
 #   launchers
 # --------------------------------------------------------
 
-python -m ecs.main
-
 #
 # Test launchers
-#python -m run_tests
+python -m run_tests
 #python -m testing.util.rail_bytesetter
 
 #

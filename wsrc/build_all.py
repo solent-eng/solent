@@ -1,4 +1,4 @@
-from solent.log import log
+from solent import log
 
 import importlib
 import os

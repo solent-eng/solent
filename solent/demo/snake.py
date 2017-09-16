@@ -22,8 +22,8 @@ from solent import solent_keycode
 from solent import uniq
 from solent.brick import brick_menu_new
 from solent.exceptions import SolentQuitException
-from solent.log import init_logging
-from solent.log import log
+from solent import init_logging
+from solent import log
 from solent.util import SpinSelectionUi
 
 from collections import deque

@@ -18,7 +18,7 @@
 
 from wsrc import dget_root
 from wsrc import dget_wres
-from solent.log import log
+from solent import log
 
 import os
 import string

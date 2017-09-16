@@ -26,8 +26,6 @@
 from .gruel_protocol import Datatype
 from .gruel_protocol import gmt_value_to_name
 
-from solent.log import hexdump_bytes
-
 import struct
 
 class GruelPuff:

@@ -41,7 +41,7 @@
 
 from solent import Engine
 from solent import SolentQuitException
-from solent.log import log
+from solent import log
 
 MTU = 1400
 

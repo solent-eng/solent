@@ -24,7 +24,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.eng import ip_validator_new
-from solent.log import log
+from solent import log
 
 class HeartbeaterCog(object):
     def __init__(self, cog_h, orb, engine):

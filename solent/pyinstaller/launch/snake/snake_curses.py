@@ -22,7 +22,7 @@
 
 from solent.release.snake import game
 
-from solent.log import log
+from solent import log
 
 def am_i_in_a_pyinsaller_bundle():
     import sys

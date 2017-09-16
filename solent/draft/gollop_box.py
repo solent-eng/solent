@@ -23,8 +23,8 @@ from solent import Engine
 from solent import solent_cpair
 from solent import uniq
 from solent.exceptions import SolentQuitException
-from solent.log import init_logging
-from solent.log import log
+from solent import init_logging
+from solent import log
 from solent.util import SpinSelectionUi
 
 from collections import deque

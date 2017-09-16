@@ -28,8 +28,8 @@
 
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_protocol_new
-from solent.log import hexdump_bytes
-from solent.log import hexdump_string
+from solent import hexdump_bytes
+from solent import hexdump_string
 from solent.test import run_tests
 from solent.test import test
 
@@ -59,7 +59,7 @@ def test_client_login_creation():
         heartbeat_interval=1)
     '''
     print(hexdump_bytes(
-        arr=bb))
+        bb=bb))
     '''
     #
     return True
@@ -79,7 +79,7 @@ def test_server_greet_creation():
         max_packet_size=800)
     '''
     print(hexdump_bytes(
-        arr=bb))
+        bb=bb))
     '''
     #
     return True
@@ -99,7 +99,7 @@ def test_server_bye_creation():
         notes='notes for server_bye')
     '''
     print(hexdump_bytes(
-        arr=bb))
+        bb=bb))
     '''
     #
     return True
@@ -118,7 +118,7 @@ def test_heartbeat_creation():
     bb = gruel_press.create_heartbeat_bb()
     '''
     print(hexdump_bytes(
-        arr=bb))
+        bb=bb))
     '''
     #
     return True
@@ -139,7 +139,7 @@ def test_docdata_creation():
         data='some content for the bb block')
     '''
     print(hexdump_bytes(
-        arr=bb))
+        bb=bb))
     '''
     #
     return True

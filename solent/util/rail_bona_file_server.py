@@ -43,7 +43,7 @@
 #   uint8               status. Will be set to 2
 #
 
-from solent.log import log
+from solent import log
 
 import struct
 

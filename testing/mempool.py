@@ -20,7 +20,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import mempool_new
-from solent.log import log
+from solent import log
 from solent.test import run_tests
 from solent.test import test
 

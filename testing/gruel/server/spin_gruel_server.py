@@ -27,8 +27,7 @@ from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_server_new
-from solent.log import log
-from solent.log import hexdump_bytes
+from solent import log
 from solent.test import run_tests
 from solent.test import test
 

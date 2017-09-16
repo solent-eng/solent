@@ -21,8 +21,7 @@
 # were consuming a stream of bytes from a source, and seeking to output these
 # bytes to a series of fixed-size network packets.
 
-from solent.log import hexdump_bytes
-from solent.log import log
+from solent import log
 
 from collections import deque
 

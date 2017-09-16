@@ -23,13 +23,10 @@
 # For the moment I'm just hard-coding it to pygame. If you're in unix,
 # you probably have something else handy.
 
+from solent import Engine
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
-from solent import Engine
-from solent.log import init_logging
-from solent.log import log
-from solent.log import hexdump_bytes
 from solent.util import RailLineFinder
 from solent.util import SpinSelectionUi
 
@@ -292,7 +289,6 @@ def main():
     if 3 != len(sys.argv):
         usage()
     #
-    init_logging()
     engine = Engine(
         mtu=1492)
     try:

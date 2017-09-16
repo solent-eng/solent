@@ -30,7 +30,7 @@
 from .test_bridge_class_cog import test_bridge_cog_class_new
 
 from solent import ns
-from solent.log import log
+from solent import log
 from solent.util.interface_script import init_interface_script_parser
 from solent.util.interface_script import SignalConsumer
 

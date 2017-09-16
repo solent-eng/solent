@@ -16,17 +16,26 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+# Below: order matters!
+
 from .common import uniq
 from .common import ns
 
 from .cpair import solent_cpair
 from .cpair import solent_cpair_pairs
 
+from .log import hexdump_bytes
+from .log import hexdump_string
+from .log import init_logging
+from .log import log
+
 from .exceptions import SolentQuitException
 
 from .keycode import solent_keycode
 
 from .mempool import mempool_new
+
+from .eng import Engine
 
 from .paths import are_we_in_a_pyinstaller_bundle
 from .paths import dget_root
@@ -37,9 +46,4 @@ from .ref import ref_create
 from .ref import ref_lookup
 from .ref import ref_acquire
 from .ref import ref_release
-
-# We are always doing this, it is convenient to have it exposed in the base.
-from .eng import Engine
-# same
-from .log import log
 

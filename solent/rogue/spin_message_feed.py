@@ -30,7 +30,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.console import Cgrid
-from solent.log import log
+from solent import log
 
 from collections import deque
 

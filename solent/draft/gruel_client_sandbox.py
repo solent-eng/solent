@@ -31,8 +31,8 @@ from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_client_new
-from solent.log import init_logging
-from solent.log import log
+from solent import init_logging
+from solent import log
 from solent.util import RailLineFinder
 
 from collections import deque

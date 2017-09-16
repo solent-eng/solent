@@ -21,8 +21,8 @@
 # scenarios.
 
 from solent import Engine
-from solent.log import log
-from solent.log import hexdump_bytes
+from solent import log
+from solent import hexdump_bytes
 
 import sys
 import traceback
@@ -106,7 +106,7 @@ class CogUdpListener(object):
         bb = cs_udp_bb.bb
         #
         hexdump_bytes(
-            arr=bb,
+            bb=bb,
             title='Received')
 
 def app(net_addr, net_port):

@@ -23,9 +23,9 @@
 
 from solent import Engine
 from solent.gruel import spin_gruel_server_new
-from solent.log import cformat
-from solent.log import init_logging
-from solent.log import log
+from solent import cformat
+from solent import init_logging
+from solent import log
 from solent.util import SpinLineConsole
 
 from collections import deque

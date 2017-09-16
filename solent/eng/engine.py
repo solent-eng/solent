@@ -50,8 +50,7 @@ from .orb import orb_new
 
 from solent import mempool_new
 from solent import uniq
-from solent.log import hexdump_bytes
-from solent.log import log
+from solent import log
 from solent.util.clock import clock_new
 
 from collections import OrderedDict as od

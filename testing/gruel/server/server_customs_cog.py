@@ -32,7 +32,7 @@ from solent.gruel import gruel_puff_new
 from solent.gruel.server.nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.server_customs_cog import server_customs_cog_new
 from solent.gruel.server.server_customs_cog import ServerCustomsState
-from solent.log import log
+from solent import log
 from solent.test import run_tests
 from solent.test import test
 
