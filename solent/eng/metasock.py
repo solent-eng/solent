@@ -62,8 +62,8 @@ from .cs import CsTcpAcceptRecv
 from .cs import CsTcpServerStart
 from .cs import CsTcpServerStop
 
-from solent.log import hexdump_bytes
-from solent.log import log
+from solent import hexdump_bytes
+from solent import log
 
 from collections import deque
 import errno
@@ -339,7 +339,7 @@ class Metasock(object):
                 cs_sub_recv=self.cs_sub_recv)
         elif self.ms_type == MS_TYPE_TCP_ACCEPT:
             #hexdump_bytes(
-            #    arr=bb,
+            #    bb=bb,
             #    title='** metasock client read**')
             self.cs_tcp_accept_recv.engine = self.engine
             self.cs_tcp_accept_recv.accept_sid = self.sid
@@ -348,7 +348,7 @@ class Metasock(object):
                 cs_tcp_accept_recv=self.cs_tcp_accept_recv)
         elif self.ms_type == MS_TYPE_TCP_CLIENT:
             #hexdump_bytes(
-            #    arr=bb,
+            #    bb=bb,
             #    title='** metasock client read**')
             self.cs_tcp_client_recv.engine = self.engine
             self.cs_tcp_client_recv.client_sid = self.sid

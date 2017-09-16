@@ -33,7 +33,7 @@
 
 from solent import Engine
 from solent import SolentQuitException
-from solent.log import log
+from solent import log
 from solent.util import RailLineFinder
 
 I_NEARCAST = '''

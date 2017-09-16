@@ -21,7 +21,7 @@
 
 from solent import solent_cpair
 from solent.console import Cgrid
-from solent.log import log
+from solent import log
 from solent.rogue import spin_message_feed_new
 from solent.test import run_tests
 from solent.test import test

@@ -42,7 +42,7 @@ from solent.gruel import gruel_press_new
 from solent.gruel import gruel_protocol_new
 from solent.gruel.gruel_protocol import DOCPART_OVERHEAD
 from solent.gruel.gruel_protocol import GruelMessageType
-from solent.log import log
+from solent import log
 
 from collections import deque
 from enum import Enum

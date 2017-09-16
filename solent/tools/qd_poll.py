@@ -21,8 +21,7 @@
 # producing a stream of data with which to test/validate a UDP subscriber.
 
 from solent import Engine
-from solent.log import log
-from solent.log import hexdump_bytes
+from solent import log
 
 import sys
 import time

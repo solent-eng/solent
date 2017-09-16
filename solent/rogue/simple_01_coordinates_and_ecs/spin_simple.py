@@ -24,7 +24,7 @@
 
 from solent import solent_cpair
 from solent.console import Cgrid
-from solent.log import log
+from solent import log
 from solent.rogue import directive_new
 
 from collections import deque

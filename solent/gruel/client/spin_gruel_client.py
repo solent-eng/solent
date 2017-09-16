@@ -23,8 +23,8 @@ from solent import ns
 from solent.gruel import gruel_press_new
 from solent.gruel.gruel_protocol import GruelMessageType
 from solent.gruel.gruel_protocol import gmt_value_to_name
-from solent.log import log
-from solent.log import hexdump_bytes
+from solent import log
+from solent import hexdump_bytes
 
 from collections import deque
 from collections import OrderedDict as od
@@ -212,7 +212,7 @@ class SpinGruelClient:
             b_complete=b_complete,
             data=doc)
         hexdump_bytes( # xxx
-            arr=bb,
+            bb=bb,
             title='sending!! (%s)'%(b_complete))
         self.engine.send(
             sid=self.client_sid,

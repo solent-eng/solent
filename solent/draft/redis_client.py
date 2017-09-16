@@ -23,9 +23,9 @@ from solent import Engine
 from solent import solent_cpair
 from solent import uniq
 from solent.exceptions import SolentQuitException
-from solent.log import cformat
-from solent.log import init_logging
-from solent.log import log
+from solent import cformat
+from solent import init_logging
+from solent import log
 from solent.redis import rail_resp_etcher_new
 from solent.util import SpinLineConsole
 

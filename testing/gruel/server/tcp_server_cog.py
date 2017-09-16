@@ -25,7 +25,7 @@ from solent.gruel import gruel_puff_new
 from solent.gruel.gruel_protocol import GruelMessageType
 from solent.gruel.server.nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.tcp_server_cog import tcp_server_cog_new
-from solent.log import log
+from solent import log
 from solent.test import run_tests
 from solent.test import test
 

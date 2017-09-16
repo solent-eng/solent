@@ -141,18 +141,18 @@ def hexdump_string(s, title='hexdump'):
     int_buffer = []
     for c in s:
         int_buffer.append(ord(c))
-    b = bytearray(int_buffer)
+    bb = bytearray(int_buffer)
     hexdump_bytes(
-        arr=b,
+        bb=bb,
         title=title)
 
-def hexdump_bytes(arr, title='hexdump'):
+def hexdump_bytes(bb, title='hexdump'):
     #
     # Awkward implementation of. Mixes up print-as-you-go (for the bytes
     # on the left) with buffer-building (for the displayable characters
     # on the right).
     #
-    arr_len = len(arr)
+    arr_len = len(bb)
     DOT = ord('.')
     SPACE = ord(' ')
     BAR = ord('|')
@@ -161,27 +161,27 @@ def hexdump_bytes(arr, title='hexdump'):
     # right-hand-side of the buffer (i.e. displayable characters where
     # we can, or a substitute period to represent non-displayable
     # characters)
-    bb = []
+    acc_rhs_bb = []
     def append_dot():
-        bb.append(DOT)
+        acc_rhs_bb.append(DOT)
     def append_bar():
-        bb.append(BAR)
+        acc_rhs_bb.append(BAR)
     def append_space():
-        bb.append(SPACE)
+        acc_rhs_bb.append(SPACE)
     def render_sb():
         print(':::', end=' ')
-        print(''.join( [chr(b) for b in bb] ))
-        while bb: bb.pop()
+        print(''.join( [chr(b) for b in acc_rhs_bb] ))
+        while acc_rhs_bb: acc_rhs_bb.pop()
     #
     # Heading
     print('// %s [%s bytes]'%(title, arr_len))
     #
     # Main content
     idx = 0
-    for (idx, b) in enumerate(arr):
+    for (idx, b) in enumerate(bb):
         print('%02x'%(b), end=' ')
         if b >= ord(' ') and b <= ord('~'):
-            bb.append(b)
+            acc_rhs_bb.append(b)
         else:
             append_dot()
         if (idx+1) % 16 == 0:

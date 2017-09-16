@@ -32,7 +32,7 @@ from solent import solent_keycode
 from solent import uniq
 from solent.console import Cgrid
 from solent.console import Console
-from solent.log import log
+from solent import log
 
 import time
 

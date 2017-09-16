@@ -51,7 +51,7 @@ from .nearcast_schema import nearcast_schema_new
 
 from solent import uniq
 from solent import SolentQuitException
-from solent.log import log
+from solent import log
 
 from collections import deque
 from collections import OrderedDict as od

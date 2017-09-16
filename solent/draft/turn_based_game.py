@@ -1,10 +1,5 @@
 #!/usr/bin/python
 #
-# demo_experience
-#
-# // overview
-# Intends to exercise the client module.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,6 +17,12 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# demo_experience. This is old, pre-nearcast code. Consider this heavily
+# deprecated. It was originally intende dto exercise the console code. It
+# turned into a proof-of-concept for a turn-based scheduling algorithm.
+#
 
 from .turnlib.algobunny_mind import algobunny_mind_new
 from .turnlib.cursor import cursor_new
@@ -49,8 +50,6 @@ ESC_KEY_ORD = 27
 
 C_GAME_WIDTH = 78
 C_GAME_HEIGHT = 25
-
-TITLE = 'sample game (solent.client)'
 
 
 # --------------------------------------------------------
@@ -462,20 +461,12 @@ class Husk(object):
                 if not activity:
                     time.sleep(0.1)
 
-def husk_new(console):
-    cgrid = Cgrid(
-        width=console.width,
-        height=console.height)
-    ob = Husk(
-        console=console,
-        cgrid=cgrid,
-        title=TITLE)
-    return ob
-
 
 # --------------------------------------------------------
 #   :rest
 # --------------------------------------------------------
+TITLE = 'sample game (solent.client)'
+
 def main():
     if '--curses' in sys.argv:
         console_type = 'curses'
@@ -491,8 +482,14 @@ def main():
             console_type=console_type,
             width=C_GAME_WIDTH,
             height=C_GAME_HEIGHT)
-        husk = husk_new(
-            console=console)
+        #
+        cgrid = Cgrid(
+            width=console.width,
+            height=console.height)
+        husk = Husk(
+            console=console,
+            cgrid=cgrid,
+            title=TITLE)
         #
         # event loop
         husk.event_loop()

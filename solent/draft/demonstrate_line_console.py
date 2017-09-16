@@ -18,7 +18,7 @@
 
 from solent import Engine
 from solent import SolentQuitException
-from solent.log import log
+from solent import log
 from solent.util import SpinLineConsole
 
 LC_ADDR = 'localhost'

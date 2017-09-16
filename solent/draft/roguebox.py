@@ -26,8 +26,8 @@ from solent import uniq
 from solent.brick import brick_menu_new
 from solent.console import Cgrid
 from solent.exceptions import SolentQuitException
-from solent.log import init_logging
-from solent.log import log
+from solent import init_logging
+from solent import log
 from solent.rogue import spin_message_feed_new
 from solent.rogue.simple_01_coordinates_and_ecs import spin_simple_new
 from solent.util import SpinSelectionUi

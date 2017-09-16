@@ -22,7 +22,7 @@
 from solent.gruel.gruel_protocol import gruel_protocol_new
 from solent.gruel.gruel_press import gruel_press_new
 from solent.gruel.gruel_puff import gruel_puff_new
-from solent.log import log
+from solent import log
 
 import traceback
 

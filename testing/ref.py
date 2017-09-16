@@ -24,7 +24,7 @@ from solent import ref_create
 from solent import ref_lookup
 from solent import ref_acquire
 from solent import ref_release
-from solent.log import log
+from solent import log
 from solent.test import run_tests
 from solent.test import test
 

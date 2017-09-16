@@ -20,8 +20,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import dget_wres
-from solent.log import log
-from solent.log import hexdump_bytes
+from solent import log
 from solent.util import wrap_so_fn
 
 from ctypes import *

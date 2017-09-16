@@ -20,8 +20,7 @@ from solent import uniq
 from solent.eng import activity_new
 from solent.eng import cs
 from solent import Engine
-from solent.log import log
-from solent.log import hexdump_bytes
+from solent import log
 from solent.test import run_tests
 from solent.test import test
 from solent.util import SpinLineConsole

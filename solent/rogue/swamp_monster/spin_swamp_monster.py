@@ -30,7 +30,7 @@ from .swamp_generator import swamp_generator_new
 
 from solent import solent_cpair
 from solent import uniq
-from solent.log import log
+from solent import log
 
 from collections import deque
 from collections import OrderedDict as od
