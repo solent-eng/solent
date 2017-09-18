@@ -20,14 +20,13 @@
 # Nearcast that is contains a simple roguelike game.
 
 from solent import Engine
+from solent import log
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import uniq
-from solent.brick import brick_menu_new
 from solent.console import Cgrid
+from solent.console import RailMenu
 from solent.exceptions import SolentQuitException
-from solent import init_logging
-from solent import log
 from solent.rogue import spin_message_feed_new
 from solent.rogue.simple_00_weed_the_garden import spin_simple_new
 from solent.util import SpinSelectionUi
@@ -47,10 +46,11 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
     i message h
         i field h
 
-    message init
+    message prime_console
         field console_type
         field console_height
         field console_width
+    message init
 
     message quit
 
@@ -65,11 +65,6 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
         field cpair
 
     message menu_focus
-    message menu_title
-        field text
-    message menu_item
-        field menu_keycode
-        field text
     message menu_select
         field menu_keycode
 
@@ -90,6 +85,18 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
     message o_game_keycode
         field keycode
 '''
+
+class TrackPrimeConsole:
+    def __init__(self, orb):
+        self.orb = orb
+        #
+        self.ctype = None
+        self.height = None
+        self.width = None
+    def on_prime_console(self, console_type, console_height, console_width):
+        self.ctype = console_type
+        self.height = console_height
+        self.width = console_width
 
 CONTROL_SCHEME_H_GOLLOP = 'gollop'
 CONTROL_SCHEME_H_KEYPAD = 'keypad'
@@ -138,17 +145,6 @@ class TrackContainmentMode:
         return self.b_in_menu
     def is_focus_on_game(self):
         return not self.b_in_menu
-
-class CogBridge:
-    def __init__(self, cog_h, orb, engine):
-        self.cog_h = cog_h
-        self.orb = orb
-        self.engine = engine
-    def nc_init(self, console_type, console_height, console_width):
-        self.nearcast.init(
-            console_type=console_type,
-            console_height=console_height,
-            console_width=console_width)
 
 class CogInterpreter:
     '''
@@ -326,16 +322,18 @@ class CogTerm:
         self.engine = engine
         self.orb = orb
         #
+        self.track_prime_console = orb.track(TrackPrimeConsole)
+        #
         self.spin_term = None
-    def on_init(self, console_type, console_height, console_width):
+    def on_init(self):
         self.spin_term = self.engine.init_spin(
             construct=SpinSelectionUi,
-            console_type=console_type,
+            console_type=self.track_prime_console.ctype,
             cb_selui_keycode=self.cb_selui_keycode,
             cb_selui_lselect=self.cb_selui_lselect)
         self.spin_term.open_console(
-            width=console_width,
-            height=console_height)
+            width=self.track_prime_console.width,
+            height=self.track_prime_console.height)
     def on_term_clear(self):
         self.spin_term.clear()
     def on_term_write(self, drop, rest, s, cpair):
@@ -347,6 +345,7 @@ class CogTerm:
     #
     def cb_selui_keycode(self, cs_selui_keycode):
         keycode = cs_selui_keycode.keycode
+        #
         self.nearcast.keystroke(
             keycode=keycode)
     def cb_selui_lselect(self, cs_selui_lselect):
@@ -355,6 +354,7 @@ class CogTerm:
         c = cs_selui_lselect.c
         cpair = cs_selui_lselect.cpair
         #
+        pass
 
 class CogMenu:
     def __init__(self, cog_h, engine, orb):
@@ -362,33 +362,27 @@ class CogMenu:
         self.engine = engine
         self.orb = orb
         #
-        self.brick_menu = None
-    def on_init(self, console_type, console_height, console_width):
-        self.brick_menu = brick_menu_new(
-            height=console_height,
-            width=console_width,
-            cb_display_clear=self.menu_display_clear,
-            cb_display_write=self.menu_display_write)
-        self.nearcast.menu_title(
-            text=GAME_NAME)
-        self.nearcast.menu_item(
+        self.track_prime_console = orb.track(TrackPrimeConsole)
+        #
+        self.rail_menu = RailMenu()
+    def on_init(self):
+        self.rail_menu.zero(
+            menu_h='menu',
+            cb_menu_asks_display_to_clear=self.cb_menu_asks_display_to_clear,
+            cb_menu_asks_display_to_write=self.cb_menu_asks_display_to_write,
+            cb_menu_selection=self.cb_menu_selection,
+            height=self.track_prime_console.height,
+            width=self.track_prime_console.width,
+            title=GAME_NAME)
+        self.rail_menu.add_menu_item(
             menu_keycode=MENU_KEYCODE_NEW_GAME,
             text='new game')
-        self.nearcast.menu_item(
+        self.rail_menu.add_menu_item(
             menu_keycode=MENU_KEYCODE_QUIT,
             text='quit')
         self.nearcast.menu_focus()
-    def on_menu_title(self, text):
-        self.brick_menu.set_title(
-            text=text)
-    def on_menu_item(self, menu_keycode, text):
-        self.brick_menu.add_menu_item(
-            menu_keycode=menu_keycode,
-            text=text,
-            cb_select=lambda: self.menu_select(
-                menu_keycode=keycode))
     def on_menu_focus(self):
-        self.brick_menu.render_menu()
+        self.rail_menu.render_menu()
     def on_menu_select(self, menu_keycode):
         d = { MENU_KEYCODE_NEW_GAME: self._mi_new_game
             , MENU_KEYCODE_CONTINUE: self._mi_continue
@@ -399,17 +393,28 @@ class CogMenu:
         fn = d[menu_keycode]
         fn()
     def on_o_game_new(self):
-        if not self.brick_menu.has_menu_keycode(MENU_KEYCODE_CONTINUE):
-            self.nearcast.menu_item(
+        if not self.rail_menu.has_menu_keycode(MENU_KEYCODE_CONTINUE):
+            self.rail_menu.add_menu_item(
                 menu_keycode=MENU_KEYCODE_CONTINUE,
                 text='continue')
     #
-    def menu_select(self, menu_keycode):
+    def cb_menu_selection(self, cs_menu_selection):
+        menu_h = cs_menu_selection.menu_h
+        keycode = cs_menu_selection.keycode
+        text = cs_menu_selection.text
+        #
         self.nearcast.menu_select(
-            menu_keycode=menu_keycode)
-    def menu_display_clear(self):
+            menu_keycode=keycode)
+    def cb_menu_asks_display_to_clear(self, cs_menu_asks_display_to_clear):
+        menu_h = cs_menu_asks_display_to_clear.menu_h
+        #
         self.nearcast.term_clear()
-    def menu_display_write(self, drop, rest, s):
+    def cb_menu_asks_display_to_write(self, cs_menu_asks_display_to_write):
+        menu_h = cs_menu_asks_display_to_write.menu_h
+        drop = cs_menu_asks_display_to_write.drop
+        rest = cs_menu_asks_display_to_write.rest
+        s = cs_menu_asks_display_to_write.s
+        #
         self.nearcast.term_write(
             drop=drop,
             rest=rest,
@@ -435,7 +440,9 @@ class CogRoguebox:
         self.engine = engine
         self.orb = orb
         #
+        self.track_prime_console = orb.track(TrackPrimeConsole)
         self.track_containment_mode = orb.track(TrackContainmentMode)
+        #
         self.spin_roguelike = None
         self.spin_message_feed = None
         self.cgrid_last = None
@@ -466,9 +473,9 @@ class CogRoguebox:
             self._diff_display_refresh()
             self.b_refresh_needed = False
     #
-    def on_init(self, console_type, console_height, console_width):
-        self.console_height = console_height
-        self.console_width = console_width
+    def on_init(self):
+        console_height = self.track_prime_console.height
+        console_width = self.track_prime_console.width
         #
         if console_height < ROGUEBOX_GAMEBOX_HEIGHT:
             raise Exception("console height %s too small for game height %s."%(
@@ -557,8 +564,8 @@ class CogRoguebox:
                 s=message,
                 cpair=solent_cpair('white'))
         #
-        for drop in range(self.console_height):
-            for rest in range(self.console_width):
+        for drop in range(self.track_prime_console.height):
+            for rest in range(self.track_prime_console.width):
                 (old_c, old_cpair) = self.cgrid_last.get(
                     drop=drop,
                     rest=rest)
@@ -577,8 +584,6 @@ class CogRoguebox:
             src_cgrid=self.cgrid_next)
 
 def game(console_type):
-    init_logging()
-    #
     engine = None
     try:
         engine = Engine(
@@ -594,11 +599,12 @@ def game(console_type):
         orb.init_cog(CogMenu)
         orb.init_cog(CogRoguebox)
         #
-        bridge = orb.init_cog(CogBridge)
-        bridge.nc_init(
+        bridge = orb.init_autobridge()
+        bridge.nearcast.prime_console(
             console_type=console_type,
             console_height=CONSOLE_HEIGHT,
             console_width=CONSOLE_WIDTH)
+        bridge.nearcast.init()
         #
         engine.event_loop()
     except SolentQuitException:

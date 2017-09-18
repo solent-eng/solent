@@ -16,9 +16,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .cgrid import Cgrid
 from .iconsole import iconsole_new
 from .keystream import keystream_new
+
+from .cgrid import Cgrid
+
+from .rail_menu import RailMenu
 
 import enum
 
@@ -32,6 +35,7 @@ class e_boxtype(enum.Enum):
 CONSOLE_TYPE_ANDROID = 'android'
 CONSOLE_TYPE_APPLE = 'apple_ios'
 CONSOLE_TYPE_CURSES = 'curses'
+CONSOLE_TYPE_HAIKU = 'haiku'
 CONSOLE_TYPE_PYGAME = 'pygame'
 CONSOLE_TYPE_WAYLAND = 'wayland'
 CONSOLE_TYPE_WINDOWS = 'windows'

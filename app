@@ -30,6 +30,7 @@ python -m run_tests
 # Release
 #python -m solent.demo.snake
 #python -m solent.demo.weeds
+#python -m solent.demo.draw
 
 #
 # Scenarios
@@ -59,17 +60,16 @@ python -m run_tests
 #
 # Drafting
 #python -m solent.draft.demonstrate_line_console
-#python -m solent.draft.draw
 #python -m solent.draft.gollop_box
 #python -m solent.draft.gruel_server_sandbox
 #python -m solent.draft.gruel_client_sandbox --pygame
 #python -m solent.draft.mountain_box --pygame
 #python -m solent.draft.oled_ui_demo
 #python -m solent.draft.redis_client
-#python -m solent.draft.roguebox --pygame
 #python -m solent.draft.sdl
 #python -m solent.draft.turn_based_game --curses
 #python -m solent.draft.turn_based_game --pygame
+#python -m solent.draft.winsnake
 
 #
 # Other
