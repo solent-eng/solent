@@ -237,7 +237,7 @@ class Orb:
             orb=self,
             engine=self.engine)
         return cog
-    def track(self, construct):
+    def track(self, tclass):
         '''
         Construct must have no arguments, and will typically be class
         that matches the Track convention.
@@ -250,13 +250,18 @@ class Orb:
         Their state should change only as a result of the message stream. This
         trait is what allows us to reuse a single track across multiple cogs.
         '''
-        if construct in self.tracks:
-            return self.tracks[construct]
+        if tclass in self.tracks:
+            return self.tracks[tclass]
         #
-        if not inspect.isclass(construct):
+        if not inspect.isclass(tclass):
             raise Exception("Supply a class, not an instance of it.")
         #
-        track_inst = construct(
+        argspec = tuple(inspect.getargspec(tclass.__init__)[0])
+        if argspec != ('self', 'orb'):
+            raise Exception("Argspec of %s.__init__ needs to be self, orb."%(
+                tclass.__name__))
+        #
+        track_inst = tclass(
             orb=self)
         #
         # validate that the track's on_methods match the schema
@@ -293,7 +298,7 @@ class Orb:
         #
         install_orb_metadata(track_inst)
         #
-        self.tracks[construct] = track_inst
+        self.tracks[tclass] = track_inst
         return track_inst
     def nearcast(self, cog, message_h, **d_fields):
         '''

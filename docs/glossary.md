@@ -353,8 +353,7 @@ class CogGame:
         self.orb = orb
         self.engine = engine
         #
-        self.track_display_state = self.orb.track(
-            construct=TrackDisplayState)
+        self.track_display_state = self.orb.track(TrackDisplayState)
     def on_something(self):
         if self.track_display_state.is_in_game_focus():
             # etc

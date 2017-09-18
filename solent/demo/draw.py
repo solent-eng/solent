@@ -20,8 +20,8 @@ from solent import Engine
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import uniq
-from solent.brick import brick_menu_new
 from solent.console import Cgrid
+from solent.console import RailMenu
 from solent.exceptions import SolentQuitException
 from solent import init_logging
 from solent import log
@@ -36,7 +36,7 @@ import traceback
 
 MTU = 1500
 
-APP_NAME = 'mouse_draw'
+APP_NAME = 'draw'
 
 
 # --------------------------------------------------------
@@ -45,21 +45,39 @@ APP_NAME = 'mouse_draw'
 def create_spot(drop, rest):
     return (drop, rest)
 
-class SpinDrawGame:
-    def __init__(self, height, width, cb_display_clear, cb_display_write):
+class CsDrawSurfaceClear:
+    def __init__(self):
+        pass
+
+class CsDrawSurfaceWrite:
+    def __init__(self):
+        self.drop = None
+        self.rest = None
+        self.s = None
+        self.cpair = None
+
+class RailDrawSurface:
+    def __init__(self):
+        self.cs_draw_surface_clear = CsDrawSurfaceClear()
+        self.cs_draw_surface_write = CsDrawSurfaceWrite()
+        #
+        self.b_started = False
+    def zero(self, height, width, cb_draw_surface_clear, cb_draw_surface_write):
         self.height = height
         self.width = width
-        self.cb_display_clear = cb_display_clear
-        self.cb_display_write = cb_display_write
+        self.cb_draw_surface_clear = cb_draw_surface_clear
+        self.cb_draw_surface_write = cb_draw_surface_write
+        #
+        self.b_started = True
         #
         self.spots = []
     def tick(self):
         pass
     def render(self):
-        self.cb_display_clear()
+        self._call_draw_surface_clear()
         for spot in self.spots:
             (drop, rest) = spot
-            self.cb_display_write(
+            self._call_draw_surface_write(
                 drop=drop,
                 rest=rest,
                 s='@',
@@ -70,18 +88,17 @@ class SpinDrawGame:
             self.spots.remove(spot)
         else:
             self.spots.append(spot)
-
-def spin_draw_game_new(height, width, cb_display_clear, cb_display_write):
-    '''
-    cb_display_clear()
-    cb_display_write(drop, rest, s, cpair)
-    '''
-    ob = SpinDrawGame(
-        height=height,
-        width=width,
-        cb_display_clear=cb_display_clear,
-        cb_display_write=cb_display_write)
-    return ob
+    #
+    def _call_draw_surface_clear(self):
+        self.cb_draw_surface_clear(
+            cs_draw_surface_clear=self.cs_draw_surface_clear)
+    def _call_draw_surface_write(self, drop, rest, s, cpair):
+        self.cs_draw_surface_write.drop = drop
+        self.cs_draw_surface_write.rest = rest
+        self.cs_draw_surface_write.s = s
+        self.cs_draw_surface_write.cpair = cpair
+        self.cb_draw_surface_write(
+            cs_draw_surface_write=self.cs_draw_surface_write)
 
 
 # --------------------------------------------------------
@@ -95,10 +112,11 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
     i message h
         i field h
 
-    message init
+    message prime_console
         field console_type
         field height
         field width
+    message init
 
     message quit
 
@@ -133,6 +151,14 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
     message menu_select
         field menu_keycode
 '''
+
+class TrackPrimeConsole:
+    def __init__(self, orb):
+        self.orb = orb
+    def on_prime_console(self, console_type, height, width):
+        self.console_type = console_type
+        self.height = height
+        self.width = width
 
 MENU_KEYCODE_NEW_GAME = solent_keycode('n')
 MENU_KEYCODE_CONTINUE = solent_keycode('c')
@@ -194,18 +220,23 @@ class CogInterpreter:
                 drop=drop,
                 rest=rest)
 
-class CogTerm:
+class CogToTerm:
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
         self.orb = orb
         #
+        self.track_prime_console = orb.track(TrackPrimeConsole)
+        #
         self.spin_term = None
     #
-    def on_init(self, console_type, height, width):
+    def on_init(self):
+        width = self.track_prime_console.width
+        height = self.track_prime_console.height
+        #
         self.spin_term = self.engine.init_spin(
             construct=SpinSelectionUi,
-            console_type=console_type,
+            console_type=self.track_prime_console.console_type,
             cb_selui_keycode=self.cb_selui_keycode,
             cb_selui_lselect=self.cb_selui_lselect)
         self.spin_term.open_console(
@@ -236,39 +267,37 @@ class CogTerm:
             drop=drop,
             rest=rest)
 
-class CogMenu:
+class CogToMenu:
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
         self.orb = orb
         #
-        self.brick_menu = None
-    def on_init(self, console_type, height, width):
-        self.brick_menu = brick_menu_new(
-            height=height,
-            width=width,
-            cb_display_clear=self.menu_display_clear,
-            cb_display_write=self.menu_display_write)
-        self.nearcast.menu_title(
-            text=APP_NAME)
-        self.nearcast.menu_item(
+        self.track_prime_console = orb.track(TrackPrimeConsole)
+        #
+        self.rail_menu = RailMenu()
+    def on_init(self):
+        console_type = self.track_prime_console.console_type
+        height = self.track_prime_console.height
+        width = self.track_prime_console.width
+        #
+        self.rail_menu.zero(
+            menu_h='menu',
+            cb_menu_selection=self.cb_menu_selection,
+            cb_menu_asks_display_to_clear=self.cb_menu_asks_display_to_clear,
+            cb_menu_asks_display_to_write=self.cb_menu_asks_display_to_write,
+            height=self.track_prime_console.height,
+            width=self.track_prime_console.width,
+            title=APP_NAME)
+        self.rail_menu.add_menu_item(
             menu_keycode=MENU_KEYCODE_NEW_GAME,
             text='new game')
-        self.nearcast.menu_item(
+        self.rail_menu.add_menu_item(
             menu_keycode=MENU_KEYCODE_QUIT,
             text='quit')
         self.nearcast.menu_focus()
-    def on_menu_title(self, text):
-        self.brick_menu.set_title(
-            text=text)
-    def on_menu_item(self, menu_keycode, text):
-        self.brick_menu.add_menu_item(
-            menu_keycode=menu_keycode,
-            text=text,
-            cb_select=lambda: self.menu_select(
-                menu_keycode=keycode))
     def on_menu_focus(self):
-        self.brick_menu.render_menu()
+        self.rail_menu.render_menu()
     def on_menu_select(self, menu_keycode):
         d = { MENU_KEYCODE_NEW_GAME: self._mi_new_game
             , MENU_KEYCODE_CONTINUE: self._mi_continue
@@ -279,17 +308,27 @@ class CogMenu:
         fn = d[menu_keycode]
         fn()
     def on_game_new(self):
-        if not self.brick_menu.has_menu_keycode(MENU_KEYCODE_CONTINUE):
-            self.nearcast.menu_item(
+        if not self.rail_menu.has_menu_keycode(MENU_KEYCODE_CONTINUE):
+            self.rail_menu.add_menu_item(
                 menu_keycode=MENU_KEYCODE_CONTINUE,
                 text='continue')
     #
-    def menu_select(self, menu_keycode):
+    def cb_menu_selection(self, cs_menu_selection):
+        menu_h = cs_menu_selection.menu_h
+        keycode = cs_menu_selection.keycode
+        #
         self.nearcast.menu_select(
-            menu_keycode=menu_keycode)
-    def menu_display_clear(self):
+            menu_keycode=keycode)
+    def cb_menu_asks_display_to_clear(self, cs_menu_asks_display_to_clear):
+        menu_h = cs_menu_asks_display_to_clear.menu_h
+        #
         self.nearcast.term_clear()
-    def menu_display_write(self, drop, rest, s):
+    def cb_menu_asks_display_to_write(self, cs_menu_asks_display_to_write):
+        menu_h = cs_menu_asks_display_to_write.menu_h
+        drop = cs_menu_asks_display_to_write.drop
+        rest = cs_menu_asks_display_to_write.rest
+        s = cs_menu_asks_display_to_write.s
+        #
         self.nearcast.term_write(
             drop=drop,
             rest=rest,
@@ -304,63 +343,55 @@ class CogMenu:
     def _mi_quit(self):
         raise SolentQuitException()
 
-class CogDrawGame:
+class CogToDrawSurface:
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
         self.orb = orb
         #
+        self.track_prime_console = orb.track(TrackPrimeConsole)
         self.track_containment_mode = orb.track(TrackContainmentMode)
-        self.height = None
-        self.width = None
-        self.spin_draw_game = None
+        #
+        self.rail_draw_surface = RailDrawSurface()
         self.tick_t100 = None
     #
     def orb_turn(self, activity):
-        if self.spin_draw_game == None:
+        if self.rail_draw_surface == None:
             return
     #
-    def on_init(self, console_type, height, width):
-        self.height = height
-        self.width = width
     def on_game_new(self):
-        self.spin_draw_game = spin_draw_game_new(
-            height=self.height,
-            width=self.width,
-            cb_display_clear=self.game_display_clear,
-            cb_display_write=self.game_display_write)
+        self.rail_draw_surface.zero(
+            height=self.track_prime_console.height,
+            width=self.track_prime_console.width,
+            cb_draw_surface_clear=self.cb_draw_surface_clear,
+            cb_draw_surface_write=self.cb_draw_surface_write)
     def on_game_input(self, keycode):
         log('xxx game input %s'%keycode)
     def on_game_focus(self):
-        if None == self.spin_draw_game:
+        if not self.rail_draw_surface.b_started:
             self.nearcast.menu_focus()
             return
-        self.spin_draw_game.render()
+        self.rail_draw_surface.render()
     def on_game_plot(self, drop, rest):
-        self.spin_draw_game.flip(
+        self.rail_draw_surface.flip(
             drop=drop,
             rest=rest)
-        self.spin_draw_game.render()
+        self.rail_draw_surface.render()
     #
-    def game_display_clear(self):
+    def cb_draw_surface_clear(self, cs_draw_surface_clear):
+        #
         self.nearcast.term_clear()
-    def game_display_write(self, drop, rest, s, cpair):
+    def cb_draw_surface_write(self, cs_draw_surface_write):
+        drop = cs_draw_surface_write.drop
+        rest = cs_draw_surface_write.rest
+        s = cs_draw_surface_write.s
+        cpair = cs_draw_surface_write.cpair
+        #
         self.nearcast.term_write(
             drop=drop,
             rest=rest,
             s=s,
             cpair=cpair)
-
-class CogPrimer:
-    def __init__(self, cog_h, orb, engine):
-        self.cog_h = cog_h
-        self.orb = orb
-        self.engine = engine
-    def nc_init(self, console_type, height, width):
-        self.nearcast.init(
-            console_type=console_type,
-            height=height,
-            width=width)
 
 def main():
     init_logging()
@@ -375,15 +406,16 @@ def main():
             i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
-        orb.init_cog(CogTerm)
-        orb.init_cog(CogMenu)
-        orb.init_cog(CogDrawGame)
+        orb.init_cog(CogToTerm)
+        orb.init_cog(CogToMenu)
+        orb.init_cog(CogToDrawSurface)
         #
-        primer = orb.init_cog(CogPrimer)
-        primer.nc_init(
+        bridge = orb.init_autobridge()
+        bridge.nearcast.prime_console(
             console_type='pygame',
             height=24,
             width=78)
+        bridge.nearcast.init()
         #
         engine.event_loop()
     except SolentQuitException:
