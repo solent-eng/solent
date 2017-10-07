@@ -3,7 +3,8 @@ import subprocess
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-LAUNCH = "solent.demo.snake"
+LAUNCH = "run_tests"
+#LAUNCH = "solent.demo.snake"
 
 def main():
 	venv_python = os.path.join(BASE_DIR, 'venv', 'Scripts', 'python.exe')
