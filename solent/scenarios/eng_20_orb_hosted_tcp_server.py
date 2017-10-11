@@ -125,22 +125,21 @@ class CogTcpServer:
         self.engine.close_tcp_server(
             server_sid=self.server_sid)
 
-def app(engine):
+def init(engine):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
     orb.init_cog(CogTcpServer)
     #
     bridge = orb.init_autobridge()
     bridge.nc_init()
-    #
-    engine.event_loop()
 
 def main():
     engine = Engine(
         mtu=MTU)
     try:
-        run_scenario(
+        init(
             engine=engine)
+        engine.event_loop()
     except KeyboardInterrupt:
         pass
     except SolentQuitException:

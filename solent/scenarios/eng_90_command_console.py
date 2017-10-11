@@ -20,7 +20,7 @@
 # [This is incomplete at time if writing]
 #
 # Here is a more complex application of the principles from some of the TCP
-# scenarios (e.g. 20, 21).
+# scenarios (e.g. eng_20, eng_21).
 #
 # Here we use the line console to send commands over the nearcast. We run the
 # command console itself. Then, there are cogs offering functionality on other
@@ -43,7 +43,7 @@
 from solent import Engine
 from solent import SolentQuitException
 from solent import log
-from solent.util import RailLineFinder
+from solent import RailLineFinder
 
 import traceback
 
@@ -237,7 +237,8 @@ class CogAppConsole:
         #
         self.rail_line_finder = RailLineFinder()
         self.rail_line_finder.zero(
-            cb_found_line=self.cb_found_line)
+            rail_h='line_finder.only',
+            cb_line_finder_event=self.cb_line_finder_event)
         self.rail_command_shell = RailCommandShell()
     def orb_close(self):
         if self.server_sid:
@@ -312,8 +313,9 @@ class CogAppConsole:
         #
         log('xxx')
     #
-    def cb_found_line(self, cs_found_line):
-        msg = cs_found_line.msg
+    def cb_line_finder_event(self, cs_line_finder_event):
+        rail_h = cs_line_finder_event.rail_h
+        msg = cs_line_finder_event.msg
         #
         self.rail_command_shell.accept(
             line=msg)
@@ -396,16 +398,34 @@ class CogPubManager:
         self.orb = orb
         self.engine = engine
         #
+        self.pub_sid = None
     def on_start_udp_pub(self, pub_h, port, duration, word):
         # xxx buffer this information, and complete the pub setup.
         # /note that we will need a map of pubs, not just a single.
-        self.open_pub(
+        self.pub_sid = self.engine.open_pub(
             addr='127.0.0.1',
             port=port,
             cb_pub_start=self.cb_pub_start,
             cb_pub_stop=self.cb_pub_stop)
     def on_stop_udp_pub(self, pub_h):
-        xxx
+        if None == self.pub_sid:
+            print("Weird: looks like no server is started.")
+            return
+        self.engine.close_pub(
+            pub_sid=self.pub_sid)
+    def cb_pub_start(self, cs_pub_start):
+        engine = cs_pub_start.engine
+        pub_sid = cs_pub_start.pub_sid
+        addr = cs_pub_start.addr
+        port = cs_pub_start.port
+        #
+        pass
+    def cb_pub_stop(self, cs_pub_stop):
+        engine = cs_pub_stop.engine
+        pub_sid = cs_pub_stop.pub_sid
+        message = cs_pub_stop.message
+        #
+        pass
 
 class CogSubManager:
     def __init__(self, cog_h, orb, engine):
@@ -413,7 +433,7 @@ class CogSubManager:
         self.orb = orb
         self.engine = engine
 
-def contain_event_loop(engine):
+def init(engine, console_addr, console_port):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
     orb.init_cog(CogAppConsole)
@@ -423,10 +443,8 @@ def contain_event_loop(engine):
     #
     bridge = orb.init_autobridge()
     bridge.nc_init(
-        console_addr=CONSOLE_ADDR,
-        console_port=CONSOLE_PORT)
-    #
-    engine.event_loop()
+        console_addr=console_addr,
+        console_port=console_port)
 
 
 # --------------------------------------------------------
@@ -441,8 +459,11 @@ def main():
     engine = Engine(
         mtu=MTU)
     try:
-        contain_event_loop(
-            engine=engine)
+        init(
+            engine=engine,
+            console_addr=CONSOLE_ADDR,
+            console_port=CONSOLE_PORT)
+        engine.event_loop()
     except KeyboardInterrupt:
         pass
     except SolentQuitException:

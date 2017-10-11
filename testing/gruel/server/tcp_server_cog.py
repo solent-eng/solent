@@ -16,18 +16,17 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import uniq
-from solent.eng import activity_new
 from solent import Engine
+from solent import log
+from solent import run_tests
+from solent import test
+from solent import uniq
 from solent.gruel import gruel_protocol_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
 from solent.gruel.gruel_protocol import GruelMessageType
 from solent.gruel.server.nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.tcp_server_cog import tcp_server_cog_new
-from solent import log
-from solent.test import run_tests
-from solent.test import test
 
 import sys
 
@@ -358,7 +357,6 @@ def should_boot_client_when_told_to():
 
 @test
 def should_boot_client_when_invalid_gruel_is_received():
-    activity = activity_new()
     engine = Engine(
         mtu=MTU)
     orb = engine.init_orb(

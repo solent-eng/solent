@@ -32,9 +32,9 @@
 # find it does what you need.
 
 from solent import Engine
+from solent import RailLineFinder
 from solent import SolentQuitException
 from solent import log
-from solent.util import RailLineFinder
 
 I_NEARCAST = '''
     i message h
@@ -66,7 +66,8 @@ class CogAppConsole:
         #
         self.rail_line_finder = RailLineFinder()
         self.rail_line_finder.zero(
-            cb_found_line=self.cb_found_line)
+            rail_h='line_finder.only',
+            cb_line_finder_event=self.cb_line_finder_event)
     def orb_close(self):
         if self.server_sid:
             self._stop_server()
@@ -84,8 +85,9 @@ class CogAppConsole:
         self.b_active = False
         self._stop_server()
     #
-    def cb_found_line(self, cs_found_line):
-        msg = cs_found_line.msg
+    def cb_line_finder_event(self, cs_line_finder_event):
+        rail_h = cs_line_finder_event.rail_h
+        msg = cs_line_finder_event.msg
         #
         self.nearcast.user_line(
             msg=msg)
@@ -157,7 +159,7 @@ class CogPrinter:
     def on_user_line(self, msg):
         log("Received line [%s]"%msg)
 
-def run_scenario(engine):
+def init(engine):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
     orb.init_cog(CogAppConsole)
@@ -165,15 +167,14 @@ def run_scenario(engine):
     #
     bridge = orb.init_autobridge()
     bridge.nc_init()
-    #
-    engine.event_loop()
 
 def main():
     engine = Engine(
         mtu=MTU)
     try:
-        run_scenario(
+        init(
             engine=engine)
+        engine.event_loop()
     except KeyboardInterrupt:
         pass
     except SolentQuitException:

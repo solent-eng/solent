@@ -77,6 +77,17 @@ class CogUdpPublisher:
         log('pub stop %s'%(self.pub_sid))
         self.pub_sid = None
 
+def init(engine, addr, port):
+    orb = engine.init_orb(
+        i_nearcast=I_NEARCAST)
+    orb.init_cog(CogCoord)
+    orb.init_cog(CogUdpPublisher)
+    #
+    bridge = orb.init_autobridge()
+    bridge.nc_init(
+        addr=addr,
+        port=port)
+
 
 # --------------------------------------------------------
 #   launch
@@ -86,24 +97,15 @@ MTU = 1300
 ADDR = '127.255.255.255'
 PORT = 50000
 
-def app():
+def main():
     engine = Engine(
         mtu=MTU)
-    orb = engine.init_orb(
-        i_nearcast=I_NEARCAST)
-    orb.init_cog(CogCoord)
-    orb.init_cog(CogUdpPublisher)
-    #
-    bridge = orb.init_autobridge()
-    bridge.nc_init(
-        addr=ADDR,
-        port=PORT)
-    #
-    engine.event_loop()
-
-def main():
     try:
-        app()
+        init(
+            engine=engine,
+            addr=ADDR,
+            port=PORT)
+        engine.event_loop()
     except KeyboardInterrupt:
         pass
     except SolentQuitException:

@@ -44,7 +44,3 @@ class IpValidator:
             raise Exception("Please do not do this.")
         self.permissioned_ips.append(ip)
 
-def ip_validator_new():
-    ob = IpValidator()
-    return ob
-

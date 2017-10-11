@@ -26,10 +26,10 @@
 from solent import solent_cpair
 from solent import solent_cpair_pairs
 from solent import solent_keycode
+from solent import SolentQuitException
 from solent import uniq
 from solent.console import Cgrid
-from solent.console import console_new
-from solent.exceptions import SolentQuitException
+from solent.console import Console
 
 import sys
 import time

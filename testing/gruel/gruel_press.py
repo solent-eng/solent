@@ -26,12 +26,12 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.gruel import gruel_press_new
-from solent.gruel import gruel_protocol_new
 from solent import hexdump_bytes
 from solent import hexdump_string
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
+from solent.gruel import gruel_press_new
+from solent.gruel import gruel_protocol_new
 
 import sys
 

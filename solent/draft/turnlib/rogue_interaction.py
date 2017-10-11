@@ -27,8 +27,8 @@ from .glyph import glyph_new
 from .scope import scope_new
 
 from solent import solent_cpair
+from solent import SolentQuitException
 from solent.console import Cgrid
-from solent.exceptions import SolentQuitException
 
 from collections import deque
 

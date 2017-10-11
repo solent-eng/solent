@@ -23,7 +23,6 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import ip_validator_new
 from solent import log
 
 class HeartbeaterCog(object):

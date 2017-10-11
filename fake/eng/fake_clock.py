@@ -1,6 +1,5 @@
-# // overview
-# Line console. This is a simple TCP server that listens on an address and
-# port, and calls back whenever it gets a line.
+#
+# fake_clock
 #
 # // license
 # Copyright 2016, Free Software Foundation.
@@ -20,5 +19,15 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .spin_line_console import SpinLineConsole
+class FakeClock:
+    def __init__(self):
+        self.t = 0
+    def add(self, n):
+        self.t += n
+    def set(self, t):
+        self.t = t
+    def inc(self, amt=1):
+        self.t += amt
+    def now(self):
+        return self.t
 

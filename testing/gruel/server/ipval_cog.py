@@ -19,13 +19,11 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from fake.eng import fake_engine_new
+from fake import FakeEngine
 
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent import uniq
-from solent.eng import activity_new
-from solent.eng.cs import *
 from solent.gruel import gruel_protocol_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
@@ -33,14 +31,14 @@ from solent.gruel.gruel_protocol import GruelMessageType
 from solent.gruel.server.nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.ipval_cog import ipval_cog_new
 from solent import log
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
 
 import sys
 
 @test
 def should_reject_unauthorised_ip():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     r = orb.init_cog(
@@ -62,7 +60,7 @@ def should_reject_unauthorised_ip():
 
 @test
 def should_allow_authorised_ip():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     r = orb.init_cog(
@@ -101,7 +99,7 @@ def should_allow_authorised_ip():
 
 @test
 def should_allow_any_ip():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_GRUEL_SERVER)
     r = orb.init_cog(

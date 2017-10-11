@@ -48,9 +48,9 @@
 
 from .activity import activity_new
 from .nearcast_schema import nearcast_schema_new
+from .solent_quit_exception import SolentQuitException
 
 from solent import uniq
-from solent import SolentQuitException
 from solent import log
 
 from collections import deque
@@ -437,11 +437,4 @@ class Orb:
             orb=self,
             cog=cog)
         self.cogs.append(cog)
-
-def orb_new(spin_h, engine, i_nearcast):
-    ob = Orb(
-        spin_h=spin_h,
-        engine=engine,
-        i_nearcast=i_nearcast)
-    return ob
 

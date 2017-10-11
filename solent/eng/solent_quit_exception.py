@@ -1,7 +1,3 @@
-#
-# fake_clock
-#
-# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -19,19 +15,6 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-class FakeClock:
-    def __init__(self):
-        self.t = 0
-    def add(self, n):
-        self.t += n
-    def set(self, t):
-        self.t = t
-    def inc(self, amt=1):
-        self.t += amt
-    def now(self):
-        return self.t
-
-def fake_clock_new():
-    ob = FakeClock()
-    return ob
+class SolentQuitException(Exception):
+    pass
 

@@ -1,6 +1,3 @@
-#
-# sip
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -19,19 +16,20 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent.base.sip import Sip
+
 from solent import ref_create
 from solent import ref_lookup
 from solent import ref_acquire
 from solent import ref_release
 from solent import log
 from solent import hexdump_bytes
-from solent.sip import sip_new
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
 
 @test
 def should_handle_c():
-    sip = sip_new(100)
+    sip = Sip(100)
     sip.put_unsigned_char(
         c='q',
         o=16)
@@ -43,7 +41,7 @@ def should_handle_c():
 
 @test
 def should_handle_u1():
-    sip = sip_new(100)
+    sip = Sip(100)
     sip.put_u1(
         n=123,
         o=20)
@@ -55,7 +53,7 @@ def should_handle_u1():
 
 @test
 def should_handle_u2():
-    sip = sip_new(100)
+    sip = Sip(100)
     sip.put_u2(
         n=123,
         o=24)
@@ -67,7 +65,7 @@ def should_handle_u2():
 
 @test
 def should_handle_u4():
-    sip = sip_new(100)
+    sip = Sip(100)
     sip.put_u4(
         n=123,
         o=4)
@@ -79,7 +77,7 @@ def should_handle_u4():
 
 @test
 def should_handle_u8():
-    sip = sip_new(100)
+    sip = Sip(100)
     sip.put_u8(
         n=123,
         o=8)
@@ -91,7 +89,7 @@ def should_handle_u8():
 
 @test
 def should_lookup_bytes_easily():
-    sip = sip_new(100)
+    sip = Sip(100)
     #
     # Remember: sips store numbers as network format (big endian).
     sip.put_u4(
@@ -106,7 +104,7 @@ def should_lookup_bytes_easily():
 
 @test
 def should_write_string():
-    sip = sip_new(100)
+    sip = Sip(100)
     #
     # In UTF8, the delta symbol takes two bytes (\xce\x94').
     delta_symbol = u'\N{GREEK CAPITAL LETTER DELTA}'
@@ -146,7 +144,7 @@ def should_write_string():
 
 @test
 def should_store_and_retrieve_reference():
-    sip = sip_new(100)
+    sip = Sip(100)
     #
     source_a = 'abcdefghij'
     source_b = 'z'*50000
@@ -174,7 +172,7 @@ def should_store_and_retrieve_reference():
 @test
 def should_clone_equivalent_sip():
     content = b'abcdefghij'
-    sip_b = sip_new(10)
+    sip_b = Sip(10)
     sip_b.clone(
         bb=content)
     hexdump_bytes(content, title='content')
@@ -187,7 +185,7 @@ def should_clone_equivalent_sip():
 def should_clone_shorter_sip():
     content = b'abcdefghij'
     clen = len(content)
-    sip = sip_new(100)
+    sip = Sip(100)
     sip.clone(
         bb=content)
     hexdump_bytes(content, title='content')

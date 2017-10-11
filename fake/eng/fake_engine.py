@@ -24,11 +24,11 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from .fake_clock import FakeClock
+
 from solent import uniq
 from solent.eng import cs
-from solent.eng.orb import orb_new
-
-from testing.util import clock_fake
+from solent.eng.orb import Orb
 
 class FakeSocket:
     def __init__(self, cb_tcp_connect, cb_tcp_condrop, cb_tcp_recv):
@@ -42,7 +42,7 @@ def create_fake_sid():
 class FakeEngine:
     def __init__(self):
         #
-        self.clock = clock_fake()
+        self.clock = FakeClock()
         self.events = []
         self.sent_bb = []
         self.sids = {}
@@ -51,7 +51,7 @@ class FakeEngine:
     def get_clock(self):
         return self.clock
     def init_orb(self, i_nearcast):
-        return orb_new(
+        return Orb(
             spin_h='fake_engine/orb/%s'%uniq(),
             engine=self,
             i_nearcast=i_nearcast)
@@ -101,8 +101,4 @@ class FakeEngine:
         cs_tcp_connect.port = client_port
         s.cb_tcp_connect(
             cs_tcp_connect=cs_tcp_connect)
-
-def fake_engine_new():
-    ob = FakeEngine()
-    return ob
 

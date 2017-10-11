@@ -106,22 +106,21 @@ class CogTcpClient:
         self.nearcast.result(
             content=msg)
 
-def run_scenario(engine):
+def init(engine):
     orb = engine.init_orb(I_NEARCAST)
     orb.init_cog(CogCoordinator)
     orb.init_cog(CogTcpClient)
     #
     bridge = orb.init_autobridge()
     bridge.nc_init()
-    #
-    engine.event_loop()
 
 def main():
     engine = Engine(
         mtu=MTU)
     try:
-        run_scenario(
+        init(
             engine=engine)
+        engine.event_loop()
     except KeyboardInterrupt:
         pass
     except SolentQuitException:

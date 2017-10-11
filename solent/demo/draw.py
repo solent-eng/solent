@@ -17,14 +17,14 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import Engine
+from solent import init_logging
+from solent import log
 from solent import solent_cpair
 from solent import solent_keycode
+from solent import SolentQuitException
 from solent import uniq
 from solent.console import Cgrid
 from solent.console import RailMenu
-from solent.exceptions import SolentQuitException
-from solent import init_logging
-from solent import log
 from solent.util import SpinSelectionUi
 
 from collections import deque

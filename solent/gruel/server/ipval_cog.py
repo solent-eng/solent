@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import ip_validator_new
+from solent.eng import IpValidator
 from solent import log
 
 class IpvalCog(object):
@@ -28,7 +28,7 @@ class IpvalCog(object):
         self.orb = orb
         self.engine = engine
         #
-        self.ip_validator = ip_validator_new()
+        self.ip_validator = IpValidator()
     #
     def on_ipval_add_ip(self, ip):
         self.ip_validator.add_ip(

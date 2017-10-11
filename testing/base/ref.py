@@ -19,14 +19,13 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import mempool_new
 from solent import ref_create
 from solent import ref_lookup
 from solent import ref_acquire
 from solent import ref_release
 from solent import log
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
 
 @test
 def should_acquire_and_release():

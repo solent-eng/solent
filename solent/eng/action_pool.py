@@ -52,7 +52,3 @@ class ActionPool:
             b_recurring=b_recurring)
         return action
 
-def action_pool_new():
-    ob = ActionPool()
-    return ob
-

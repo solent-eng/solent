@@ -27,13 +27,17 @@ from solent import Engine
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
-from solent.util import RailLineFinder
+from solent import RailLineFinder
 from solent.util import SpinSelectionUi
 
 import sys
 import time
 import traceback
 
+
+# --------------------------------------------------------
+#   model
+# --------------------------------------------------------
 I_NEARCAST_SCHEMA = '''
     i message h
         i field h
@@ -144,7 +148,8 @@ class CogTerm:
     def on_net_connect(self):
         self.rail_line_finder = RailLineFinder()
         self.rail_line_finder.zero(
-            cb_found_line=self.cb_found_line)
+            rail_h='line_finder.only',
+            cb_line_finder_event=self.cb_line_finder_event)
         #
         self.spin_term.clear()
         self.spin_term.write(
@@ -199,8 +204,9 @@ class CogTerm:
         cpair = cs_selui_lselect.cpair
         #
         pass
-    def cb_found_line(self, cs_found_line):
-        line = cs_found_line.msg
+    def cb_line_finder_event(self, cs_line_finder_event):
+        rail_h = cs_line_finder_event.rail_h
+        line = cs_line_finder_event.msg
         #
         self.nearcast.net_send(
             bb=bytes('%s\n'%line, 'utf8'))
@@ -267,23 +273,25 @@ class CogBridge:
             addr=addr,
             port=port)
 
-def usage():
-    print('Usage:')
-    print('  %s addr port'%sys.argv[0])
-    sys.exit(1)
-
-def launch(engine, net_addr, net_port):
+def init(engine, net_addr, net_port):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_SCHEMA)
     orb.add_log_snoop()
     orb.init_cog(CogTcpClient)
     orb.init_cog(CogTerm)
+    #
     bridge = orb.init_cog(CogBridge)
     bridge.nc_init(
         addr=net_addr,
         port=net_port)
-    #
-    engine.event_loop()
+
+# --------------------------------------------------------
+#   launch
+# --------------------------------------------------------
+def usage():
+    print('Usage:')
+    print('  %s addr port'%sys.argv[0])
+    sys.exit(1)
 
 def main():
     if 3 != len(sys.argv):
@@ -295,10 +303,11 @@ def main():
         net_addr = sys.argv[1]
         net_port = int(sys.argv[2])
         #
-        launch(
+        init(
             engine=engine,
             net_addr=net_addr,
             net_port=net_port)
+        engine.event_loop()
     except KeyboardInterrupt:
         pass
     except SolentQuitException:

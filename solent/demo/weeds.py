@@ -23,10 +23,10 @@ from solent import Engine
 from solent import log
 from solent import solent_cpair
 from solent import solent_keycode
+from solent import SolentQuitException
 from solent import uniq
 from solent.console import Cgrid
 from solent.console import RailMenu
-from solent.exceptions import SolentQuitException
 from solent.rogue import spin_message_feed_new
 from solent.rogue.simple_00_weed_the_garden import spin_simple_new
 from solent.util import SpinSelectionUi

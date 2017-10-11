@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 #
-# // Overview
+# // overview
 # Here, we introduce the concepts of nearcast, orb, and cog.
 #
 # In the main function, we instantiate an orb. We use a domain-specific
@@ -113,21 +113,20 @@ class CogQuitter:
             log('quitting')
             raise SolentQuitException()
 
-def run_scenario(engine):
+def init(engine):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
     orb.init_cog(CogSender)
     orb.init_cog(CogPrinter)
     orb.init_cog(CogQuitter)
-    #
-    engine.event_loop()
 
 def main():
     engine = Engine(
         mtu=MTU)
     try:
-        run_scenario(
+        init(
             engine=engine)
+        engine.event_loop()
     except KeyboardInterrupt:
         pass
     except SolentQuitException:

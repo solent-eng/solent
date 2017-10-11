@@ -22,11 +22,12 @@
 from solent import Engine
 from solent import solent_cpair
 from solent import uniq
-from solent.exceptions import SolentQuitException
-from solent import cformat
+from solent import SolentQuitException
 from solent import init_logging
 from solent import log
 from solent.redis import rail_resp_etcher_new
+from solent.redis import rail_resp_parser_new
+from solent.util import cformat
 from solent.util import SpinLineConsole
 
 from collections import deque
