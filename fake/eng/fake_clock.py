@@ -31,7 +31,3 @@ class FakeClock:
     def now(self):
         return self.t
 
-def fake_clock_new():
-    ob = FakeClock()
-    return ob
-

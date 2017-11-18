@@ -16,10 +16,10 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
 
-from fake.eng import fake_engine_new
+from fake import FakeEngine
 
 I_NEARCAST_EXAMPLE = '''
     i message h
@@ -42,7 +42,7 @@ I_NEARCAST_EXAMPLE = '''
 
 @test
 def should_construct():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_EXAMPLE)
     #

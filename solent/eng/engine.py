@@ -38,20 +38,20 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .action_pool import action_pool_new
-from .activity import activity_new
+from .action_pool import ActionPool
+from .activity import Activity
+from .clock import Clock
 from .metasock import MetasockCloseCondition
 from .metasock import metasock_create_sub
 from .metasock import metasock_create_pub
 from .metasock import metasock_create_tcp_accept
 from .metasock import metasock_create_tcp_client
 from .metasock import metasock_create_tcp_server
-from .orb import orb_new
+from .orb import Orb
 
-from solent import mempool_new
 from solent import uniq
 from solent import log
-from solent.util.clock import clock_new
+from solent import Mempool
 
 from collections import OrderedDict as od
 import platform
@@ -99,13 +99,13 @@ class Engine(object):
     def __init__(self, mtu):
         self.mtu = mtu
         #
-        self.mempool = mempool_new()
-        self.clock = clock_new()
-        self.action_pool = action_pool_new()
+        self.mempool = Mempool()
+        self.clock = Clock()
+        self.action_pool = ActionPool()
         self.sid_to_metasock = od()
         self.spins = od()
         #
-        self.activity = activity_new()
+        self.activity = Activity()
         self.b_debug_eloop = False
         self.sid_counter = 0
         self.default_timeout = 0.2
@@ -171,7 +171,7 @@ class Engine(object):
         # confusing to new users to force the user to be constantly changing
         # this. Hence, we default it.
         spin_h = 'orb/%s'%(uniq())
-        spin = orb_new(
+        spin = Orb(
             spin_h=spin_h,
             engine=self,
             i_nearcast=i_nearcast)

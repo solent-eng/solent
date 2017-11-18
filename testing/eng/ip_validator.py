@@ -19,9 +19,9 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.eng import ip_validator_new
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
+from solent.eng import IpValidator
 
 import sys
 
@@ -30,7 +30,7 @@ def should_accept_and_reject_ips():
     test_ip = '127.0.0.1'
     second_ip = '203.15.93.2'
     #
-    ip_validator = ip_validator_new()
+    ip_validator = IpValidator()
     ip_validator.add_ip(
         ip=test_ip)
     #
@@ -53,7 +53,7 @@ def should_allow_all_ips_to_be_accepted():
     test_ip = '127.0.0.1'
     second_ip = '203.15.93.2'
     #
-    ip_validator = ip_validator_new()
+    ip_validator = IpValidator()
     #
     assert False == ip_validator.is_ok(
         ip=test_ip)
@@ -70,7 +70,7 @@ def should_clear_when_told_to():
     first_ip = '127.0.0.1'
     second_ip = '203.15.93.2'
     #
-    ip_validator = ip_validator_new()
+    ip_validator = IpValidator()
     assert False == ip_validator.is_ok(
         ip=first_ip)
     assert False == ip_validator.is_ok(

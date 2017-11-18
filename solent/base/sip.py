@@ -1,21 +1,3 @@
-#
-# sip
-#
-# // overview
-# Wrapper for a bytebuffer. Name is a pun, small volume of fluid that could
-# be taken from a pool.
-#
-# Note that numbers are stored big-endian. This is convention for networks,
-# and fine for everything else.
-#
-# On first-look, the behaviour of references may seem strange. This codebase
-# is about using python to model a sequencer architecture, not about building
-# the ultimate sequencer architecture in python. The references system is
-# done knowingly, with goal of leaving option open to c-like pointers
-# later. In particular, it's done to allow sips to be used for nearcasting
-# large objects around. Since they're in the same process, there will be
-# situations where this is desirable.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -33,11 +15,25 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Wrapper for a bytebuffer. Name is a pun, small volume of fluid that could
+# be taken from a pool.
+#
+# Note that numbers are stored big-endian. This is convention for networks,
+# and fine for everything else.
+#
+# On first-look, the behaviour of references may seem strange. This codebase
+# is about using python to model a sequencer architecture, not about building
+# the ultimate sequencer architecture in python. The references system is
+# done knowingly, with goal of leaving option open to c-like pointers
+# later. In particular, it's done to allow sips to be used for nearcasting
+# large objects around. Since they're in the same process, there will be
+# situations where this is desirable.
 
 from .ref import ref_acquire
 from .ref import ref_release
-
-from solent import uniq
+from .small import uniq
 
 import struct
 
@@ -196,9 +192,4 @@ class Sip:
         start = o+2
         end = start+sl
         arr[0:sl] = self.arr[start:end]
-
-def sip_new(size):
-    ob = Sip(
-        size=size)
-    return ob
 

@@ -20,7 +20,7 @@
 # [This is incomplete at time if writing]
 #
 # Here is a more complex application of the principles from some of the TCP
-# scenarios (e.g. 20, 21).
+# scenarios (e.g. eng_20, eng_21).
 #
 # Here we use the line console to send commands over the nearcast. We run the
 # command console itself. Then, there are cogs offering functionality on other
@@ -43,7 +43,8 @@
 from solent import Engine
 from solent import SolentQuitException
 from solent import log
-from solent.util import RailLineFinder
+from solent import ns
+from solent import RailLineFinder
 
 import traceback
 
@@ -51,55 +52,64 @@ import traceback
 # --------------------------------------------------------
 #   command shell
 # --------------------------------------------------------
-class CsShellError:
-    def __init__(self):
-        self.msg = None
-
-class CsShellInfo:
-    def __init__(self):
-        self.msg = None
-
-class CsShellDisconnect:
-    def __init__(self):
-        self.msg = None
-
-class CsShellPubStart:
-    def __init__(self):
-        self.pub_h = None
-        self.port = None
-        self.duration = None
-        self.word = None
-
-class CsShellPubStop:
-    def __init__(self):
-        self.pub_h = None
-
-class CsShellPubSend:
-    def __init__(self):
-        self.pub_h = None
-        self.msg = None
-
-class CsShellSubStart:
-    def __init__(self):
-        self.sub_h = None
-        self.port = None
-        self.duration = None
-
-class CsShellSubStop:
-    def __init__(self):
-        self.sub_h = None
-
 class RailCommandShell:
     def __init__(self):
-        self.cs_shell_error = CsShellError()
-        self.cs_shell_info = CsShellInfo()
-        self.cs_shell_disconnect = CsShellDisconnect()
-        self.cs_shell_pub_start = CsShellPubStart()
-        self.cs_shell_pub_stop = CsShellPubStop()
-        self.cs_shell_pub_send = CsShellPubSend()
-        self.cs_shell_sub_start = CsShellSubStart()
-        self.cs_shell_sub_stop = CsShellSubStop()
-    def zero(self, cb_shell_error, cb_shell_info, cb_shell_disconnect, cb_shell_pub_start, cb_shell_pub_stop, cb_shell_pub_send, cb_shell_sub_start, cb_shell_sub_stop):
+        self.cs_shell_error = ns()
+        self.cs_shell_info = ns()
+        self.cs_shell_disconnect = ns()
+        self.cs_shell_pub_start = ns()
+        self.cs_shell_pub_stop = ns()
+        self.cs_shell_pub_send = ns()
+        self.cs_shell_sub_start = ns()
+        self.cs_shell_sub_stop = ns()
+    def call_shell_error(self, rail_h, msg):
+        self.cs_shell_error.rail_h = rail_h
+        self.cs_shell_error.msg = msg
+        self.cb_shell_error(
+            cs_shell_error=self.cs_shell_error)
+    def call_shell_info(self, rail_h, msg):
+        self.cs_shell_info.rail_h = rail_h
+        self.cs_shell_info.msg = msg
+        self.cb_shell_info(
+            cs_shell_info=self.cs_shell_info)
+    def call_shell_disconnect(self, rail_h, msg):
+        self.cs_shell_disconnect.rail_h = rail_h
+        self.cs_shell_disconnect.msg = msg
+        self.cb_shell_disconnect(
+            cs_shell_disconnect=self.cs_shell_disconnect)
+    def call_shell_pub_start(self, rail_h, pub_h, port, duration, word):
+        self.cs_shell_pub_start.rail_h = rail_h
+        self.cs_shell_pub_start.pub_h = pub_h
+        self.cs_shell_pub_start.port = port
+        self.cs_shell_pub_start.duration = duration
+        self.cs_shell_pub_start.word = word
+        self.cb_shell_pub_start(
+            cs_shell_pub_start=self.cs_shell_pub_start)
+    def call_shell_pub_stop(self, rail_h, pub_h):
+        self.cs_shell_pub_stop.rail_h = rail_h
+        self.cs_shell_pub_stop.pub_h = pub_h
+        self.cb_shell_pub_stop(
+            cs_shell_pub_stop=self.cs_shell_pub_stop)
+    def call_shell_pub_send(self, rail_h, pub_h, msg):
+        self.cs_shell_pub_send.rail_h = rail_h
+        self.cs_shell_pub_send.pub_h = pub_h
+        self.cs_shell_pub_send.msg = msg
+        self.cb_shell_pub_send(
+            cs_shell_pub_send=self.cs_shell_pub_send)
+    def call_shell_sub_start(self, rail_h, sub_h, port, duration):
+        self.cs_shell_sub_start.rail_h = rail_h
+        self.cs_shell_sub_start.sub_h = sub_h
+        self.cs_shell_sub_start.port = port
+        self.cs_shell_sub_start.duration = duration
+        self.cb_shell_sub_start(
+            cs_shell_sub_start=self.cs_shell_sub_start)
+    def call_shell_sub_stop(self, rail_h, sub_h):
+        self.cs_shell_sub_stop.rail_h = rail_h
+        self.cs_shell_sub_stop.sub_h = sub_h
+        self.cb_shell_sub_stop(
+            cs_shell_sub_stop=self.cs_shell_sub_stop)
+    def zero(self, rail_h, cb_shell_error, cb_shell_info, cb_shell_disconnect, cb_shell_pub_start, cb_shell_pub_stop, cb_shell_pub_send, cb_shell_sub_start, cb_shell_sub_stop):
+        self.rail_h = rail_h
         self.cb_shell_error = cb_shell_error
         self.cb_shell_info = cb_shell_info
         self.cb_shell_disconnect = cb_shell_disconnect
@@ -119,20 +129,24 @@ class RailCommandShell:
         (cmd, rest) = (tokens[0], tokens[1:])
         if cmd == '?':
             names = sorted(cmd_functions)
-            self._call_shell_info(
+            self.call_shell_info(
+                rail_h=self.rail_h,
                 msg='\n'.join(names))
         elif cmd not in cmd_functions:
-            self._call_shell_error(
+            self.call_shell_error(
+                rail_h=self.rail_h,
                 msg="No command %s. (Try ?)"%(cmd))
         else:
             fn = getattr(self, 'cmd_%s'%(cmd))
             fn(rest)
     #
     def cmd_quit(self, tokens):
-        self._call_shell_disconnect(
+        self.call_shell_disconnect(
+            rail_h=self.rail_h,
             msg='')
     def cmd_test(self, tokens):
-        self._call_shell_info(
+        self.call_shell_info(
+            rail_h=self.rail_h,
             msg='wohoo!')
     def cmd_pub_start(self, tokens):
         log('%s'%str(tokens))
@@ -142,55 +156,19 @@ class RailCommandShell:
             duration = int(duration)
         except:
             traceback.print_exc()
-            self._call_shell_error(
+            self.call_shell_error(
+                rail_h=self.rail_h,
                 msg='usage:')
-            self._call_shell_error(
+            self.call_shell_error(
+                rail_h=self.rail_h,
                 msg='  pub_start pub_h port duration word')
             return
-        self._call_shell_pub_start(
+        self.call_shell_pub_start(
+            rail_h=self.rail_h,
             pub_h=pub_h,
             port=port,
             duration=duration,
             word=word)
-    #
-    def _call_shell_error(self, msg):
-        self.cs_shell_error.msg = msg
-        self.cb_shell_error(
-            cs_shell_error=self.cs_shell_error)
-    def _call_shell_info(self, msg):
-        self.cs_shell_info.msg = msg
-        self.cb_shell_info(
-            cs_shell_info=self.cs_shell_info)
-    def _call_shell_disconnect(self, msg):
-        self.cs_shell_disconnect.msg = msg
-        self.cb_shell_disconnect(
-            cs_shell_disconnect=self.cs_shell_disconnect)
-    def _call_shell_pub_start(self, pub_h, port, duration, word):
-        self.cs_shell_pub_start.pub_h = pub_h
-        self.cs_shell_pub_start.port = port
-        self.cs_shell_pub_start.duration = duration
-        self.cs_shell_pub_start.word = word
-        self.cb_shell_pub_start(
-            cs_shell_pub_start=self.cs_shell_pub_start)
-    def _call_shell_pub_stop(self, pub_h):
-        self.cs_shell_pub_stop.pub_h = pub_h
-        self.cb_shell_pub_stop(
-            cs_shell_pub_stop=self.cs_shell_pub_stop)
-    def _call_shell_pub_send(self, pub_h, msg):
-        self.cs_shell_pub_send.pub_h = pub_h
-        self.cs_shell_pub_send.msg = msg
-        self.cb_shell_pub_send(
-            cs_shell_pub_send=self.cs_shell_pub_send)
-    def _call_shell_sub_start(self, sub_h, port, duration):
-        self.cs_shell_sub_start.sub_h = sub_h
-        self.cs_shell_sub_start.port = port
-        self.cs_shell_sub_start.duration = duration
-        self.cb_shell_sub_start(
-            cs_shell_sub_start=self.cs_shell_sub_start)
-    def _call_shell_sub_stop(self, sub_h):
-        self.cs_shell_sub_stop.sub_h = sub_h
-        self.cb_shell_sub_stop(
-            cs_shell_sub_stop=self.cs_shell_sub_stop)
 
 
 # --------------------------------------------------------
@@ -236,8 +214,6 @@ class CogAppConsole:
         self.accept_sid = None
         #
         self.rail_line_finder = RailLineFinder()
-        self.rail_line_finder.zero(
-            cb_found_line=self.cb_found_line)
         self.rail_command_shell = RailCommandShell()
     def orb_close(self):
         if self.server_sid:
@@ -249,6 +225,11 @@ class CogAppConsole:
     def on_init(self, console_addr, console_port):
         self.console_addr = console_addr
         self.console_port = console_port
+        #
+        rail_h = '%s/command_shell'%(self.cog_h)
+        self.rail_line_finder.zero(
+            rail_h=rail_h,
+            cb_line_finder_event=self.cb_line_finder_event)
         #
         self.b_active = True
         self._start_server()
@@ -312,8 +293,9 @@ class CogAppConsole:
         #
         log('xxx')
     #
-    def cb_found_line(self, cs_found_line):
-        msg = cs_found_line.msg
+    def cb_line_finder_event(self, cs_line_finder_event):
+        rail_h = cs_line_finder_event.rail_h
+        msg = cs_line_finder_event.msg
         #
         self.rail_command_shell.accept(
             line=msg)
@@ -346,7 +328,10 @@ class CogAppConsole:
             server_sid=self.server_sid)
         self.accept_sid = accept_sid
         self.rail_line_finder.clear()
+        #
+        rail_h = '%s/command_shell'%(self.cog_h)
         self.rail_command_shell.zero(
+            rail_h=rail_h,
             cb_shell_error=self.cb_shell_error,
             cb_shell_info=self.cb_shell_info,
             cb_shell_disconnect=self.cb_shell_disconnect,
@@ -396,16 +381,34 @@ class CogPubManager:
         self.orb = orb
         self.engine = engine
         #
+        self.pub_sid = None
     def on_start_udp_pub(self, pub_h, port, duration, word):
         # xxx buffer this information, and complete the pub setup.
         # /note that we will need a map of pubs, not just a single.
-        self.open_pub(
+        self.pub_sid = self.engine.open_pub(
             addr='127.0.0.1',
             port=port,
             cb_pub_start=self.cb_pub_start,
             cb_pub_stop=self.cb_pub_stop)
     def on_stop_udp_pub(self, pub_h):
-        xxx
+        if None == self.pub_sid:
+            print("Weird: looks like no server is started.")
+            return
+        self.engine.close_pub(
+            pub_sid=self.pub_sid)
+    def cb_pub_start(self, cs_pub_start):
+        engine = cs_pub_start.engine
+        pub_sid = cs_pub_start.pub_sid
+        addr = cs_pub_start.addr
+        port = cs_pub_start.port
+        #
+        pass
+    def cb_pub_stop(self, cs_pub_stop):
+        engine = cs_pub_stop.engine
+        pub_sid = cs_pub_stop.pub_sid
+        message = cs_pub_stop.message
+        #
+        pass
 
 class CogSubManager:
     def __init__(self, cog_h, orb, engine):
@@ -413,7 +416,7 @@ class CogSubManager:
         self.orb = orb
         self.engine = engine
 
-def contain_event_loop(engine):
+def init(engine, console_addr, console_port):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
     orb.init_cog(CogAppConsole)
@@ -423,10 +426,8 @@ def contain_event_loop(engine):
     #
     bridge = orb.init_autobridge()
     bridge.nc_init(
-        console_addr=CONSOLE_ADDR,
-        console_port=CONSOLE_PORT)
-    #
-    engine.event_loop()
+        console_addr=console_addr,
+        console_port=console_port)
 
 
 # --------------------------------------------------------
@@ -441,8 +442,11 @@ def main():
     engine = Engine(
         mtu=MTU)
     try:
-        contain_event_loop(
-            engine=engine)
+        init(
+            engine=engine,
+            console_addr=CONSOLE_ADDR,
+            console_port=CONSOLE_PORT)
+        engine.event_loop()
     except KeyboardInterrupt:
         pass
     except SolentQuitException:

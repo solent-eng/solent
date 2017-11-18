@@ -18,32 +18,49 @@
 
 # Below: order matters!
 
-from .common import uniq
-from .common import ns
-
-from .cpair import solent_cpair
-from .cpair import solent_cpair_pairs
-
-from .log import hexdump_bytes
-from .log import hexdump_string
-from .log import init_logging
-from .log import log
-
-from .exceptions import SolentQuitException
-
-from .keycode import solent_keycode
-
-from .mempool import mempool_new
-
-from .eng import Engine
-
 from .paths import are_we_in_a_pyinstaller_bundle
 from .paths import dget_root
 from .paths import dget_static
 from .paths import dget_wres
 
-from .ref import ref_create
-from .ref import ref_lookup
-from .ref import ref_acquire
-from .ref import ref_release
+# small
+from .base import uniq
+from .base import ns
+from .base import SolentQuitException
+# log
+from .base import hexdump_bytes
+from .base import hexdump_string
+from .base import log
+from .base import init_logging
+# test
+from .base import clear_tests
+from .base import have_tests
+from .base import run_tests
+from .base import test
+# mempool
+from .base import Mempool
+# ref
+from .base import ref_create
+from .base import ref_lookup
+from .base import ref_acquire
+from .base import ref_release
+# rail_line_finder
+from .base import RailLineFinder
+# interface script
+from .base import parse_line_to_tokens
+from .base import init_interface_script_parser
+from .base import SignalConsumer
+
+from .eng import Clock
+from .eng import Engine
+
+# Above this point, solent is structured into a clear dependency hierarchy.
+# After this point, it becomes less-deliberate, shabby. At the time of
+# writing, we could further improve things by putting all console-style
+# functionality into a console or term module, and then arranging that
+# below this point.
+
+from .cpair import solent_cpair
+from .cpair import solent_cpair_pairs
+from .keycode import solent_keycode
 

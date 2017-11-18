@@ -17,9 +17,10 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import Engine
-from solent import SolentQuitException
 from solent import log
-from solent.util import RailLineFinder
+from solent import ns
+from solent import RailLineFinder
+from solent import SolentQuitException
 
 
 # --------------------------------------------------------
@@ -39,25 +40,42 @@ I_NEARCAST = '''
 '''
 
 class RailBroadcastListener:
-    def __init__(self, engine, cb_found_line):
-        self.engine = engine
-        self.cb_found_line = cb_found_line
-        #
-        self.sub_sid = None
+    def __init__(self):
         self.rail_line_finder = RailLineFinder()
+        self.cs_broadcast_listener_data = ns()
+    def call_broadcast_listener_data(self, rail_h, msg):
+        self.cs_broadcast_listener_data.rail_h = rail_h
+        self.cs_broadcast_listener_data.msg = msg
+        self.cb_broadcast_listener_data(
+            cs_broadcast_listener_data=self.cs_broadcast_listener_data)
+    def zero(self, rail_h, cb_broadcast_listener_data, engine, ip, port):
+        self.rail_h = rail_h
+        self.cb_broadcast_listener_data = cb_broadcast_listener_data
+        self.engine = engine
+        self.ip = ip
+        self.port = port
+        #
         self.rail_line_finder.zero(
-            cb_found_line=cb_found_line)
-    #
-    def start(self, ip, port):
+            rail_h=self.rail_h, # we pass the rail_h value through
+            cb_line_finder_event=self.cb_line_finder_event)
+        #
+        print("CALLING OPEN %s %s"%(ip, port))
         self.engine.open_sub(
             addr=ip,
             port=port,
             cb_sub_start=self.cb_sub_start,
             cb_sub_stop=self.cb_sub_stop,
             cb_sub_recv=self.cb_sub_recv)
-    def stop(self):
-        self.engine.close_sub(
-            sub_sid=self.sub_sid)
+    #
+    def cb_line_finder_event(self, cs_line_finder_event):
+        rail_h = cs_line_finder_event.rail_h
+        msg = cs_line_finder_event.msg
+        #
+        # Note that above we caught the rail_h value that we had previously
+        # passed through.
+        self.call_broadcast_listener_data(
+            rail_h=rail_h,
+            msg=msg)
     #
     def cb_sub_start(self, cs_sub_start):
         engine = cs_sub_start.engine
@@ -66,8 +84,6 @@ class RailBroadcastListener:
         port = cs_sub_start.port
         #
         log('sub %s started %s:%s'%(sub_sid, addr, port))
-        #
-        self.sub_sid = sub_sid
     def cb_sub_stop(self, cs_sub_stop):
         engine = cs_sub_stop.engine
         sub_sid = cs_sub_stop.sub_sid
@@ -75,7 +91,6 @@ class RailBroadcastListener:
         #
         log('sub stopped %s'%sub_sid)
         #
-        self.sub_sid = None
         self.rail_line_finder.clear()
     def cb_sub_recv(self, cs_sub_recv):
         engine = cs_sub_recv.engine
@@ -93,18 +108,18 @@ class CogBroadcastListener:
         self.orb = orb
         self.engine = engine
         #
-        self.rail_broadcast_listener = None
-    #
+        self.rail_broadcast_listener = RailBroadcastListener()
     def on_init(self, net_addr, net_port):
-        self.rail_broadcast_listener = RailBroadcastListener(
+        self.rail_broadcast_listener.zero(
+            rail_h='broadcast_listener.only',
+            cb_broadcast_listener_data=self.cb_broadcast_listener_data,
             engine=self.engine,
-            cb_found_line=self.cb_found_line)
-        self.rail_broadcast_listener.start(
             ip=net_addr,
             port=net_port)
     #
-    def cb_found_line(self, cs_found_line):
-        msg = cs_found_line.msg
+    def cb_broadcast_listener_data(self, cs_broadcast_listener_data):
+        rail_h = cs_broadcast_listener_data.rail_h
+        msg = cs_broadcast_listener_data.msg
         #
         self.nearcast.received_from_network(
             msg=msg)
@@ -117,19 +132,7 @@ class CogPrinter:
     def on_received_from_network(self, msg):
         log('! received [%s] :)'%(msg))
 
-
-# --------------------------------------------------------
-#   launch
-# --------------------------------------------------------
-MTU = 1350
-
-NET_ADDR = '127.255.255.255'
-NET_PORT = 50000
-
-def app():
-    engine = Engine(
-        mtu=MTU)
-    #
+def init(engine, net_addr, net_port):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
     orb.init_cog(CogBroadcastListener)
@@ -137,14 +140,17 @@ def app():
     #
     bridge = orb.init_autobridge()
     bridge.nc_init(
-        net_addr=NET_ADDR,
-        net_port=NET_PORT)
-    #
-    # You can use this to print more info about the event loop. This would be
-    # useful if you had a flailing event loop and could not work out what was
-    # causing the activity.
-    engine.debug_eloop_on()
-    engine.event_loop()
+        net_addr=net_addr,
+        net_port=net_port)
+
+
+# --------------------------------------------------------
+#   launch
+# --------------------------------------------------------
+MTU = 1350
+
+NET_ADDR = '127.255.255.255'
+NET_PORT = 3000
 
 def main():
     print('''test this with
@@ -152,12 +158,26 @@ def main():
     Or
         python3 -m solent.tools.qd_poll 127.255.255.255 50000
     '''%(NET_ADDR, NET_PORT))
+    #
+    engine = Engine(
+        mtu=MTU)
     try:
-        app()
+        init(
+            engine=engine,
+            net_addr=NET_ADDR,
+            net_port=NET_PORT)
+        #
+        # You can use this to print more info about the event loop. This would be
+        # useful if you had a flailing event loop and could not work out what was
+        # causing the activity.
+        engine.debug_eloop_on()
+        engine.event_loop()
     except KeyboardInterrupt:
         pass
     except SolentQuitException:
         pass
+    finally:
+        engine.close()
 
 if __name__ == '__main__':
     main()

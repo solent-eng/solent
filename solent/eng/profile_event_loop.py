@@ -17,8 +17,8 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import Engine
-from solent import SolentQuitException
 from solent import log
+from solent import SolentQuitException
 
 import cProfile
 

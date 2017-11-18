@@ -21,15 +21,13 @@ from solent import Engine
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
 from solent import uniq
-from solent.eng import activity_new
-from solent.eng import cs
+from solent import log
+from solent import run_tests
+from solent import test
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_server_new
-from solent import log
-from solent.test import run_tests
-from solent.test import test
 
 import sys
 
@@ -57,7 +55,6 @@ def should_construct_and_start_and_stop():
     #
     engine = Engine(
         mtu=MTU)
-    activity = activity_new()
     #
     # scenario: construction
     gruel_protocol = gruel_protocol_new()

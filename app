@@ -23,55 +23,54 @@ popd
 
 #
 # Test launchers
-python -m run_tests
-#python -m testing.util.rail_bytesetter
+#python -B -m run_tests
 
 #
 # Release
-#python -m solent.demo.snake
-#python -m solent.demo.weeds
-#python -m solent.demo.draw
+#python -B -m solent.demo.snake
+#python -B -m solent.demo.weeds
+#python -B -m solent.demo.draw
 
 #
 # Scenarios
-#python -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
-#python -m solent.scenarios.eng_20_orb_hosted_tcp_server
-#python -m solent.scenarios.eng_21_line_console
-#python -m solent.scenarios.eng_40_simple_udp_sub
-#python -m solent.scenarios.eng_41_simple_udp_pub
-#python -m solent.scenarios.eng_90_command_console
+python -B -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
+#python -B -m solent.scenarios.eng_20_orb_hosted_tcp_server
+#python -B -m solent.scenarios.eng_21_line_console
+#python -B -m solent.scenarios.eng_40_simple_udp_sub
+#python -B -m solent.scenarios.eng_41_simple_udp_pub
+#python -B -m solent.scenarios.eng_90_command_console
 
 #
 # Tools
-#python -m solent.tools.qd_listen 127.255.255.255 50000
-#python -m solent.tools.qd_poll 127.255.255.255 50000
-#python -m solent.tools.tclient localhost 5001 # nc -l -p 5001
+#python -B -m solent.tools.qd_listen 127.255.255.255 50000
+#python -B -m solent.tools.qd_poll 127.255.255.255 50000
+#python -B -m solent.tools.tclient localhost 5001 # nc -l -p 5001
 
 #
 # Wrapping C
-#python -m wsrc.build_all
-#python -m solent.draft.wrap_c_code
+#python -B -m wsrc.build_all
+#python -B -m solent.draft.wrap_c_code
 
 #
 # Console
-#python -m solent.draft.console_demo --curses
-#python -m solent.draft.console_demo --pygame
+#python -B -m solent.draft.console_demo --curses
+#python -B -m solent.draft.console_demo --pygame
 
 #
 # Drafting
-#python -m solent.draft.demonstrate_line_console
-#python -m solent.draft.gollop_box
-#python -m solent.draft.gruel_server_sandbox
-#python -m solent.draft.gruel_client_sandbox --pygame
-#python -m solent.draft.mountain_box --pygame
-#python -m solent.draft.oled_ui_demo
-#python -m solent.draft.redis_client
-#python -m solent.draft.sdl
-#python -m solent.draft.turn_based_game --curses
-#python -m solent.draft.turn_based_game --pygame
-#python -m solent.draft.winsnake
+#python -B -m solent.draft.demonstrate_line_console
+#python -B -m solent.draft.gollop_box
+#python -B -m solent.draft.gruel_server_sandbox
+#python -B -m solent.draft.gruel_client_sandbox --pygame
+#python -B -m solent.draft.mountain_box --pygame
+#python -B -m solent.draft.oled_ui_demo
+#python -B -m solent.draft.redis_client
+#python -B -m solent.draft.sdl
+#python -B -m solent.draft.turn_based_game --curses
+#python -B -m solent.draft.turn_based_game --pygame
+#python -B -m solent.draft.winsnake
 
 #
 # Other
-#python -m solent.eng.profile_event_loop
+#python -B -m solent.eng.profile_event_loop
 

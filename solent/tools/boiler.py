@@ -17,21 +17,15 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 #
 # // overview
-# This is easier to understand by seeing it than explaining it.
+# This is mostly obsolete.
 #
-# Attempt to explain:
-# You can drop the text from a callback struct in here. Each time you do,
-# this will give you stencils you might require for other parts of the
-# program.
-#
-# Show you:
-# Copy a definition of a call struct into your clipboard. For example, grab
-# CsRcpFound below. Run this program. Paste your clipboard into the console.
-#
-# Why this is useful:
-# There is a bunch of boilerplate work involved in putting solent systems
-# together. This makes the boilerplate easy.
+# In older solent, we declared a struct for each cs_type. It was handy to be
+# able to transform those definitions into call_type and cb_type methods. That
+# is what this tool does. These days, we have eliminated those structures from
+# almost everywhere (although not the engine yet), and replaced them with
+# solent.ns. The main API for callbacks is now the call methods themselves.
 
+from solent import ns
 from solent import uniq
 
 import re
@@ -51,15 +45,6 @@ def convert_camel_to_snake(name):
 # --------------------------------------------------------
 #   cs parser
 # --------------------------------------------------------
-class CsRcpError:
-    def __init__(self):
-        self.msg = None
-
-class CsRcpFound:
-    def __init__(self):
-        self.cname = None
-        self.fields = None
-
 RCP_MODE_EXPECT_CLASS_LINE = uniq()
 RCP_MODE_EXPECT_INIT_LINE = uniq()
 RCP_MODE_EXPECT_FIELD_OR_TERM = uniq()
@@ -72,18 +57,25 @@ PATTERN_FIELD = re.compile('^ *self.[a-z0-9_]* = None$')
 
 class RailCsParser:
     def __init__(self):
-        self.cs_rcp_error = CsRcpError()
-        self.cs_rcp_found = CsRcpFound()
-    def zero(self, cb_rcp_error, cb_rcp_found):
+        self.cs_rcp_error = ns()
+        self.cs_rcp_found = ns()
+    def call_rcp_error(self, rail_h, msg):
+        self.cs_rcp_error.rail_h = rail_h
+        self.cs_rcp_error.msg = msg
+        self.cb_rcp_error(
+            cs_rcp_error=self.cs_rcp_error)
+    def call_rcp_found(self, rail_h, cname, fields):
+        self.cs_rcp_found.rail_h = rail_h
+        self.cs_rcp_found.cname = cname
+        self.cs_rcp_found.fields = fields
+        self.cb_rcp_found(
+            cs_rcp_found=self.cs_rcp_found)
+    def zero(self, rail_h, cb_rcp_error, cb_rcp_found):
+        self.rail_h = rail_h
         self.cb_rcp_error = cb_rcp_error
         self.cb_rcp_found = cb_rcp_found
         #
         self._reset()
-    def _reset(self):
-        self.mode = RCP_MODE_EXPECT_CLASS_LINE
-        self.cname = None
-        self.fields = []
-    #
     def accept(self, line):
         if self.mode == RCP_MODE_EXPECT_CLASS_LINE:
             if line.strip() == '':
@@ -124,22 +116,18 @@ class RailCsParser:
         else:
             raise Exception("unknown mode %s"%(self.mode))
     #
-    def _call_rcp_error(self, msg):
-        self.cs_rcp_error.msg = msg
-        self.cb_rcp_error(
-            cs_rcp_error=self.cs_rcp_error)
-    def _call_rcp_found(self, cname, fields):
-        self.cs_rcp_found.cname = cname
-        self.cs_rcp_found.fields = fields
-        self.cb_rcp_found(
-            cs_rcp_found=self.cs_rcp_found)
-    #
+    def _reset(self):
+        self.mode = RCP_MODE_EXPECT_CLASS_LINE
+        self.cname = None
+        self.fields = []
     def _error_and_reset(self, msg):
-        self._call_rcp_error(
+        self.call_rcp_error(
+            rail_h=self.rail_h,
             msg=msg)
         self._reset()
     def _end_block(self):
-        self._call_rcp_found(
+        self.call_rcp_found(
+            rail_h=self.rail_h,
             cname=self.cname,
             fields=self.fields)
         #
@@ -154,7 +142,7 @@ class RailCsParser:
 def render_call_function(cname, fields):
     sb = []
     sb.append('    ')
-    sb.append('def _call_%s(self'%cname)
+    sb.append('def call_%s(self'%cname)
     for f in fields:
         sb.append(', %s'%(f))
     sb.append('):')
@@ -215,6 +203,7 @@ def cb_rcp_found(cs_rcp_found):
 def app():
     rail_cs_parser = RailCsParser()
     rail_cs_parser.zero(
+        rail_h='app/cs_parser',
         cb_rcp_error=cb_rcp_error,
         cb_rcp_found=cb_rcp_found)
     print('** Paste call struct class definitions in here.')

@@ -29,7 +29,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .sip import sip_new
+from .sip import Sip
 
 class Mempool:
     def __init__(self):
@@ -46,7 +46,7 @@ class Mempool:
         self.lent[size] += 1
         self.ltotal += 1
         if len(self.pool[size]) == 0:
-            sip = sip_new(size)
+            sip = Sip(size)
         else:
             sip = self.pool[size].pop()
         # This is part of a hack to allow sip references in this python
@@ -67,8 +67,4 @@ class Mempool:
         # This is part of a hack to allow sip references in this python
         # implementation. See section in sip.py.
         sip._ref_handle = None
-
-def mempool_new():
-    ob = Mempool()
-    return ob
 

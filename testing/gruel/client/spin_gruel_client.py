@@ -16,11 +16,10 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from fake.util import fake_clock_new
+from fake.eng import FakeClock
 
 from solent import Engine
 from solent import uniq
-from solent.eng import activity_new
 from solent.eng import cs
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_press_new
@@ -28,8 +27,8 @@ from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_client_new
 from solent import hexdump_bytes
 from solent import log
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
 
 from collections import deque
 import sys
@@ -270,46 +269,6 @@ def should_successfully_connect_and_log_in():
     return True
 
 @test
-def should_callback_and_go_dormant_on_failed_connection():
-    addr = '127.0.0.1'
-    port = 4098
-    password = 'pass1234'
-    #
-    connection_info = ConnectionInfo()
-    doc_receiver = DocReceiver()
-    gruel_protocol = gruel_protocol_new()
-    gruel_press = gruel_press_new(
-        gruel_protocol=gruel_protocol,
-        mtu=MTU)
-    gruel_puff = gruel_puff_new(
-        gruel_protocol=gruel_protocol,
-        mtu=MTU)
-    #
-    engine = Engine(
-        mtu=MTU)
-    #
-    # step: spin_gruel_client connects to our non-existent rene server
-    spin_gruel_client = engine.init_spin(
-        construct=spin_gruel_client_new,
-        gruel_press=gruel_press,
-        gruel_puff=gruel_puff)
-    spin_gruel_client.order_connect(
-        addr=addr,
-        port=port,
-        password=password,
-        cb_connect=connection_info.on_connect,
-        cb_condrop=connection_info.on_condrop,
-        cb_doc=doc_receiver.on_doc)
-    #
-    # verify
-    engine.cycle()
-    assert spin_gruel_client.get_status() == 'dormant'
-    assert 0 == connection_info.calls_to_on_connect
-    assert 1 == connection_info.calls_to_on_condrop
-    #
-    return True
-
-@test
 def should_callback_and_go_dormant_on_failed_login():
     addr = '127.0.0.1'
     port = 4098
@@ -385,7 +344,7 @@ def should_send_and_receive_heartbeats():
     port = 4098
     password = 'pass1234'
     #
-    fake_clock = fake_clock_new()
+    fake_clock = FakeClock()
     connection_info = ConnectionInfo()
     doc_receiver = DocReceiver()
     gruel_protocol = gruel_protocol_new()
@@ -475,7 +434,7 @@ def should_receive_payloads_correctly():
     port = 4098
     password = 'pass1234'
     #
-    fake_clock = fake_clock_new()
+    fake_clock = FakeClock()
     connection_info = ConnectionInfo()
     doc_receiver = DocReceiver()
     gruel_protocol = gruel_protocol_new()
@@ -570,7 +529,7 @@ def should_send_payloads_correctly():
     port = 4098
     password = 'pass1234'
     #
-    fake_clock = fake_clock_new()
+    fake_clock = FakeClock()
     connection_info = ConnectionInfo()
     doc_receiver = DocReceiver()
     gruel_protocol = gruel_protocol_new()

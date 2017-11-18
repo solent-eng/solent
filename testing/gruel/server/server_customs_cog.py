@@ -19,22 +19,20 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from fake.eng import fake_engine_new
+from fake import FakeEngine
 
 from testing.gruel.server.receiver_cog import receiver_cog_fake
 
+from solent import log
+from solent import run_tests
+from solent import test
 from solent import uniq
-from solent.eng import activity_new
-from solent.eng.cs import *
 from solent.gruel import gruel_protocol_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
 from solent.gruel.server.nearcast import I_NEARCAST_GRUEL_SERVER
 from solent.gruel.server.server_customs_cog import server_customs_cog_new
 from solent.gruel.server.server_customs_cog import ServerCustomsState
-from solent import log
-from solent.test import run_tests
-from solent.test import test
 
 from enum import Enum
 import sys
@@ -43,7 +41,7 @@ MTU = 500
 
 @test
 def should_throw_alg_exception_if_packet_seen_before_password():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
         gruel_protocol=gruel_protocol,
@@ -75,7 +73,7 @@ def should_throw_alg_exception_if_packet_seen_before_password():
 
 @test
 def should_store_password_values():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
         gruel_protocol=gruel_protocol,
@@ -105,7 +103,7 @@ def should_store_password_values():
 
 @test
 def should_boot_client_if_first_message_is_not_client_login():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     clock = engine.get_clock()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
@@ -145,7 +143,7 @@ def should_boot_client_if_first_message_is_not_client_login():
 
 @test
 def should_boot_user_on_receipt_of_login_message_when_already_logged_in():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     clock = engine.get_clock()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
@@ -187,7 +185,7 @@ def should_boot_user_on_receipt_of_login_message_when_already_logged_in():
 
 @test
 def should_do_basic_login_reject():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     clock = engine.get_clock()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
@@ -231,7 +229,7 @@ def should_do_basic_login_reject():
 
 @test
 def should_do_successful_login_accept():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     clock = engine.get_clock()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
@@ -274,7 +272,7 @@ def should_do_successful_login_accept():
 
 @test
 def should_run_a_rejection_sequence():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     clock = engine.get_clock()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
@@ -328,7 +326,7 @@ def should_run_a_rejection_sequence():
 
 @test
 def should_clear_state_in_announce_connect():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     clock = engine.get_clock()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
@@ -357,7 +355,7 @@ def should_clear_state_in_announce_connect():
 
 @test
 def should_buffer_a_couple_of_docs():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     clock = engine.get_clock()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
@@ -431,7 +429,7 @@ def should_buffer_a_couple_of_docs():
 
 @test
 def should_send_a_couple_of_docs():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     clock = engine.get_clock()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(
@@ -496,7 +494,7 @@ def should_send_a_couple_of_docs():
 
 @test
 def should_convert_heartbeat_requests_to_gruel():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     clock = engine.get_clock()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(

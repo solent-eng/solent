@@ -20,11 +20,11 @@
 # Sandbox used for developing gollop-style selection within spin_term.
 
 from solent import Engine
-from solent import solent_cpair
-from solent import uniq
-from solent.exceptions import SolentQuitException
 from solent import init_logging
 from solent import log
+from solent import solent_cpair
+from solent import SolentQuitException
+from solent import uniq
 from solent.util import SpinSelectionUi
 
 from collections import deque

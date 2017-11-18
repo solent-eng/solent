@@ -19,14 +19,14 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import mempool_new
+from solent import Mempool
 from solent import log
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
 
 @test
 def should_get_and_return():
-    mempool = mempool_new()
+    mempool = Mempool()
     #
     # get
     sip_a = mempool.alloc(101)

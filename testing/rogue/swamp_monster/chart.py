@@ -18,8 +18,8 @@
 
 from solent import log
 from solent.rogue.swamp_monster.chart import chart_new
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
 
 import sys
 

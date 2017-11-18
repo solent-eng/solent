@@ -23,9 +23,9 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent import init_interface_script_parser
+from solent import SignalConsumer
 from solent import uniq
-from solent.util.interface_script import init_interface_script_parser
-from solent.util.interface_script import SignalConsumer
 
 from collections import OrderedDict as od
 from enum import Enum

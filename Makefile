@@ -1,12 +1,14 @@
 all:
-	cd venv && . bin/activate && cd .. && python -m wsrc.build_all
+	. venv/bin/activate
+	python3 -B -m wsrc.build_all
 
 init:
 	virtualenv -p python3 venv
 	pip install -r requirements.txt
 
 test:
-	./run_tests_within_venv
+	. venv/bin/activate
+	python3 -B -m run_tests
 
 .PHONY: init test
 

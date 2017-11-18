@@ -17,12 +17,9 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import solent_cpair
+from solent import run_tests
+from solent import test
 from solent.console import Cgrid
-from solent.eng import ip_validator_new
-from solent.test import run_tests
-from solent.test import test
-
-from testing.util import clock_fake
 
 import sys
 

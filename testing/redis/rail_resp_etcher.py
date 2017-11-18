@@ -17,8 +17,8 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent.redis import rail_resp_etcher_new
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
 
 import sys
 

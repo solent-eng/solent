@@ -21,17 +21,16 @@
 # class can be run against streams, and issues a callback each time it finds
 # a line.
 
-from solent import solent_keycode
-
 import types
 
 STANDARD_ENDINGS = (
-    solent_keycode('nul'),
-    solent_keycode('newline'),
-    solent_keycode('eot'))
+    0x00,   # nul
+    0x0a,   # newline
+    0x04)   # ctrl+d
 
-class CsFoundLine:
+class CsLineFinderEvent:
     def __init__(self):
+        self.rail_h = None
         self.msg = None
 
 class RailLineFinder:
@@ -40,9 +39,15 @@ class RailLineFinder:
         self.endings = STANDARD_ENDINGS
         #
         self.sb = []
-        self.cs_found_line = CsFoundLine()
-    def zero(self, cb_found_line):
-        self.cb_found_line = cb_found_line
+        self.cs_line_finder_event = CsLineFinderEvent()
+    def call_line_finder_event(self, rail_h, msg):
+        self.cs_line_finder_event.rail_h = rail_h
+        self.cs_line_finder_event.msg = msg
+        self.cb_line_finder_event(
+            cs_line_finder_event=self.cs_line_finder_event)
+    def zero(self, rail_h, cb_line_finder_event):
+        self.rail_h = rail_h
+        self.cb_line_finder_event = cb_line_finder_event
         #
         self.sb.clear()
     #
@@ -56,7 +61,8 @@ class RailLineFinder:
         for c in s:
             if ord(c) in self.endings:
                 msg = ''.join(self.sb)
-                self._call_found_line(
+                self.call_line_finder_event(
+                    rail_h=self.rail_h,
                     msg=msg)
                 self.clear()
             else:
@@ -71,14 +77,10 @@ class RailLineFinder:
             self.sb.pop()
     def flush(self):
         msg = ''.join(self.sb)
-        line = self._call_found_line(
+        line = self.call_line_finder_event(
+            rail_h=self.rail_h,
             msg=msg)
         self.clear()
     def clear(self):
         self.sb = []
-    #
-    def _call_found_line(self, msg):
-        self.cs_found_line.msg = msg
-        self.cb_found_line(
-            cs_found_line=self.cs_found_line)
 

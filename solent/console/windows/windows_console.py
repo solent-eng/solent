@@ -23,12 +23,11 @@
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import dget_static
+from solent import log
+from solent import SolentQuitException
 from solent.console import Cgrid
 from solent.console import iconsole_new
 from solent.console import keystream_new
-from solent import log
-
-from solent.exceptions import SolentQuitException
 
 from collections import deque
 import os

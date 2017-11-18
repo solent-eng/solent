@@ -1,7 +1,3 @@
-#
-# random utility functions and classes
-#
-# // license
 # Copyright 2016, Free Software Foundation.
 #
 # This file is part of Solent.
@@ -19,11 +15,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .clock import clock_new
-from .interface_script import init_interface_script_parser
-from .interface_script import SignalConsumer
+from .cformat import cformat
 from .rail_bytesetter import RailBytesetter
-from .rail_line_finder import RailLineFinder
 from .spin_line_console import SpinLineConsole
 from .spin_selection_ui import SpinSelectionUi
 from .wrap_shared_lib import wrap_so_fn

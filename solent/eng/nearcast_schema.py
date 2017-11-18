@@ -31,8 +31,8 @@ from .test_bridge_class_cog import test_bridge_cog_class_new
 
 from solent import ns
 from solent import log
-from solent.util.interface_script import init_interface_script_parser
-from solent.util.interface_script import SignalConsumer
+from solent import init_interface_script_parser
+from solent import SignalConsumer
 
 from collections import OrderedDict as od
 

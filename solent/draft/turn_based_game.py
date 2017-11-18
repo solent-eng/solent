@@ -34,11 +34,11 @@ from .turnlib.initiative import initiative_new
 
 from solent import solent_cpair
 from solent import solent_keycode
+from solent import SolentQuitException
 from solent import uniq
 from solent.console import e_boxtype
 from solent.console import Cgrid
 from solent.console import Console
-from solent.exceptions import SolentQuitException
 
 from collections import deque
 import os

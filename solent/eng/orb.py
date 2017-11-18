@@ -50,8 +50,8 @@ from .activity import activity_new
 from .nearcast_schema import nearcast_schema_new
 
 from solent import uniq
-from solent import SolentQuitException
 from solent import log
+from solent import SolentQuitException
 
 from collections import deque
 from collections import OrderedDict as od
@@ -437,11 +437,4 @@ class Orb:
             orb=self,
             cog=cog)
         self.cogs.append(cog)
-
-def orb_new(spin_h, engine, i_nearcast):
-    ob = Orb(
-        spin_h=spin_h,
-        engine=engine,
-        i_nearcast=i_nearcast)
-    return ob
 

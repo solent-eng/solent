@@ -6,7 +6,3 @@ class Clock:
     def now(self):
         return time.time()
 
-def clock_new():
-    ob = Clock()
-    return ob
-

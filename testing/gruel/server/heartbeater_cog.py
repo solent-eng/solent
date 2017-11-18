@@ -19,11 +19,9 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from fake.eng import fake_engine_new
+from fake import FakeEngine
 
 from solent import uniq
-from solent.eng import activity_new
-from solent.eng.cs import *
 from solent.gruel import gruel_protocol_new
 from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
@@ -32,8 +30,8 @@ from solent.gruel.server.heartbeater_cog import heartbeater_cog_new
 from solent.gruel.server.server_customs_cog import server_customs_cog_new
 from solent.gruel.server.server_customs_cog import ServerCustomsState
 from solent import log
-from solent.test import run_tests
-from solent.test import test
+from solent import run_tests
+from solent import test
 
 from enum import Enum
 import sys
@@ -42,7 +40,7 @@ MTU = 500
 
 @test
 def should_start_on_announce_login_and_stop_on_announce_condrop():
-    engine = fake_engine_new()
+    engine = FakeEngine()
     clock = engine.get_clock()
     gruel_protocol = gruel_protocol_new()
     gruel_press = gruel_press_new(

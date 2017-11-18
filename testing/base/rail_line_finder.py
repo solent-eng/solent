@@ -16,25 +16,26 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent.test import run_tests
-from solent.test import test
-
-from solent.util.rail_line_finder import RailLineFinder
+from solent import RailLineFinder
+from solent import run_tests
+from solent import test
 
 class Receiver:
     def __init__(self):
         self.events = []
-    def cb_found_line(self, cs_found_line):
-        msg = cs_found_line.msg
+    def cb_line_finder_event(self, cs_line_finder_event):
+        rail_h = cs_line_finder_event.msg
+        msg = cs_line_finder_event.msg
         #
-        self.events.append( ('cb_found_line', msg) )
+        self.events.append( ('cb_line_finder_event', msg) )
 
 @test
 def should_do_basics():
     receiver = Receiver()
     rail_line_finder = RailLineFinder()
     rail_line_finder.zero(
-        cb_found_line=receiver.cb_found_line)
+        rail_h='line_finder.only',
+        cb_line_finder_event=receiver.cb_line_finder_event)
     #
     rail_line_finder.accept_string(
         s='something')
@@ -44,12 +45,12 @@ def should_do_basics():
         s=' _ abc\ndef')
     assert 1 == len(receiver.events)
     assert receiver.events[0] == (
-        'cb_found_line', 'something _ abc')
+        'cb_line_finder_event', 'something _ abc')
     #
     rail_line_finder.flush()
     assert 2 == len(receiver.events)
     assert receiver.events[1] == (
-        'cb_found_line', 'def')
+        'cb_line_finder_event', 'def')
     #
     return True
 

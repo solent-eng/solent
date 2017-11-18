@@ -1,6 +1,3 @@
-#
-# interface script
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -18,8 +15,11 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# This is a simple but powerful serialisation mechanism.
 
-from solent.util.rail_line_finder import RailLineFinder
+from .rail_line_finder import RailLineFinder
 
 import inspect
 
@@ -109,14 +109,17 @@ class InterfaceScriptParser(object):
         #
         self.rail_line_finder = RailLineFinder()
         self.rail_line_finder.zero(
-            cb_found_line=self.cb_found_line)
+            rail_h='line_finder.only',
+            cb_line_finder_event=self.cb_line_finder_event)
         self.interfaces = {}
     def parse(self, s):
         self.rail_line_finder.accept_string(
 			s=s)
-    def cb_found_line(self, cs_found_line):
-        line = cs_found_line.msg
+    def cb_line_finder_event(self, cs_line_finder_event):
+        rail_h = cs_line_finder_event.rail_h
+        msg = cs_line_finder_event.msg
         #
+        line = msg
         tokens = parse_line_to_tokens(line)
         if not tokens:
             return

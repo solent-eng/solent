@@ -1,0 +1,120 @@
+// Release 0.48
+
+::: Issues
+
+issue 88, orb messaging should count as activity
+
+issue 90, Refactor library structure to encourage log and hexdump_bytes to be
+imported from solent package
+
+issue 92, obsolete the brick package
+
+issue 94, create convenient launch script for Windows-based development
+
+issue 96, move clock into eng, create an engine alarm. (big refactor)
+
+
+::: Changes
+
+Overview. This is a major upgrade, with many breaking API changes. But the
+breaks are generally minor. For example, due to package refactors or changed
+argument names.
+
+[high-level]
+
+API-break. There has been a heavy refactor to packages. There is now a clear
+hierarchy to them. This is obvious in the import order in solent/__init__.
+
+    Summary of the new package arrangements
+    =========================================
+    paths: allows solent to get its orientation in the filesystem.
+
+    base: foundation of the system. Memory control, namespaces, unit testing
+    tools and logging are here. We have put just enough function in here to
+    bootstrap Interface Script. This means we can use Interface Script as a
+    DSL building block anywhere in the system that is above this base.
+
+    eng: The engine, orb and nearcasts.
+    =========================================
+
+API-break. SolentQuitException has moved. If you were importing it from
+engine, that will need a refactor to solent.SolentQuitException.
+
+API-break. Logs are now offered through the root solent package. This
+includes hexdump. This will break almost everything that uses solent at the
+moment. It is a fast fix: just change package imports for log, hexdump_bytes
+and hexdump_string.
+
+API-break. RailLineFinder has become a base class (to support interface
+script.) Its argument API and callback API has changed to match convention.
+
+Polish. Several things which used the old convention of using "thing_new"
+functions for construction have been moved to the new convention of using
+"Thing" classes. The old way was a legacy of the original C codebase. The new
+way creates less friction with python users. (This is not always a reason to
+do things, but it does us no harm here.)
+
+Polish. The fake package is now more effective as a fake package.
+
+Polish. Internals of lots of classes have been refactored so that rail_h now
+gets passed as a callback, so that call methods are structured at the top of
+classes, and to replace bespoke callback classes with references to solent.ns.
+
+Polish. Scenarios have been improved, but there is still a lot of room for
+improvement in scenarios.
+
+[menu]
+
+API-break. What was BrickMenu has become solent.console.RailMenu. Its
+parameter of menu_h has changed to rail_h.
+
+[hexdump]
+
+API-break. A further change to hexdump_bytes. Its receive argument is now bb.
+Previously it was arr. This brings it in line with convention, to refer to a
+list of bytes as bb.
+
+Bugfix. There was a formatting bug in hexdump functionality when a byte lined
+up with the edge of a string or similar. It is a minor visual fix.
+
+Feature. There is now a hexdump tool, similar to unix "hexdump -C". It was
+written for Haiku usage, and will also be useful in Windows.
+
+[line console]
+
+API-break. The package solent.lc is gone. SpinLineConsole has been moved to
+solent.util. In a future release, this will be refactored to RailLineConsole
+(issue 100).
+
+[orb]
+
+Bugfix. Orb messages did not count as 'activity'. This created situations
+where the engine would have short sleeps between cycles. The engine is not
+meant to sleep between cycles when work is happening.
+
+Polish. We now profile Tracks to check their structure, and to give more
+helpful messages when they are mis-structured.
+
+[cformat]
+
+API-break. There was a weird cformat module in solent.log. This was a legacy
+of the roguelike codebase that solent evolved from. It predates the current
+console model, and offers simple text formatting when printing directly to
+TTY. It has a bit of value, so has been kept in solent.util. (It is used by
+only a couple of sections of this codebase, both of them also in line for a
+shakeup: gruel and redis.)
+
+
+// Opening comment
+
+The platform has a history of big-bang releases. We are moving towards a
+model where we use issues to drive changes. The improvement will be gradual
+
+Comments should be streamed,
+* Overview
+* API-break.
+* Bugfix.
+* Feature.
+* Polish.
+
+

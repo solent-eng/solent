@@ -22,6 +22,9 @@
 # acting as a demonstration of a gruel client.
 
 from solent import Engine
+from solent import init_logging
+from solent import log
+from solent import RailLineFinder
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
@@ -31,9 +34,6 @@ from solent.gruel import gruel_press_new
 from solent.gruel import gruel_puff_new
 from solent.gruel import gruel_protocol_new
 from solent.gruel import spin_gruel_client_new
-from solent import init_logging
-from solent import log
-from solent.util import RailLineFinder
 
 from collections import deque
 from collections import OrderedDict as od
@@ -409,7 +409,8 @@ class CogShell:
         self.b_first = True
         self.rail_line_finder = RailLineFinder()
         self.rail_line_finder.zero(
-            cb_found_line=self.cb_found_line)
+            rail_h='line_finder.only',
+            cb_line_finder_event=self.cb_line_finder_event)
     #
     def orb_turn(self, activity):
         if self.b_first:
@@ -434,9 +435,11 @@ class CogShell:
     def _console_announce(self, s):
         self.nearcast.term_announce(
             s=s)
-    def cb_found_line(self, cs_found_line):
-        line = cs_found_line.msg
+    def cb_line_finder_event(self, cs_line_finder_event):
+        rail_h = cs_line_finder_event.rail_h
+        msg = cs_line_finder_event.msg
         #
+        line = msg
         if line in ('q', 'quit'):
             raise SolentQuitException()
         elif line == 'start':
