@@ -176,6 +176,8 @@ def main():
         pass
     except SolentQuitException:
         pass
+    finally:
+        engine.close()
 
 if __name__ == '__main__':
     main()

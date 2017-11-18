@@ -1,56 +1,96 @@
-# Project Overview
+# Overview
 
-"What is it?"
+Solent is a toolkit for creating event-driven systems.
 
-Solent is an application programming toolkit which happens to currently be
-implemented in python3.
+Solent is currently implemented mostly in python3, with small amounts of C and
+C++. When the model is stable, we will lift-and-shift it to become its own
+language, with an independent ecosystem.
 
-Solent describes systems in terms of their messages. This is a contrast to
-monolithic techniques, which focus on functional nodes while leaving messaging
-as an afterthought. For example, the typical centralised database model.
+The goal here is to create a flexible systems-programming platform.
 
-So far, Solent's main accomplishment is a concept called "the Nearcast".
-Application developers can use a DSL to describe a messaging schema. The
-nearcast is the vehicle for these messages. With this defined, it is then
-straightforward to write nodes that attach to the nearcast in order to do its
-work.
 
-If you look at solent.demo you can see the design for some simple apps. In
-particular, look at the value of `I_NEARCAST` for the snake game. (This is the
-messaging schema for that game.) The core mechanics of the game are easily
-implemented in a single node connected to this nearcast, CogSnakeGame.
+# Platform Goal
 
-In its current state, Solent useful for constructing complex network apps. 
+Become the leading foundation for concurrent systems development.
 
-At the next level, it will be suited for building full-blown, multi-host
-sequencer architectures. With such a toolkit, a developer could quickly
-implement a world-class stock exchange or clearing house.
 
-LGPL licensed, except for solent.scenarios, which should be considered
-MIT-license. The intention here is that you should not be affected by LGPL
-obligations if you are copying blocks from documentation. (Directories with
-special licensing arrangements will be specifically marked.)
+# Qualities
 
+## Headlines
+
+The system must be allow developers to reason about exactly what the machine
+is doing. It should not abstract this away from users.
+
+Easy to use for programming in the small.
+
+Easy to use for programming in the large.
+
+Easy path to high-performance for those who want it.
+
+Multiplatform. Should work on Unix, Windows and should be a fast port to
+anything else (e.g. Android, Haiku).
+
+Zero-dependency. This library should be useful as a go-to tool even in tight
+situations.
+
+## Comment
+
+Performance. We will need to be able to create engines that support kqueue,
+epoll and IO completion ports.
+
+Zero-dependency. Some features that stand out,
+
+* We need a standard terminal which supports ncurses (done) and a Windows native console. (in progress)
+
+* A lowest-common-denominator network engine uses select(2). (done)
+
+License: The core is LGPL. This is a "free-software" license. It encourages
+the community to feed solent improvements back into our codebase. It gives the
+same users flexibility to integrate with the system from proprietary code.
+Some directories are MIT-licensed. For example, the scenarios directory is
+intended to act as documentation, and not to create license complications.
+Directories with special licensing arrangements will be specifically marked.
+
+Performance, zero-dependency: implement a solent compiler frontend to LLVM.
+Move off python. In the meantime, reduce dependence on garbage collection or
+rich python features.
+
+
+## Learning about solent
+
+You can see examples of solent in use in solent.demo, solent.tools and
+scenarios.
+
+An important concept is "the Nearcast". Think of this as an in-process message
+bus. Non-trivial applications tend to be a set of actors ("Cogs") arranged
+around a nearcast. These concepts are described in more detail in the Glossary
+(docs/glossary.md).
+
+Your feedback would be valuable for us improving these docs,
+
+* What attracted your interest?
+
+* What works and does not work when you try to learn from the scenarios?
+
+
+# Questions and answers
 
 "What can I get from this that I can't get elsewhere?"
 
 Solent is a good foundation for creating sophisticated systems using
 event-driven programming techniques.
 
+The canonical work is Leslie Lamport's work on State Machine Replication
+(`https://en.m.wikipedia.org/wiki/State_machine_replication`)
+
 There's a tradition of using message-driven techniques to build
 high-availability, high-performance systems. For example, here is a video by
 former Nasdaq architect Brian Nigito, "How To Build an Exchange".
 https://www.youtube.com/watch?v=b1e4t2k2KJY
 
-As far as I know, this is the first time such a system has been offered under
-a free-software license.
-
 These ideas have not yet gained widespread use. The author believes that
 something like solent will prove to be 'The Railroad of the Digital
 Revolution'.
-
-For another prespective, see Leslie Lamport's work on State Machine
-Replication (`https://en.m.wikipedia.org/wiki/State_machine_replication`)
 
 
 "What is 'sequencer architecture' all about?"
@@ -70,66 +110,23 @@ sequence. Hence, sequencer architecture.
 You can build small things quickly. You can easily scale small things into
 large things. You can easily maintain large things.
 
-Solent is particularly good for addressing embarassingly-concurrent problems.
-Example: simulations, games, trading systems. It's also effective for just
-building small fiddly stuff, such as an application that needed to
-effortlessly juggle several types of network connection at the same time.
+Solent is suited to embarassingly-concurrent problems. Example: simulations,
+games, trading systems. It is also effective for just building small fiddly
+stuff, such as an application that needed to effortlessly juggle several types
+of network connection at the same time.
 
 
 "What components does solent have?"
 
-* Eng: concurrency engine. Uses async networking patterns (e.g. select). Offers TCP client/server and UDP pub/sub. Select loop and scheduling is done for you.
+* Engine: concurrency engine. Uses async networking patterns (e.g. select). Offers TCP client/server and UDP pub/sub. Select loop and scheduling is done for you.
 
 * Nearcast: an in-process messaging backbone.
 
-* Gruel: general-purpose bidirection asynchronous network protocol. (Nasdaq publish a spec for a protocol called SOUP. Somebody who knew about SOUP would hopefully judge Gruel to be a predictable evolution.)
+* Term: general-purpose textual console (currently offers pygame and curses consoles. Windows-native is coming, to maintain our no-dependency goal.)
 
-* Term: general-purpose textual console (currently offers pygame and curses consoles)
+* Access shared libraries (e.g. compiled C).
 
-* Mechanisms to build create shared libraries from C and access them from python
-
-* Mechanisms for creating binary distributions (uses pyinstaller)
-
-
-"How evolved is it?"
-
-/Functionality that is already solid
-
-Solent is now effective for building single-process message-oriented systems.
-If you wanted to build a complex network app or roguelike game in a single
-process, you'd find it to be a sharp tool.
-
-/Memory management
-
-So far, solent has not focused on deliberate memory management. Ideally we'd
-allocate all memory and never need the garbage collector.
-
-It's possible that a JITting VM like pypy would manage out the remaining
-inefficiencies.
-
-Regardless, we've introduced a memory pool, and started to be deliberate about
-allocation in the engine core. This is still in the early days.
-
-/Broadcasting
-
-We don't yet have solid redundancy mechanisms in place, and we will need that
-before we offer network-based broadcasting.
-
-You could get some distance by wiring nodes together with using supplied Gruel
-tools. But that's not at all in the spirit of the system. Where we need to get
-to is sequenced broadcasting with a scribe and failover options.
-
-
-"With all that, what are some things it would be a good foundation for?"
-
-Digital audio studio, alt-coin exchange, clearing house, monitoring platform,
-reference-data aggregator.
-
-
-"Where can I learn more?"
-
-The Glossary (docs/glossary.md) gives an overview of the platform's major
-concepts.
+* Binary distriction (uses pyinstaller)
 
 
 "Is it fast?"
@@ -145,100 +142,93 @@ internals of Engine with a solution taken from asyncio, twisted or libuv. Or
 we may rewrite the engine in C++ and offer python wrappers to it.
 
 
+# Compare to other systems
+
 "How does it compare to system x?"
 
-/Comment
-
-The essential idea in solent is the nearcast. As far as we know, there are no
-other platforms pitching a software method around this idea.
-
-In time, solent will develop the ability to offer nearcast-like functionality
-over multiple hosts. This will consist of UDP-broadcast with a reliability
-layer over the top of it.
+The essential idea in solent is for systems to be message-driven. So far, we
+demonstrate this with the nearcast.
 
 These approaches give rise to a programming style that is message-centric and
 event-driven. This encourages a layering approach that leads to robust,
 discoverable systems.
 
-The simpler response to most "why didn't you use x" queries is usually,
-"because nearcasting".
+The simpler response to most "why didn't you use x" brings out recurring
+themes,
+
+* Not sufficiently message-driven.
+
+* Not ambitious enough.
+
+* Abstracts the computer from the developer too much.
 
 
-/NodeJS
-
-NodeJS is an toolbox for building asynchronous applications in javascript.
-
-Its core is a high-performance async library called libuv. This is excellent.
-Perhaps we will reimplement solent.eng.Engine in libuv.
-
-NodeJS doesn't do nearcasting.
-
-
-/Python3 asyncio
+## Python3 asyncio
 
 Asyncio is a asynchronous concurrency library. A lot of engineering has
 gone into its throughput performance.
 
-AsyncIO doesn't aspire to have high-level patterns, and asyncio doesn't do
-nearcasting.
+AsyncIO is tied to Python, which is garbage-affected. AsyncIO relies on complex language features of the Python ecosystem, (abstraction).
+
+AsyncIO does not aspire to high-level patterns, and asyncio doesn't do nearcasting. (ambition)
+
+AsyncIO does not do nearcasting. You could implement nearcasting on top of it.
 
 
-/Twisted
+## Twisted
 
 Twisted is a multiplatform concurrency systems. A lot of engineering has gone
 into its throughput performance.
 
 Twisted has something like spins, but nothing like the nearcast, orbs or cogs.
 
-
-/Tornado
-
-It's like twisted, with fewer features, but a bit easier to get started with
-for the features it does have. Has nothing like the nearcast.
+It is a python library (ambition).
 
 
-/RabbitMQ
+## Tornado
+
+It's like twisted, with fewer features, but a bit easier to get started with for the features it does have. Has nothing like the nearcast.
+
+
+## ZeroMQ
+
+ZeroMQ is a messaging system that takes a lot of the hassle out of messaging
+between hosts. Unlike RabbitMQ, there is no central broker.
+
+ZeroMQ is an excellent abstraction. But, as a result, it does not allow the developer to reason about what is on the wire (abstraction).
+
+
+## NodeJS
+
+NodeJS is a toolbox for creating asynchronous applications in javascript.
+
+Its core is a high-performance async library called libuv, which is excellent.
+Perhaps we will create a high-performance Engine option using libuv.
+
+NodeJS doesn't do nearcasting. Javascript is garbage-collected (ambition).
+
+
+## RabbitMQ and Tibco
 
 RabbitMQ is a message broker system. In a typical RabbitMQ ecosystem, you will
 have a standalone message broker, and then applications that want to talk to
 one another. The applications will use a rabbitmq library to send messages to
 the broker, and then the broker distributes them out to applications.
 
-You could see this approach as rival worldview to solent, and think in terms
-of skeleton vs exo-skeleton.
+You could see this approach as rival worldview to solent.
 
 Solent systems tend to be a single codebase. Within this codebase, there is a
 contained message system. RabbitMQ systems tend to be dispirate codebases that
 fire messages to one another via the broker.
 
-As you would expect, RabbitMQ has no concept of a nearcast.
-
 The RabbitMQ approach can be used to great effect. But if you are not vigilant
 about the circumstances of who can send to each channel, and who can receive
 from each channel, it rapidly evolves into horror.
 
-It would probably not be much work to create a spin in solent that could talk
-to RabbitMQ.
-
-
-/Tibco
-
 Tibco is essentially a commercialised form of the same ideas behind RabbitMQ.
 
 
-/ZeroMQ
-
-ZeroMQ is a messaging system that takes a lot of the hassle out of messaging
-between hosts. Unlike RabbitMQ, there is no central broker.
-
-In ZeroMQ, everyone needs to be talking ZeroMQ. It doesn't deal with design
-within an applicaiton. Hence, there is no nearcast.
-
-It would probably not be much work to create a spin in solent that could talk
-to ZeroMQ.
-
-
-/Apache Kafka
+## Apache Kafka
 
 Kafka is a bit like RabbitMQ. A difference is that the kafka cluster caches
 messages that are sent to it. So if an application misses some messages or
@@ -249,26 +239,49 @@ the time of writing, the quality of the libraries for Python are not
 fantastic.
 
 
-/Java
+## Java
 
 Java NIO2 is a fantastic concurrency library. There is no concept of the
 nearcast inherent to nio2.
 
-With effort, you develop a zero-garbage coding style in Java.
+With effort, you can implement a zero-garbage coding style in Java.
 
 You could definitely implement Solent on a Java foundation. If anyone is
-interested in undertaking a project like this, let me know.
+interested in working on this, do say.
 
 
-/Other languages
+## Erlang
 
-We chose python because it was easy to get started. Given thta we would like
-to evolve this system towards high-throughput, low-latency behaviour, it may
-make sense to rewrite the core to a non-garbange-collected platforms such as
-C, C++ or Rust. Also, Golang has an easy-to-understand garbage collection
-methodology, and a tight syntax. If anyone has interest in doing work to port
-either the engine or all of solent to one of these systems, get in touch. Some
-groundwork is already done.
+In Erlang, you send messages between actors, as a point-to-point interaction.
+You design systems to correct in situations where a sent message does not
+reach its target.
+
+Solent takes a different approach: its essence is a reliable stream of
+deliberately ordered messages.
+
+The nearcast allows Solent to be more effective for programming in the small
+than Erlang, and at least as effective for programming in the large.
+
+
+## C/C++/Ada/Rust
+
+Useful languages. We are using some C/C++ for interacting with Windows.
+
+Solent development is driven by DSLs. For example, the nearcast schema does a
+lot of code generation. It is easier to do this in python.
+
+I would be open to writing high-performance engines in Ada or Rust, producing
+object files, wrapping them in python/solent-lang.
+
+
+## Lisp/ML/Haskell
+
+For the core: Lazy functional programming is probably a bad fit for the
+requirement that the programmer should be able to reason about exactly what
+the machine is doing. Eager evaluation could work. There are garbage
+complications with these platforms too. Open to talk.
+
+For templating: those would have worked, but python is just good enough.
 
 
 # Community/Contributions
@@ -277,48 +290,45 @@ Except where specifically marked, the codebase will be licensed under the
 LGPL, with copyright assigned to the FSF. Contributions are welcome. See
 [Contributing guidelines](CONTRIBUTING.md)
 
-We aim for this system to be multi-platform with no dependencies on other
-libraries.
-
 
 # Quickstart
 
 This will get you seeing some basic stuff
 
 ```bash
+# In unix, you will need python3 and git
+
 git clone https://github.com/cratuki/solent.git
-
 cd solent
+python3 -m venv venv
 
-bin/arrange_dependencies
+. venv/bin/activate
 
-# Whenever you open a new prompt, do this to make your
-# virtual env active
-(cd venv; . bin/activate; cd ..)
-
-# Look at and run particular usage scenarios
-ls solent/scenarios
-python -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
-
+# Use keys around 's' to navigate.
 python -m solent.demo.snake
 python -m solent.demo.weeds
+
+# There are many more scenarios in this directory
+python -m scenarios.eng_10_orb_nearcast_and_cog_basics
 ```
 
-If you want to understand the network layer, look at solent.scenarios.
+```bash
+# In Windows, you will need python3 and git-for-windows
 
-If you find the pygame stuff, and want to play with an alternate UI, you can
-install pygame like this. For the moment, I haven't documented how to enable
-this.
+git clone https://github.com/cratuki/solent.git
+cd solent
+python3 -m venv venv
+
+venv\Scripts\activate
+pip install pygame
+
+# Use keys around 's' to navigate.
+python -m solent.demo.snake
+python -m solent.demo.weeds
+
+# There are many more scenarios in this directory
+python -m scenarios.eng_10_orb_nearcast_and_cog_basics
 ```
-# Install pygame
-pip3 install hg+https://bitbucket.org/pygame/pygame
-```
-
-
-# Release to pypi
-
-Run `bin/release_solent_to_pypi` and follow the instructions.
-
 
 # Creating an installer/distribution
 
@@ -362,20 +372,5 @@ pyinstaller solent/pyinstaller/snake_pygame.spec
 # // Look in the dist directory for the resulting binaries
 #
 ```
-
-# What people are saying
-
-"I definitely see the value, having gone through the pain of implementing
-get/setsockopt. You've taken the common 5 or 6 steps required to get a BSD
-socket up and running and boiled it down to a nice set of options. Kudos."
-(Lead developer of a free software operating system project)
-
-"I'm guessing you're off work, how long have you got for all this (really
-jealous BTW). (... some evangelism from me about getting involved with the
-project ,,,) So when I said jealous I meant of your time, you have time, so
-jealous." (Former colleague)
-
-"Apart from that you are apparently still not working? I am not exactly sure
-what the problem is - do you need to go in a different direction?" (My mother)
 
 

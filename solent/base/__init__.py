@@ -27,6 +27,7 @@ from .libtest import test
 
 from .small import ns
 from .small import uniq
+from .small import SolentQuitException
 
 from .mempool import Mempool
 

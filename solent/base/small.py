@@ -10,3 +10,6 @@ def ns():
     ob = types.ModuleType(str(uniq()))
     return ob
 
+class SolentQuitException(Exception):
+    pass
+

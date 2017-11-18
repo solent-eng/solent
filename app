@@ -23,7 +23,7 @@ popd
 
 #
 # Test launchers
-python -B -m run_tests
+#python -B -m run_tests
 
 #
 # Release
@@ -33,7 +33,7 @@ python -B -m run_tests
 
 #
 # Scenarios
-#python -B -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
+python -B -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
 #python -B -m solent.scenarios.eng_20_orb_hosted_tcp_server
 #python -B -m solent.scenarios.eng_21_line_console
 #python -B -m solent.scenarios.eng_40_simple_udp_sub

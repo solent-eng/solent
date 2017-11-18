@@ -15,6 +15,7 @@ pause
 
 echo ""
 echo "Step: Version number"
+echo "  * Ensure CHANGELOG.txt is up-to-date"
 echo "  * Tweak SOLENT_VERSION in setup.py"
 echo ""
 pause

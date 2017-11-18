@@ -366,8 +366,9 @@ class CogMenu:
         #
         self.rail_menu = RailMenu()
     def on_init(self):
+        rail_h = '%s/menu'%(self.cog_h)
         self.rail_menu.zero(
-            menu_h='menu',
+            rail_h=rail_h,
             cb_menu_asks_display_to_clear=self.cb_menu_asks_display_to_clear,
             cb_menu_asks_display_to_write=self.cb_menu_asks_display_to_write,
             cb_menu_selection=self.cb_menu_selection,
@@ -399,18 +400,18 @@ class CogMenu:
                 text='continue')
     #
     def cb_menu_selection(self, cs_menu_selection):
-        menu_h = cs_menu_selection.menu_h
+        rail_h = cs_menu_selection.rail_h
         keycode = cs_menu_selection.keycode
         text = cs_menu_selection.text
         #
         self.nearcast.menu_select(
             menu_keycode=keycode)
     def cb_menu_asks_display_to_clear(self, cs_menu_asks_display_to_clear):
-        menu_h = cs_menu_asks_display_to_clear.menu_h
+        rail_h = cs_menu_asks_display_to_clear.rail_h
         #
         self.nearcast.term_clear()
     def cb_menu_asks_display_to_write(self, cs_menu_asks_display_to_write):
-        menu_h = cs_menu_asks_display_to_write.menu_h
+        rail_h = cs_menu_asks_display_to_write.rail_h
         drop = cs_menu_asks_display_to_write.drop
         rest = cs_menu_asks_display_to_write.rest
         s = cs_menu_asks_display_to_write.s

@@ -55,8 +55,8 @@ I_NEARCAST_SCHEMA = '''
         field bb
 '''
 
-#CONSOLE_TYPE = 'pygame'
-CONSOLE_TYPE = 'curses'
+CONSOLE_TYPE = 'pygame'
+#CONSOLE_TYPE = 'curses'
 CONSOLE_WIDTH = 78
 CONSOLE_HEIGHT = 24
 
@@ -263,27 +263,20 @@ class CogTerm:
             self.spin_term.scroll()
             self.drop -= 1
 
-class CogBridge:
-    def __init__(self, cog_h, orb, engine):
-        self.cog_h = cog_h
-        self.orb = orb
-        self.engine = engine
-    def nc_init(self, addr, port):
-        self.nearcast.init(
-            addr=addr,
-            port=port)
-
-def init(engine, net_addr, net_port):
+def init_nearcast(engine, net_addr, net_port):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST_SCHEMA)
     orb.add_log_snoop()
     orb.init_cog(CogTcpClient)
     orb.init_cog(CogTerm)
     #
-    bridge = orb.init_cog(CogBridge)
-    bridge.nc_init(
+    bridge = orb.init_autobridge()
+    bridge.nearcast.init(
         addr=net_addr,
         port=net_port)
+    #
+    return bridge
+
 
 # --------------------------------------------------------
 #   launch
@@ -303,7 +296,7 @@ def main():
         net_addr = sys.argv[1]
         net_port = int(sys.argv[2])
         #
-        init(
+        init_nearcast(
             engine=engine,
             net_addr=net_addr,
             net_port=net_port)

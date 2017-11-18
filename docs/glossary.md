@@ -1,15 +1,3 @@
-= Brick
-
-Required knowledge: Engine
-
-Bricks are simply standard-library units that are useful for building
-applications. For example, a menu.
-
-The main qualities of a brick:
-* They are intended to be general-purpose units.
-* They do not directly receive initiative from the engine (they're not spins)
-
-
 = Bridge
 
 Required knowledge: Engine, Spin, Orb, Cog.
@@ -264,8 +252,9 @@ if __name__ == '__main__':
 
 ```
 
-For a slightly more detailed example, see solent.tools.tclient. This shows
-basic networking functionality.
+There is a more more detailed example at solent.tools.tclient. This shows
+basic networking functionality. The 'scenarios' directory contains further
+examples.
 
 This orb/nearcast/cog approach allows developers to quickly build
 applications, even if they include complex networking arrangements. Each orb

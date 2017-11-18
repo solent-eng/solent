@@ -24,6 +24,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import log
+from solent import ns
 from solent import parse_line_to_tokens
 
 def tokenise_line(line):

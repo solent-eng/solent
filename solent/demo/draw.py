@@ -17,8 +17,8 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import Engine
-from solent import init_logging
 from solent import log
+from solent import ns
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
@@ -34,35 +34,35 @@ import sys
 import time
 import traceback
 
-MTU = 1500
-
-APP_NAME = 'draw'
-
 
 # --------------------------------------------------------
 #   :game
 # --------------------------------------------------------
+APP_NAME = 'draw'
+
 def create_spot(drop, rest):
     return (drop, rest)
 
-class CsDrawSurfaceClear:
-    def __init__(self):
-        pass
-
-class CsDrawSurfaceWrite:
-    def __init__(self):
-        self.drop = None
-        self.rest = None
-        self.s = None
-        self.cpair = None
-
 class RailDrawSurface:
     def __init__(self):
-        self.cs_draw_surface_clear = CsDrawSurfaceClear()
-        self.cs_draw_surface_write = CsDrawSurfaceWrite()
+        self.cs_draw_surface_clear = ns()
+        self.cs_draw_surface_write = ns()
         #
         self.b_started = False
-    def zero(self, height, width, cb_draw_surface_clear, cb_draw_surface_write):
+    def call_draw_surface_clear(self, rail_h):
+        self.cs_draw_surface_clear.rail_h = rail_h
+        self.cb_draw_surface_clear(
+            cs_draw_surface_clear=self.cs_draw_surface_clear)
+    def call_draw_surface_write(self, rail_h, drop, rest, s, cpair):
+        self.cs_draw_surface_write.rail_h = rail_h
+        self.cs_draw_surface_write.drop = drop
+        self.cs_draw_surface_write.rest = rest
+        self.cs_draw_surface_write.s = s
+        self.cs_draw_surface_write.cpair = cpair
+        self.cb_draw_surface_write(
+            cs_draw_surface_write=self.cs_draw_surface_write)
+    def zero(self, rail_h, height, width, cb_draw_surface_clear, cb_draw_surface_write):
+        self.rail_h = rail_h
         self.height = height
         self.width = width
         self.cb_draw_surface_clear = cb_draw_surface_clear
@@ -74,10 +74,12 @@ class RailDrawSurface:
     def tick(self):
         pass
     def render(self):
-        self._call_draw_surface_clear()
+        self.call_draw_surface_clear(
+            rail_h=self.rail_h)
         for spot in self.spots:
             (drop, rest) = spot
-            self._call_draw_surface_write(
+            self.call_draw_surface_write(
+                rail_h=self.rail_h,
                 drop=drop,
                 rest=rest,
                 s='@',
@@ -88,17 +90,6 @@ class RailDrawSurface:
             self.spots.remove(spot)
         else:
             self.spots.append(spot)
-    #
-    def _call_draw_surface_clear(self):
-        self.cb_draw_surface_clear(
-            cs_draw_surface_clear=self.cs_draw_surface_clear)
-    def _call_draw_surface_write(self, drop, rest, s, cpair):
-        self.cs_draw_surface_write.drop = drop
-        self.cs_draw_surface_write.rest = rest
-        self.cs_draw_surface_write.s = s
-        self.cs_draw_surface_write.cpair = cpair
-        self.cb_draw_surface_write(
-            cs_draw_surface_write=self.cs_draw_surface_write)
 
 
 # --------------------------------------------------------
@@ -281,8 +272,9 @@ class CogToMenu:
         height = self.track_prime_console.height
         width = self.track_prime_console.width
         #
+        rail_h = '%s/menu'%(self.cog_h)
         self.rail_menu.zero(
-            menu_h='menu',
+            rail_h=rail_h,
             cb_menu_selection=self.cb_menu_selection,
             cb_menu_asks_display_to_clear=self.cb_menu_asks_display_to_clear,
             cb_menu_asks_display_to_write=self.cb_menu_asks_display_to_write,
@@ -314,17 +306,17 @@ class CogToMenu:
                 text='continue')
     #
     def cb_menu_selection(self, cs_menu_selection):
-        menu_h = cs_menu_selection.menu_h
+        rail_h = cs_menu_selection.rail_h
         keycode = cs_menu_selection.keycode
         #
         self.nearcast.menu_select(
             menu_keycode=keycode)
     def cb_menu_asks_display_to_clear(self, cs_menu_asks_display_to_clear):
-        menu_h = cs_menu_asks_display_to_clear.menu_h
+        rail_h = cs_menu_asks_display_to_clear.rail_h
         #
         self.nearcast.term_clear()
     def cb_menu_asks_display_to_write(self, cs_menu_asks_display_to_write):
-        menu_h = cs_menu_asks_display_to_write.menu_h
+        rail_h = cs_menu_asks_display_to_write.rail_h
         drop = cs_menu_asks_display_to_write.drop
         rest = cs_menu_asks_display_to_write.rest
         s = cs_menu_asks_display_to_write.s
@@ -360,7 +352,9 @@ class CogToDrawSurface:
             return
     #
     def on_game_new(self):
+        rail_h = '%s/draw_surface'%(self.cog_h)
         self.rail_draw_surface.zero(
+            rail_h=rail_h,
             height=self.track_prime_console.height,
             width=self.track_prime_console.width,
             cb_draw_surface_clear=self.cb_draw_surface_clear,
@@ -393,38 +387,46 @@ class CogToDrawSurface:
             s=s,
             cpair=cpair)
 
-def main():
-    init_logging()
+def init_nearcast(engine):
+    engine.default_timeout = 0.05
     #
-    engine = None
+    orb = engine.init_orb(
+        i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
+    orb.add_log_snoop()
+    orb.init_cog(CogInterpreter)
+    orb.init_cog(CogToTerm)
+    orb.init_cog(CogToMenu)
+    orb.init_cog(CogToDrawSurface)
+    #
+    bridge = orb.init_autobridge()
+    bridge.nearcast.prime_console(
+        console_type='pygame',
+        height=24,
+        width=78)
+    bridge.nearcast.init()
+    #
+    return bridge
+
+
+# --------------------------------------------------------
+#   loader
+# --------------------------------------------------------
+MTU = 1500
+
+def main():
+    engine = Engine(
+        mtu=MTU)
     try:
-        engine = Engine(
-            mtu=MTU)
-        engine.default_timeout = 0.05
-        #
-        orb = engine.init_orb(
-            i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
-        orb.add_log_snoop()
-        orb.init_cog(CogInterpreter)
-        orb.init_cog(CogToTerm)
-        orb.init_cog(CogToMenu)
-        orb.init_cog(CogToDrawSurface)
-        #
-        bridge = orb.init_autobridge()
-        bridge.nearcast.prime_console(
-            console_type='pygame',
-            height=24,
-            width=78)
-        bridge.nearcast.init()
+        init_nearcast(
+            engine=engine)
         #
         engine.event_loop()
+    except KeyboardInterrupt:
+        pass
     except SolentQuitException:
         pass
-    except:
-        traceback.print_exc()
     finally:
-        if engine != None:
-            engine.close()
+        engine.close()
 
 if __name__ == '__main__':
     main()

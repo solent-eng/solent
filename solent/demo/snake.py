@@ -19,6 +19,7 @@
 from solent import Engine
 from solent import init_logging
 from solent import log
+from solent import ns
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
@@ -173,24 +174,26 @@ SPOT_SNAKE_CAR = '@'
 SPOT_SNAKE_CDR = 'x'
 SPOT_EGG = 'O'
 
-class CsGameInstructsClear:
-    def __init__(self):
-        pass
-
-class CsGameInstructsWrite:
-    def __init__(self):
-        self.drop = None
-        self.rest = None
-        self.s = None
-        self.cpair = None
-
 class RailSnakeGame:
     def __init__(self):
-        self.cs_game_instructs_clear = CsGameInstructsClear()
-        self.cs_game_instructs_write = CsGameInstructsWrite()
+        self.cs_game_instructs_clear = ns()
+        self.cs_game_instructs_write = ns()
         #
         self.b_running = False
-    def zero(self, height, width, cb_game_instructs_clear, cb_game_instructs_write):
+    def call_game_instructs_clear(self, rail_h):
+        self.cs_game_instructs_clear.rail_h = rail_h
+        self.cb_game_instructs_clear(
+            cs_game_instructs_clear=self.cs_game_instructs_clear)
+    def call_game_instructs_write(self, rail_h, drop, rest, s, cpair):
+        self.cs_game_instructs_write.rail_h = rail_h
+        self.cs_game_instructs_write.drop = drop
+        self.cs_game_instructs_write.rest = rest
+        self.cs_game_instructs_write.s = s
+        self.cs_game_instructs_write.cpair = cpair
+        self.cb_game_instructs_write(
+            cs_game_instructs_write=self.cs_game_instructs_write)
+    def zero(self, rail_h, height, width, cb_game_instructs_clear, cb_game_instructs_write):
+        self.rail_h = rail_h
         self.height = height
         self.width = width
         self.cb_game_instructs_clear = cb_game_instructs_clear
@@ -244,17 +247,20 @@ class RailSnakeGame:
         #
         self.steer_orders.append(cardinal)
     def render(self):
-        self._call_game_instructs_clear()
+        self.call_game_instructs_clear(
+            rail_h=self.rail_h)
         for spot in self.board.wall_spots:
             (drop, rest) = spot
-            self._call_game_instructs_write(
+            self.call_game_instructs_write(
+                rail_h=self.rail_h,
                 drop=drop,
                 rest=rest,
                 s='.',
                 cpair=solent_cpair('orange'))
         for spot in self.board.egg_spots:
             (drop, rest) = spot
-            self._call_game_instructs_write(
+            self.call_game_instructs_write(
+                rail_h=self.rail_h,
                 drop=drop,
                 rest=rest,
                 s='O',
@@ -267,28 +273,19 @@ class RailSnakeGame:
         #
         for spot in self.board.snake_spots:
             (drop, rest) = spot
-            self._call_game_instructs_write(
+            self.call_game_instructs_write(
+                rail_h=self.rail_h,
                 drop=drop,
                 rest=rest,
                 s='O',
                 cpair=cpair)
         # replace the head with a new character
-        self._call_game_instructs_write(
+        self.call_game_instructs_write(
+            rail_h=self.rail_h,
             drop=drop,
             rest=rest,
             s='X',
             cpair=cpair)
-    #
-    def _call_game_instructs_clear(self):
-        self.cb_game_instructs_clear(
-            cs_game_instructs_clear=self.cs_game_instructs_clear)
-    def _call_game_instructs_write(self, drop, rest, s, cpair):
-        self.cs_game_instructs_write.drop = drop
-        self.cs_game_instructs_write.rest = rest
-        self.cs_game_instructs_write.s = s
-        self.cs_game_instructs_write.cpair = cpair
-        self.cb_game_instructs_write(
-            cs_game_instructs_write=self.cs_game_instructs_write)
 
 
 # --------------------------------------------------------
@@ -447,11 +444,11 @@ class CogToMenu:
         self.track_prime_console = self.orb.track(TrackPrimeConsole)
         self.track_prime_menu_title = self.orb.track(TrackPrimeMenuTitle)
         #
-        self.rail_menu = None
-    def on_init(self):
         self.rail_menu = RailMenu()
+    def on_init(self):
+        rail_h = '%s/menu'%(self.cog_h)
         self.rail_menu.zero(
-            menu_h='menu',
+            rail_h=rail_h,
             cb_menu_selection=self.cb_menu_selection,
             cb_menu_asks_display_to_clear=self.cb_menu_asks_display_to_clear,
             cb_menu_asks_display_to_write=self.cb_menu_asks_display_to_write,
@@ -484,7 +481,7 @@ class CogToMenu:
                 text='continue')
     #
     def cb_menu_selection(self, cs_menu_selection):
-        menu_h = cs_menu_selection.menu_h
+        rail_h = cs_menu_selection.rail_h
         keycode = cs_menu_selection.keycode
         #
         self.nearcast.menu_select(
@@ -536,7 +533,9 @@ class CogSnakeGame:
     def on_init(self):
         pass
     def on_game_new(self):
+        rail_h = '%s/snake_game'%(self.cog_h)
         self.rail_snake_game.zero(
+            rail_h=rail_h,
             height=self.track_prime_console.height,
             width=self.track_prime_console.width,
             cb_game_instructs_clear=self.cb_game_instructs_clear,
@@ -589,7 +588,7 @@ class CogBridge:
             height=height,
             width=width)
 
-def launch(engine, console_type):
+def init_nearcast(engine, console_type):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
     orb.init_cog(CogInterpreter)
@@ -606,7 +605,7 @@ def launch(engine, console_type):
         text=GAME_NAME)
     bridge.nearcast.init()
     #
-    engine.event_loop()
+    return bridge
 
 
 # --------------------------------------------------------
@@ -629,9 +628,11 @@ def main():
         mtu=MTU)
     try:
         engine.default_timeout = 0.01
-        launch(
+        init_nearcast(
             engine=engine,
             console_type=console_type)
+        #
+        engine.event_loop()
     except SolentQuitException:
         pass
     finally:

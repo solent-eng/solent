@@ -39,7 +39,10 @@ def should_work_when_supplied_string_is_aligned():
     #
     mtu = 8
     rail_bytesetter = RailBytesetter()
+    #
+    rail_h = 'text/bytesetter'
     rail_bytesetter.zero(
+        rail_h=rail_h,
         cb_bytesetter_pack=r.cb_bytesetter_pack,
         cb_bytesetter_fini=r.cb_bytesetter_fini,
         mtu=mtu,
@@ -65,7 +68,10 @@ def should_work_when_supplied_string_is_not_aligned():
     #
     mtu = 8
     rail_bytesetter = RailBytesetter()
+    #
+    rail_h = 'text/bytesetter'
     rail_bytesetter.zero(
+        rail_h=rail_h,
         cb_bytesetter_pack=r.cb_bytesetter_pack,
         cb_bytesetter_fini=r.cb_bytesetter_fini,
         mtu=mtu,

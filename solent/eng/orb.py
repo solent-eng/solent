@@ -48,10 +48,10 @@
 
 from .activity import activity_new
 from .nearcast_schema import nearcast_schema_new
-from .solent_quit_exception import SolentQuitException
 
 from solent import uniq
 from solent import log
+from solent import SolentQuitException
 
 from collections import deque
 from collections import OrderedDict as od

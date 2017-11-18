@@ -22,24 +22,28 @@
 # bytes to a series of fixed-size network packets.
 
 from solent import log
+from solent import ns
 
 from collections import deque
-
-class CsBytesetterPack:
-    def __init__(self):
-        self.bytesetter_h = None
-        self.bb = None
-
-class CsBytesetterFini:
-    def __init__(self):
-        self.bytesetter_h = None
 
 class RailBytesetter:
     def __init__(self):
         self.blst = deque()
-        self.cs_bytesetter_pack = CsBytesetterPack()
-        self.cs_bytesetter_fini = CsBytesetterFini()
-    def zero(self, mtu, cb_bytesetter_pack, cb_bytesetter_fini, bytesetter_h):
+        self.cs_bytesetter_pack = ns()
+        self.cs_bytesetter_fini = ns()
+    def call_bytesetter_pack(self, rail_h, bytesetter_h, bb):
+        self.cs_bytesetter_pack.rail_h = rail_h
+        self.cs_bytesetter_pack.bytesetter_h = bytesetter_h
+        self.cs_bytesetter_pack.bb = bb
+        self.cb_bytesetter_pack(
+            cs_bytesetter_pack=self.cs_bytesetter_pack)
+    def call_bytesetter_fini(self, rail_h, bytesetter_h):
+        self.cs_bytesetter_fini.rail_h = rail_h
+        self.cs_bytesetter_fini.bytesetter_h = bytesetter_h
+        self.cb_bytesetter_fini(
+            cs_bytesetter_fini=self.cs_bytesetter_fini)
+    def zero(self, rail_h, mtu, cb_bytesetter_pack, cb_bytesetter_fini, bytesetter_h):
+        self.rail_h = rail_h
         self.mtu = mtu
         self.cb_bytesetter_pack = cb_bytesetter_pack
         self.cb_bytesetter_fini = cb_bytesetter_fini
@@ -58,18 +62,9 @@ class RailBytesetter:
     def flush(self):
         while self.bsize > 0:
             self._dispatch_pack()
-        self._call_bytesetter_fini(
+        self.call_bytesetter_fini(
+            rail_h=self.rail_h,
             bytesetter_h=self.bytesetter_h)
-    #
-    def _call_bytesetter_pack(self, bytesetter_h, bb):
-        self.cs_bytesetter_pack.bytesetter_h = bytesetter_h
-        self.cs_bytesetter_pack.bb = bb
-        self.cb_bytesetter_pack(
-            cs_bytesetter_pack=self.cs_bytesetter_pack)
-    def _call_bytesetter_fini(self, bytesetter_h):
-        self.cs_bytesetter_fini.bytesetter_h = bytesetter_h
-        self.cb_bytesetter_fini(
-            cs_bytesetter_fini=self.cs_bytesetter_fini)
     #
     def _dispatch_pack(self):
         mtu = self.mtu
@@ -93,7 +88,8 @@ class RailBytesetter:
             remain -= len(bb)
             nail = peri
         #
-        self._call_bytesetter_pack(
+        self.call_bytesetter_pack(
+            rail_h=self.rail_h,
             bytesetter_h=self.bytesetter_h,
             bb=out)
         #

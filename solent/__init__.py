@@ -26,6 +26,7 @@ from .paths import dget_wres
 # small
 from .base import uniq
 from .base import ns
+from .base import SolentQuitException
 # log
 from .base import hexdump_bytes
 from .base import hexdump_string
@@ -52,7 +53,6 @@ from .base import SignalConsumer
 
 from .eng import Clock
 from .eng import Engine
-from .eng import SolentQuitException
 
 # Above this point, solent is structured into a clear dependency hierarchy.
 # After this point, it becomes less-deliberate, shabby. At the time of

@@ -24,8 +24,8 @@
 # similar way to one.
 
 from solent import Engine
-from solent import SolentQuitException
 from solent import log
+from solent import SolentQuitException
 
 I_NEARCAST = '''
     i message h
