@@ -17,7 +17,7 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import Engine
-from solent import init_logging
+from solent import init_network_logging
 from solent import log
 from solent import ns
 from solent import solent_cpair
@@ -296,8 +296,11 @@ class RailSnakeGame:
 # encapsulates the game.
 #
 I_NEARCAST = '''
+    i schema h
     i message h
-        i field h
+    i field h
+
+    schema nc.snake
 
     message prime_console
         field console_type
@@ -623,6 +626,16 @@ def main():
         console_type = 'pygame'
     if PLATFORM_SYSTEM == 'Windows':
         console_type = 'pygame'
+    #
+    # Snake is a good go-to program for testing. Hence, I like to leave this
+    # in, commented out.
+    '''
+    init_network_logging(
+        mtu=MTU,
+        addr='127.255.255.255',
+        port=7789,
+        label='snake')
+    '''
     #
     engine = Engine(
         mtu=MTU)

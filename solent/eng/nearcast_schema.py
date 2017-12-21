@@ -64,8 +64,11 @@ class NearcastSignalConsumer(SignalConsumer):
     talking to.
     '''
     def __init__(self):
+        self.schema_h = None
         self.messages = od()
         self.current_message_lst = None
+    def on_schema(self, h):
+        self.schema_h = h
     def on_message(self, h):
         if h in self.messages:
             raise Exception('duplicate definition for [%s]'%h)
@@ -91,7 +94,8 @@ class NearcastSchema:
     don't need to serialise the message, meaning there is a bunch of type
     information that we can dispense with.
     '''
-    def __init__(self, d_messages):
+    def __init__(self, schema_h, d_messages):
+        self.schema_h = schema_h
         self.messages = d_messages
     def has_message(self, name):
         return name in self.messages
@@ -157,7 +161,7 @@ class NearcastSchema:
             construct=test_class)
         return cog
 
-def nearcast_schema_new(i_nearcast):
+def init_nearcast_schema(i_nearcast):
     '''
     i_nearcast: text in interface script format. It will need to match the
     dialect described by NearcastSignalConsumer in this module. Look in
@@ -172,6 +176,7 @@ def nearcast_schema_new(i_nearcast):
         signal_consumer=signal_consumer)
     parser.parse(i_nearcast)
     nearcast_schema = NearcastSchema(
+        schema_h=signal_consumer.schema_h,
         d_messages=signal_consumer.messages)
     return nearcast_schema
 

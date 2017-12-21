@@ -1,5 +1,20 @@
+# // license
+# Copyright 2016, Free Software Foundation.
 #
-# engine
+# This file is part of Solent.
+#
+# Solent is free software: you can redistribute it and/or modify it under the
+# terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# Solent is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# Solent. If not, see <http://www.gnu.org/licenses/>.
 #
 # // overview
 # Network engine. This is the core class of the eng system. It provides
@@ -19,24 +34,6 @@
 #   facading that. Much of what is here is explained by that priority.
 #   - read from event_loop below to see what an engine instance does once
 #   it has been started.
-#
-# // license
-# Copyright 2016, Free Software Foundation.
-#
-# This file is part of Solent.
-#
-# Solent is free software: you can redistribute it and/or modify it under the
-# terms of the GNU Lesser General Public License as published by the Free
-# Software Foundation, either version 3 of the License, or (at your option)
-# any later version.
-#
-# Solent is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-# details.
-#
-# You should have received a copy of the GNU General Public License along with
-# Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from .action_pool import ActionPool
 from .activity import Activity

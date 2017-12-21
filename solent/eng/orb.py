@@ -47,7 +47,7 @@
 #
 
 from .activity import activity_new
-from .nearcast_schema import nearcast_schema_new
+from .nearcast_schema import init_nearcast_schema
 
 from solent import uniq
 from solent import log
@@ -97,7 +97,7 @@ class LogSnoop:
     def on_nearcast_message(self, cog_h, message_h, d_fields):
         def format_message():
             sb = []
-            sb.append('[%s/%s/%s] '%(self.orb.spin_h, cog_h, message_h))
+            sb.append('[%s/%s/%s] '%(self.orb.schema_h, cog_h, message_h))
             for idx, key in enumerate(self.nearcast_schema[message_h]):
                 if idx > 0:
                     sb.append(', ')
@@ -169,8 +169,14 @@ class Orb:
         self.engine = engine
         self.i_nearcast = i_nearcast
         #
-        self.nearcast_schema = nearcast_schema_new(
+        self.nearcast_schema = init_nearcast_schema(
             i_nearcast=i_nearcast)
+        #
+        self.schema_h = None
+        if self.nearcast_schema.schema_h != None:
+            self.schema_h = self.nearcast_schema.schema_h
+        else:
+            self.schema_h = self.spin_h
         #
         self.snoops = []
         self.tracks = {} # construct vs instance
