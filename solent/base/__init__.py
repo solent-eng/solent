@@ -37,6 +37,7 @@ from .ref import ref_acquire
 from .ref import ref_release
 
 from .liblog import init_logging
+from .liblog import init_network_logging
 from .liblog import log
 from .liblog import hexdump_bytes
 from .liblog import hexdump_string

@@ -1,12 +1,3 @@
-#
-# liblog
-#
-# // overview
-# Simple wrapper for logging. motive of this is that sometimes you
-# want to be able to broadcast logs to the network rather than write to file.
-# (yes, udp broadcast is unreliable, but for many applications it's damn
-# useful). This library includes functionality that makes that easy.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -24,6 +15,12 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Simple wrapper for logging. motive of this is that sometimes you
+# want to be able to broadcast logs to the network rather than write to file.
+# (yes, udp broadcast is unreliable, but for many applications it's damn
+# useful). This library includes functionality that makes that easy.
 
 import logging
 import socket
@@ -56,86 +53,35 @@ def init_logging():
     global LOGGER
     LOGGER = newliney_info
 
-def init_logging_to_udp(addr, port, nid):
-    '''
-    This initiates logging so that it will do a UDP broadcast of anything that
-    comes in. UDP is an unreliable protocol, but for many applications this
-    approach will be adequate.
-    
-    The broadcast message is not just the raw text. Rather, there is a short
-    header of a couple of bytes indicating whether the message was from stdout
-    or stderr. Look at the fingerprint section below for these values.
+class NetLogger:
+    def __init__(self, mtu, addr, port, label):
+        self.mtu = mtu
+        self.addr = addr
+        self.port = port
+        self.label = label
+        #
+        # disable nagle
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  
+        self.sock.connect((addr, port))
+    def send(self, msg):
+        if msg.endswith('\n'):
+            msg = '[%s] %s'%(self.label, msg)
+        else:
+            msg = '[%s] %s\n'%(self.label, msg)
+        bb = bytes(msg, 'utf8')
+        self.sock.send(bb)
 
-    It would probably be easy to adapt to qd_listen as a receiver of these
-    messages. I have a more elaborate system hanging around that does this
-    already ("orb_ancient_logger") and expect it will get incorporated to the
-    solent codebase at some point.
-    '''
-    #
-    # Useful for debugging
-    orig_stdout = sys.stdout
-    orig_stderr = sys.stderr
-    #
-    # No metasocks here. We just open a raw broadcast socket in the
-    # most liberal way we can.
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  
-    sock.connect((addr, port))
-    #
-    class IoHijack(object):
-        def __init__(self):
-            pass
-        def write(self, msg, is_stderr=False):
-            def sized_send(sized_s):
-                pack = self._encase(sized_s, is_stderr)
-                #
-                #sys.stdout = orig_stdout
-                #hexdump_string(pack, title='logpack')
-                #sys.stdout = io_hijack
-                #
-                sock.send(pack)
-            max_bb_size = CORE_MTU - 8
-            msg = '%s\n'%msg
-            s = msg
-            while len(s) > max_bb_size:
-                sized_send(s[:max_bb_size])
-                s = s[max_bb_size:]
-            sized_send(s)
-            #orig_stdout.write(msg)
-        def _encase(self, s, is_stderr):
-            'Encases a string in the log format. See orb_ancient_logger.'
-            sb = []
-            #
-            # // fingerprint
-            if is_stderr:
-                sb.append(chr(0x10))
-                sb.append(chr(0x6e)) # stderr
-            else:
-                sb.append(chr(0x10))
-                sb.append(chr(0x60)) # stdout
-            #
-            # // bb size (big-endian)
-            sb.extend(struct.pack('!H', len(s)))
-            #
-            # // node id
-            sb.extend(struct.pack('!L', int(nid, 16)))
-            #
-            # // bb
-            sb.extend(s)
-            return ''.join(sb)
-    io_hijack = IoHijack()
+def init_network_logging(mtu, addr, port, label):
     global LOGGER
-    LOGGER = io_hijack.write
     #
-    # While you're debugging udp broadcast, it can help to disable this.
-    sys.stdout = io_hijack
-    class StdErrWrapper(object):
-        def __init__(self):
-            pass
-        def write(self, s):
-            io_hijack.write(s, True)
-    sys.stderr = StdErrWrapper()
+    net_logger = NetLogger(
+        mtu=mtu,
+        addr=addr,
+        port=port,
+        label=label)
+    LOGGER = net_logger.send
 
 def hexdump_string(s, title='hexdump'):
     int_buffer = []

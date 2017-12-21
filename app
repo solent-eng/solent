@@ -27,13 +27,13 @@ popd
 
 #
 # Release
-#python -B -m solent.demo.snake
-#python -B -m solent.demo.weeds
 #python -B -m solent.demo.draw
+python -B -m solent.demo.snake
+#python -B -m solent.demo.weeds
 
 #
 # Scenarios
-python -B -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
+#python -B -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
 #python -B -m solent.scenarios.eng_20_orb_hosted_tcp_server
 #python -B -m solent.scenarios.eng_21_line_console
 #python -B -m solent.scenarios.eng_40_simple_udp_sub
