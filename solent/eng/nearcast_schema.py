@@ -27,7 +27,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from .test_bridge_class_cog import test_bridge_cog_class_new
+from .testbridge import init_testbridge_class
 
 from solent import ns
 from solent import log
@@ -154,8 +154,8 @@ class NearcastSchema:
             orb=orb,
             cog=cog)
         setattr(cog, 'nearcast', nearcast_dispatcher)
-    def init_test_bridge_cog(self, cog_h, orb, engine):
-        test_class = test_bridge_cog_class_new(
+    def init_testbridge(self, cog_h, orb, engine):
+        test_class = init_testbridge_class(
             nearcast_schema=self)
         cog = orb.init_cog(
             construct=test_class)

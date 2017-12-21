@@ -238,7 +238,7 @@ class Orb:
                 fnames=fields)
         return cog
     def init_testbridge(self):
-        cog = self.nearcast_schema.init_test_bridge_cog(
+        cog = self.nearcast_schema.init_testbridge(
             cog_h='test_receiver/%s'%(uniq()),
             orb=self,
             engine=self.engine)
