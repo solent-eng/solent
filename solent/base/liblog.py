@@ -60,18 +60,32 @@ class NetLogger:
         self.port = port
         self.label = label
         #
-        # disable nagle
+        self.buffer = []
+        #
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  
         self.sock.connect((addr, port))
     def send(self, msg):
-        if msg.endswith('\n'):
-            msg = '[%s] %s'%(self.label, msg)
+        self.buffer.clear()
+        if '' == msg:
+            # blank line
+            self.buffer.append('')
         else:
-            msg = '[%s] %s\n'%(self.label, msg)
-        bb = bytes(msg, 'utf8')
-        self.sock.send(bb)
+            while len(msg) > self.mtu:
+                s = msg[:self.mtu]
+                self.buffer.append(s)
+                msg = msg[self.mtu:]
+            if msg:
+                self.buffer.append(msg)
+        #
+        for line in self.buffer:
+            if line.endswith('\n'):
+                line = '[%s] %s'%(self.label, line)
+            else:
+                line = '[%s] %s\n'%(self.label, line)
+            bb = bytes(line, 'utf8')
+            self.sock.send(bb)
 
 def init_network_logging(mtu, addr, port, label):
     global LOGGER
