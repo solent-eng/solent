@@ -26,9 +26,9 @@ from solent import SolentQuitException
 from solent import init_logging
 from solent import log
 from solent.redis import rail_resp_etcher_new
-from solent.redis import rail_resp_parser_new
+from solent.redis import RailRespParser
 from solent.util import cformat
-from solent.util import SpinLineConsole
+from solent.util import RailLineConsole
 
 from collections import deque
 import os
@@ -79,14 +79,17 @@ class CogLineConsole:
         self.orb = orb
         self.engine = engine
         #
-        self.spin_line_console = engine.init_spin(
-            construct=SpinLineConsole,
-            cb_lc_connect=lambda cs_lc_connect: None,
-            cb_lc_condrop=lambda cs_lc_condrop: None,
-            cb_lc_command=self.cb_lc_command)
+        self.rail_line_console = RailLineConsole()
     #
     def on_init(self):
-        self.spin_line_console.start(
+        rail_h = '%s/line_console'%(self.cog_h)
+        self.rail_line_console.zero(
+            rail_h=rail_h,
+            cb_line_console_connect=lambda cs_line_console_connect: None,
+            cb_line_console_condrop=lambda cs_line_console_condrop: None,
+            cb_line_console_command=self.cb_line_console_command,
+            engine=self.engine)
+        self.rail_line_console.start(
             ip=LC_ADDR,
             port=LC_PORT)
     def on_note(self, msg):
@@ -94,11 +97,11 @@ class CogLineConsole:
             string=msg,
             fg='yellow',
             bg='trans')
-        self.spin_line_console.send(
+        self.rail_line_console.send(
             msg='%s\n'%(col))
     #
-    def cb_lc_command(self, cs_lc_command):
-        tokens = cs_lc_command.tokens
+    def cb_line_console_command(self, cs_line_console_command):
+        tokens = cs_line_console_command.tokens
         #
         if 0 == len(tokens):
             return
@@ -165,7 +168,7 @@ class CogRedisClient:
             cb_etch_head=self.cb_etch_head,
             cb_etch_tail=self.cb_etch_tail,
             cb_etch_pack=self.cb_etch_pack)
-        self.rail_resp_parser = rail_resp_parser_new(
+        self.rail_resp_parser = RailRespParser(
             cb_resp_head=self.cb_resp_head,
             cb_resp_tail=self.cb_resp_tail,
             cb_resp_str=self.cb_resp_str,

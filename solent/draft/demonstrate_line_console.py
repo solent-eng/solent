@@ -19,7 +19,7 @@
 from solent import Engine
 from solent import SolentQuitException
 from solent import log
-from solent.util import SpinLineConsole
+from solent.util import RailLineConsole
 
 LC_ADDR = 'localhost'
 LC_PORT = 8200
@@ -32,12 +32,12 @@ I_NEARCAST = '''
 
     message init
 
-    message lc_connect
+    message line_console_connect
         field addr
         field port
-    message lc_condrop
+    message line_console_condrop
         field msg
-    message to_lc
+    message to_line_console
         field s
 
     message cmd_add
@@ -58,48 +58,52 @@ class CogInterpret:
         b = int(b)
         log("%s + %s = %s"%(a, b, a+b))
     def on_cmd_echo(self, s):
-        self.nearcast.to_lc(
+        self.nearcast.to_line_console(
             s=s)
     def on_cmd_quit(self):
         raise SolentQuitException()
 
-class CogLineConsole:
+class CogToLineConsole:
     def __init__(self, cog_h, orb, engine):
         self.cog_h = cog_h
         self.orb = orb
         self.engine = engine
         #
-        self.spin_line_console = engine.init_spin(
-            construct=SpinLineConsole,
-            cb_lc_connect=self._on_lc_connect,
-            cb_lc_condrop=self._on_lc_condrop,
-            cb_lc_command=self._on_lc_command)
+        self.rail_line_console = RailLineConsole()
     #
     def on_init(self):
-        self.spin_line_console.start(
+        rail_h='%s/line_console'%(self.cog_h)
+        self.rail_line_console.zero(
+            rail_h=rail_h,
+            cb_line_console_connect=self.cb_line_console_connect,
+            cb_line_console_condrop=self.cb_line_console_condrop,
+            cb_line_console_command=self.cb_line_console_command,
+            engine=self.engine)
+        #
+        self.rail_line_console.start(
             ip=LC_ADDR,
             port=LC_PORT)
-    def on_to_lc(self, s):
-        self.spin_line_console.send(
+    def on_to_line_console(self, s):
+        self.rail_line_console.send(
             msg='%s\n'%s)
     #
-    def _on_lc_connect(self, cs_lc_connect):
-        addr = cs_lc_connect.addr
-        port = cs_lc_connect.port
+    def cb_line_console_connect(self, cs_line_console_connect):
+        addr = cs_line_console_connect.addr
+        port = cs_line_console_connect.port
         #
-        self.nearcast.lc_connect(
+        self.nearcast.line_console_connect(
             addr=addr,
             port=port)
-    def _on_lc_condrop(self, cs_lc_condrop):
-        msg = cs_lc_condrop.msg
+    def cb_line_console_condrop(self, cs_line_console_condrop):
+        msg = cs_line_console_condrop.msg
         #
-        self.nearcast.lc_condrop(
+        self.nearcast.line_console_condrop(
             msg=msg)
-    def _on_lc_command(self, cs_lc_command):
-        tokens = cs_lc_command.tokens
+    def cb_line_console_command(self, cs_line_console_command):
+        tokens = cs_line_console_command.tokens
         #
         def complain(msg):
-            self.spin_line_console.send(
+            self.rail_line_console.send(
                 msg='%s\n'%msg)
         #
         if 0 == len(tokens):
@@ -141,7 +145,7 @@ def main():
             i_nearcast=I_NEARCAST)
         orb.add_log_snoop()
         orb.init_cog(CogInterpret)
-        orb.init_cog(CogLineConsole)
+        orb.init_cog(CogToLineConsole)
         bridge = orb.init_cog(CogBridge)
         bridge.nc_init()
         engine.event_loop()

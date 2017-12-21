@@ -26,19 +26,20 @@ popd
 #python -B -m run_tests
 
 #
-# Release
+# Scenarios
+#python -B -m scenarios.eng_10_orb_nearcast_and_cog_basics
+#python -B -m scenarios.eng_20_orb_hosted_tcp_server
+#python -B -m scenarios.eng_21_line_console
+#python -B -m scenarios.eng_22_builtin_line_console
+#python -B -m scenarios.eng_40_simple_udp_sub
+#python -B -m scenarios.eng_41_simple_udp_pub
+#python -B -m scenarios.eng_90_command_console
+
+#
+# Demo
 #python -B -m solent.demo.draw
 python -B -m solent.demo.snake
 #python -B -m solent.demo.weeds
-
-#
-# Scenarios
-#python -B -m solent.scenarios.eng_10_orb_nearcast_and_cog_basics
-#python -B -m solent.scenarios.eng_20_orb_hosted_tcp_server
-#python -B -m solent.scenarios.eng_21_line_console
-#python -B -m solent.scenarios.eng_40_simple_udp_sub
-#python -B -m solent.scenarios.eng_41_simple_udp_pub
-#python -B -m solent.scenarios.eng_90_command_console
 
 #
 # Tools
