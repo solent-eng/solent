@@ -1,3 +1,27 @@
+// Release 0.49
+
+::: Issues
+
+issue 103, implement line-based logging to network
+
+
+::: Changes
+
+The big-ticket item is satisfying issue 103. There is now a means to
+initialise logging to network. Import solent.init_network_logging. To see the
+results, run solent.tools.udpcat.
+
+Some unrelated tweaks are going in also,
+
+- Added some obscure keycodes to solent_keycode.
+
+- Previously, you could not quit from solent.tools.tclient unless you had made
+  a successful TCP connection. Fixed.
+
+- Made wasd controls work for solent.demo.snake
+
+
+
 // Release 0.48
 
 ::: Issues

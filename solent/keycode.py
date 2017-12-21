@@ -34,6 +34,12 @@ class e_keycode(enum.Enum):
     backspace     = 0x08
     tab           = 0x09
     newline       = 0x0a
+    dle           = 0x10 # ctrl+p
+    dc1           = 0x11 # ctrl+q
+    dc2           = 0x12 # ctrl+r
+    dc3           = 0x13 # ctrl+s
+    dc4           = 0x14 # ctrl+t
+    nak           = 0x15 # ctrl+u
     esc           = 0x1b
     space         = 0x20
     star          = 0x2a

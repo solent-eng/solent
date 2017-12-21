@@ -550,7 +550,7 @@ class CogSnakeGame:
         elif keycode == solent_keycode('d'):
             self.rail_snake_game.steer(
                 cardinal='e')
-        elif keycode == solent_keycode('x'):
+        elif keycode in (solent_keycode('x'), solent_keycode('s')):
             self.rail_snake_game.steer(
                 cardinal='s')
     def on_game_focus(self):

@@ -1,12 +1,3 @@
-#
-# iconsole
-#
-# // overview
-# Bundle of stuff you need to put a console together. Typically, an
-# application developer won't create these directly. Rather you'll call
-# curses_console or window_console, and that will give you back an instance of
-# this.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -24,6 +15,12 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Bundle of stuff you need to put a console together. Typically, an
+# application developer won't create these directly. Rather you'll call
+# curses_console or window_console, and that will give you back an instance of
+# this.
 
 class IConsole(object):
     def __init__(self, keystream, grid_display, width, height, cb_last_lmousedown, cb_last_lmouseup, cb_last_rmousedown, cb_last_rmouseup, cb_close):

@@ -32,6 +32,7 @@ from .base import hexdump_bytes
 from .base import hexdump_string
 from .base import log
 from .base import init_logging
+from .base import init_network_logging
 # test
 from .base import clear_tests
 from .base import have_tests

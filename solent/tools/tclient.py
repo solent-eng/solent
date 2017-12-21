@@ -24,6 +24,9 @@
 # you probably have something else handy.
 
 from solent import Engine
+from solent import hexdump_bytes
+from solent import log
+from solent import init_network_logging
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
@@ -55,8 +58,12 @@ I_NEARCAST_SCHEMA = '''
         field bb
 '''
 
-CONSOLE_TYPE = 'pygame'
-#CONSOLE_TYPE = 'curses'
+QUIT_KEYCODES = (
+    solent_keycode('etx'),
+    solent_keycode('dc1'))
+
+#CONSOLE_TYPE = 'pygame'
+CONSOLE_TYPE = 'curses'
 CONSOLE_WIDTH = 78
 CONSOLE_HEIGHT = 24
 
@@ -79,15 +86,15 @@ class CogTcpClient:
         self.engine.open_tcp_client(
             addr=addr,
             port=port,
-            cb_tcp_client_connect=self._engine_on_tcp_client_connect,
-            cb_tcp_client_condrop=self._engine_on_tcp_client_condrop,
-            cb_tcp_client_recv=self._engine_on_tcp_client_recv)
+            cb_tcp_client_connect=self.cb_tcp_client_connect,
+            cb_tcp_client_condrop=self.cb_tcp_client_condrop,
+            cb_tcp_client_recv=self.cb_tcp_client_recv)
     def on_net_send(self, bb):
         self.engine.send(
             sid=self.client_sid,
             bb=bb)
     #
-    def _engine_on_tcp_client_connect(self, cs_tcp_client_connect):
+    def cb_tcp_client_connect(self, cs_tcp_client_connect):
         engine = cs_tcp_client_connect.engine
         client_sid = cs_tcp_client_connect.client_sid
         addr = cs_tcp_client_connect.addr
@@ -95,7 +102,7 @@ class CogTcpClient:
         #
         self.client_sid = client_sid
         self.nearcast.net_connect()
-    def _engine_on_tcp_client_condrop(self, cs_tcp_client_condrop):
+    def cb_tcp_client_condrop(self, cs_tcp_client_condrop):
         engine = cs_tcp_client_condrop.engine
         client_sid = cs_tcp_client_condrop.client_sid
         message = cs_tcp_client_condrop.message
@@ -103,7 +110,7 @@ class CogTcpClient:
         self.client_sid = None
         self.nearcast.net_condrop(
             message=message)
-    def _engine_on_tcp_client_recv(self, cs_tcp_client_recv):
+    def cb_tcp_client_recv(self, cs_tcp_client_recv):
         engine = cs_tcp_client_recv.engine
         client_sid = cs_tcp_client_recv.client_sid
         bb = cs_tcp_client_recv.bb
@@ -124,6 +131,7 @@ class CogTerm:
     #
     def on_init(self, addr, port):
         if CONSOLE_TYPE == 'curses':
+            log('yes')
             # We deliberately set this high, because we are only waiting on things
             # that are selectable (network and stdin). We would not want to
             # implement this with pygame as the ui, because that does not use file
@@ -133,6 +141,8 @@ class CogTerm:
                 cfd_h='curses',
                 fd=sys.stdin,
                 cb_eng_custom_fd_read=self.cb_eng_custom_fd_read)
+        else:
+            log('no')
         #
         self.spin_term = self.engine.init_spin(
             construct=SpinSelectionUi,
@@ -173,6 +183,7 @@ class CogTerm:
         self.rest = 0
         self.spin_term.refresh_console()
     def on_net_recv(self, bb):
+        hexdump_bytes(bb)
         for keycode in bb:
             self._print(
                 keycode=keycode,
@@ -212,11 +223,11 @@ class CogTerm:
             bb=bytes('%s\n'%line, 'utf8'))
     #
     def _received_keycode(self, keycode):
+        if keycode in QUIT_KEYCODES:
+            raise SolentQuitException()
+        #
         if None == self.rail_line_finder:
             return
-        #
-        if keycode == 17:
-            raise SolentQuitException()
         #
         cpair = solent_cpair('orange')
         # This backspace mechanism is far from perfect.
@@ -281,6 +292,8 @@ def init_nearcast(engine, net_addr, net_port):
 # --------------------------------------------------------
 #   launch
 # --------------------------------------------------------
+MTU = 1492
+
 def usage():
     print('Usage:')
     print('  %s addr port'%sys.argv[0])
@@ -291,7 +304,7 @@ def main():
         usage()
     #
     engine = Engine(
-        mtu=1492)
+        mtu=MTU)
     try:
         net_addr = sys.argv[1]
         net_port = int(sys.argv[2])

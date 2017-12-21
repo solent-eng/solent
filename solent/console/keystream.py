@@ -1,9 +1,3 @@
-#
-# keystream interface
-#
-# // overview
-# Builds objects to meet a keystream interface
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -21,6 +15,9 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Builds objects to meet a keystream interface
 
 import types
 
