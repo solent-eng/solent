@@ -17,7 +17,7 @@
 
 from .cformat import cformat
 from .rail_bytesetter import RailBytesetter
-from .spin_line_console import SpinLineConsole
+from .rail_line_console import RailLineConsole
 from .spin_selection_ui import SpinSelectionUi
 from .wrap_shared_lib import wrap_so_fn
 

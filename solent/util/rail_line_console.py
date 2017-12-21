@@ -1,10 +1,3 @@
-#
-# spin_line_console
-#
-# // overview
-# Creates a TCP server. A user can netcat/telnet to this port, and then
-# interact with a solent application.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,6 +15,10 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Creates a TCP server. A user can netcat/telnet to this port, and then
+# interact with a solent application.
 
 from solent import log
 from solent import ns
@@ -31,30 +28,33 @@ def tokenise_line(line):
     tokens = parse_line_to_tokens(line)
     return tokens
 
-class CsLcConnect:
+class RailLineConsole:
     def __init__(self):
-        self.addr = None
-        self.port = None
-
-class CsLcCondrop:
-    def __init__(self):
-        self.msg = None
-
-class CsLcCommand:
-    def __init__(self):
-        self.tokens = None
-
-class SpinLineConsole:
-    def __init__(self, spin_h, engine, cb_lc_connect, cb_lc_condrop, cb_lc_command):
-        self.spin_h = spin_h
+        self.cs_line_console_connect = ns()
+        self.cs_line_console_condrop = ns()
+        self.cs_line_console_command = ns()
+    def call_line_console_connect(self, rail_h, addr, port):
+        self.cs_line_console_connect.rail_h = rail_h
+        self.cs_line_console_connect.addr = addr
+        self.cs_line_console_connect.port = port
+        self.cb_line_console_connect(
+            cs_line_console_connect=self.cs_line_console_connect)
+    def call_line_console_condrop(self, rail_h, msg):
+        self.cs_line_console_condrop.rail_h = rail_h
+        self.cs_line_console_condrop.msg = msg
+        self.cb_line_console_condrop(
+            cs_line_console_condrop=self.cs_line_console_condrop)
+    def call_line_console_command(self, rail_h, tokens):
+        self.cs_line_console_command.rail_h = rail_h
+        self.cs_line_console_command.tokens = tokens
+        self.cb_line_console_command(
+            cs_line_console_command=self.cs_line_console_command)
+    def zero(self, rail_h, cb_line_console_connect, cb_line_console_condrop, cb_line_console_command, engine):
+        self.rail_h = rail_h
+        self.cb_line_console_connect = cb_line_console_connect
+        self.cb_line_console_condrop = cb_line_console_condrop
+        self.cb_line_console_command = cb_line_console_command
         self.engine = engine
-        self.cb_lc_connect = cb_lc_connect
-        self.cb_lc_condrop = cb_lc_condrop
-        self.cb_lc_command = cb_lc_command
-        #
-        self.cs_lc_connect = CsLcConnect()
-        self.cs_lc_condrop = CsLcCondrop()
-        self.cs_lc_command = CsLcCommand()
         #
         self.b_active = False
         self.ip = None
@@ -100,34 +100,20 @@ class SpinLineConsole:
         if self.server_sid != None:
             self.engine.close_tcp_server(
                 server_sid=self.server_sid)
-    #
-    def _call_lc_connect(self, addr, port):
-        self.cs_lc_connect.addr = addr
-        self.cs_lc_connect.port = port
-        self.cb_lc_connect(
-            cs_lc_connect=self.cs_lc_connect)
-    def _call_lc_condrop(self, msg):
-        self.cs_lc_condrop.msg = msg
-        self.cb_lc_condrop(
-            cs_lc_condrop=self.cs_lc_condrop)
-    def _call_lc_command(self, tokens):
-        self.cs_lc_command.tokens = tokens
-        self.cb_lc_command(
-            cs_lc_command=self.cs_lc_command)
-    def _engine_on_tcp_server_start(self, cs_tcp_server_start):
+    def cb_tcp_server_start(self, cs_tcp_server_start):
         engine = cs_tcp_server_start.engine
         server_sid = cs_tcp_server_start.server_sid
         addr = cs_tcp_server_start.addr
         port = cs_tcp_server_start.port
         #
         self.server_sid = server_sid
-    def _engine_on_tcp_server_stop(self, cs_tcp_server_stop):
+    def cb_tcp_server_stop(self, cs_tcp_server_stop):
         engine = cs_tcp_server_stop.engine
         server_sid = cs_tcp_server_stop.server_sid
         message = cs_tcp_server_stop.message
         #
         self.server_sid = None
-    def _engine_on_tcp_accept_connect(self, cs_tcp_accept_connect):
+    def cb_tcp_accept_connect(self, cs_tcp_accept_connect):
         engine = cs_tcp_accept_connect.engine
         server_sid = cs_tcp_accept_connect.server_sid
         accept_sid = cs_tcp_accept_connect.accept_sid
@@ -137,20 +123,22 @@ class SpinLineConsole:
         self._boot_any_server()
         self.accept_sid = accept_sid
         self.c_buffer = []
-        self._call_lc_connect(
+        self.call_line_console_connect(
+            rail_h=self.rail_h,
             addr=accept_addr,
             port=accept_port)
-    def _engine_on_tcp_accept_condrop(self, cs_tcp_accept_condrop):
+    def cb_tcp_accept_condrop(self, cs_tcp_accept_condrop):
         engine = cs_tcp_accept_condrop.engine
         accept_sid = cs_tcp_accept_condrop.accept_sid
         message = cs_tcp_accept_condrop.message
         #
         self.accept_sid = None
-        self._call_lc_condrop(
+        self.call_line_console_condrop(
+            rail_h=self.rail_h,
             msg=message)
         if self.b_active:
             self.start_server()
-    def _engine_on_tcp_accept_recv(self, cs_tcp_accept_recv):
+    def cb_tcp_accept_recv(self, cs_tcp_accept_recv):
         engine = cs_tcp_accept_recv.engine
         accept_sid = cs_tcp_accept_recv.accept_sid
         bb = cs_tcp_accept_recv.bb
@@ -162,7 +150,8 @@ class SpinLineConsole:
                 self.c_buffer = []
                 tokens = tokenise_line(
                     line=line)
-                self._call_lc_command(
+                self.call_line_console_command(
+                    rail_h=self.rail_h,
                     tokens=tokens)
             elif c == '\r':
                 continue
@@ -176,11 +165,11 @@ class SpinLineConsole:
         self.engine.open_tcp_server(
             addr=self.ip,
             port=self.port,
-            cb_tcp_server_start=self._engine_on_tcp_server_start,
-            cb_tcp_server_stop=self._engine_on_tcp_server_stop,
-            cb_tcp_accept_connect=self._engine_on_tcp_accept_connect,
-            cb_tcp_accept_condrop=self._engine_on_tcp_accept_condrop,
-            cb_tcp_accept_recv=self._engine_on_tcp_accept_recv)
+            cb_tcp_server_start=self.cb_tcp_server_start,
+            cb_tcp_server_stop=self.cb_tcp_server_stop,
+            cb_tcp_accept_connect=self.cb_tcp_accept_connect,
+            cb_tcp_accept_condrop=self.cb_tcp_accept_condrop,
+            cb_tcp_accept_recv=self.cb_tcp_accept_recv)
     def is_server_listening(self):
         return self.server_sid != None
     def is_accept_connected(self):

@@ -21,7 +21,7 @@ from solent import Engine
 from solent import log
 from solent import run_tests
 from solent import test
-from solent.util import SpinLineConsole
+from solent.util import RailLineConsole
 
 import sys
 
@@ -31,17 +31,20 @@ class Receiver:
     def __init__(self):
         self.sb = []
         self.b_connected = False
-    def on_lc_connect(self, cs_lc_connect):
-        addr = cs_lc_connect.addr
-        port = cs_lc_connect.port
+    def on_line_console_connect(self, cs_line_console_connect):
+        rail_h = cs_line_console_connect.rail_h
+        addr = cs_line_console_connect.addr
+        port = cs_line_console_connect.port
         #
         self.b_connected = True
-    def on_lc_condrop(self, cs_lc_condrop):
-        msg = cs_lc_condrop.msg
+    def on_line_console_condrop(self, cs_line_console_condrop):
+        rail_h = cs_line_console_condrop.rail_h
+        msg = cs_line_console_condrop.msg
         #
         self.b_connected = False
-    def on_lc_command(self, cs_lc_command):
-        tokens = cs_lc_command.tokens
+    def on_line_console_command(self, cs_line_console_command):
+        rail_h = cs_line_console_command.rail_h
+        tokens = cs_line_console_command.tokens
         #
         self.sb.append(tokens)
 
@@ -65,9 +68,9 @@ class SpinBasicTcpClient:
         self.engine.open_tcp_client(
             addr=addr,
             port=port,
-            cb_tcp_client_connect=self._engine_on_tcp_client_connect,
-            cb_tcp_client_condrop=self._engine_on_tcp_client_condrop,
-            cb_tcp_client_recv=self._engine_on_tcp_client_recv)
+            cb_tcp_client_connect=self.cb_tcp_client_connect,
+            cb_tcp_client_condrop=self.cb_tcp_client_condrop,
+            cb_tcp_client_recv=self.cb_tcp_client_recv)
     def send(self, msg):
         bb = bytes(msg, 'utf8')
         self.engine.send(
@@ -77,7 +80,7 @@ class SpinBasicTcpClient:
         self.engine.close_tcp_client(
             client_sid=self.client_sid)
     #
-    def _engine_on_tcp_client_connect(self, cs_tcp_client_connect):
+    def cb_tcp_client_connect(self, cs_tcp_client_connect):
         engine = cs_tcp_client_connect.engine
         client_sid = cs_tcp_client_connect.client_sid
         addr = cs_tcp_client_connect.addr
@@ -85,14 +88,14 @@ class SpinBasicTcpClient:
         #
         self.client_sid = client_sid
         self.sb = []
-    def _engine_on_tcp_client_condrop(self, cs_tcp_client_condrop):
+    def cb_tcp_client_condrop(self, cs_tcp_client_condrop):
         engine = cs_tcp_client_condrop.engine
         client_sid = cs_tcp_client_condrop.client_sid
         message = cs_tcp_client_condrop.message
         #
         self.client_sid = None
         self.sb = None
-    def _engine_on_tcp_client_recv(self, cs_tcp_client_recv):
+    def cb_tcp_client_recv(self, cs_tcp_client_recv):
         engine = cs_tcp_client_recv.engine
         client_sid = cs_tcp_client_recv.client_sid
         bb = cs_tcp_client_recv.bb
@@ -106,30 +109,33 @@ def should_start_and_stop_without_crashing():
     #
     engine = Engine(
         mtu=MTU)
-    spin_line_console = engine.init_spin(
-        construct=SpinLineConsole,
-        cb_lc_connect=receiver.on_lc_connect,
-        cb_lc_condrop=receiver.on_lc_condrop,
-        cb_lc_command=receiver.on_lc_command)
+    rail_line_console = RailLineConsole()
+    rail_h = 'test/line_console'
+    rail_line_console.zero(
+        rail_h=rail_h,
+        cb_line_console_connect=receiver.on_line_console_connect,
+        cb_line_console_condrop=receiver.on_line_console_condrop,
+        cb_line_console_command=receiver.on_line_console_command,
+        engine=engine)
     engine.cycle()
     #
     # Stage: Start it
-    spin_line_console.start(
+    rail_line_console.start(
         ip='localhost',
         port=5000)
     #
     # Verify
     engine.cycle()
-    assert spin_line_console.is_server_listening() == True
-    assert spin_line_console.is_accept_connected() == False
+    assert rail_line_console.is_server_listening() == True
+    assert rail_line_console.is_accept_connected() == False
     #
     # Stage: Stop it
-    spin_line_console.stop()
+    rail_line_console.stop()
     #
     # Verify
     engine.cycle()
-    assert spin_line_console.is_server_listening() == False
-    assert spin_line_console.is_accept_connected() == False
+    assert rail_line_console.is_server_listening() == False
+    assert rail_line_console.is_accept_connected() == False
     #
     return True
 
@@ -143,19 +149,22 @@ def should_accept_client_and_boot_client_on_stop():
     receiver = Receiver()
     #
     # step: start
-    spin_line_console = engine.init_spin(
-        construct=SpinLineConsole,
-        cb_lc_connect=receiver.on_lc_connect,
-        cb_lc_condrop=receiver.on_lc_condrop,
-        cb_lc_command=receiver.on_lc_command)
-    spin_line_console.start(
+    rail_line_console = RailLineConsole()
+    rail_h = 'test/line_console'
+    rail_line_console.zero(
+        rail_h=rail_h,
+        cb_line_console_connect=receiver.on_line_console_connect,
+        cb_line_console_condrop=receiver.on_line_console_condrop,
+        cb_line_console_command=receiver.on_line_console_command,
+        engine=engine)
+    rail_line_console.start(
         ip=ip,
         port=port)
     #
     # verify
     engine.cycle()
-    assert spin_line_console.is_server_listening() == True
-    assert spin_line_console.is_accept_connected() == False
+    assert rail_line_console.is_server_listening() == True
+    assert rail_line_console.is_accept_connected() == False
     #
     # step: client connects
     client = engine.init_spin(
@@ -166,17 +175,17 @@ def should_accept_client_and_boot_client_on_stop():
     #
     # verify
     engine.cycle()
-    assert spin_line_console.is_server_listening() == False
-    assert spin_line_console.is_accept_connected() == True
+    assert rail_line_console.is_server_listening() == False
+    assert rail_line_console.is_accept_connected() == True
     assert client.is_connected() == True
     #
     # step: server is stopped with client attached
-    spin_line_console.stop()
+    rail_line_console.stop()
     #
     # confirm effects
     engine.cycle()
-    assert spin_line_console.is_server_listening() == False
-    assert spin_line_console.is_accept_connected() == False
+    assert rail_line_console.is_server_listening() == False
+    assert rail_line_console.is_accept_connected() == False
     assert client.is_connected() == False
     #
     return True
@@ -191,19 +200,22 @@ def should_transfer_of_text():
     receiver = Receiver()
     #
     # step: start it
-    spin_line_console = engine.init_spin(
-        construct=SpinLineConsole,
-        cb_lc_connect=receiver.on_lc_connect,
-        cb_lc_condrop=receiver.on_lc_condrop,
-        cb_lc_command=receiver.on_lc_command)
-    spin_line_console.start(
+    rail_line_console = RailLineConsole()
+    rail_h = 'test/line_console'
+    rail_line_console.zero(
+        rail_h=rail_h,
+        cb_line_console_connect=receiver.on_line_console_connect,
+        cb_line_console_condrop=receiver.on_line_console_condrop,
+        cb_line_console_command=receiver.on_line_console_command,
+        engine=engine)
+    rail_line_console.start(
         ip=ip,
         port=port)
     #
     # verify
     engine.cycle()
-    assert spin_line_console.is_server_listening() == True
-    assert spin_line_console.is_accept_connected() == False
+    assert rail_line_console.is_server_listening() == True
+    assert rail_line_console.is_accept_connected() == False
     #
     # step: client connects
     client = engine.init_spin(
@@ -214,8 +226,8 @@ def should_transfer_of_text():
     #
     # verify
     engine.cycle()
-    assert spin_line_console.is_server_listening() == False
-    assert spin_line_console.is_accept_connected() == True
+    assert rail_line_console.is_server_listening() == False
+    assert rail_line_console.is_accept_connected() == True
     assert client.is_connected() == True
     #
     # step: client sends text that does not have a newline
@@ -258,7 +270,7 @@ def should_transfer_of_text():
     #
     # step: we write to client
     s = "here is some text\n"
-    spin_line_console.send(
+    rail_line_console.send(
         msg=s)
     #
     # verify

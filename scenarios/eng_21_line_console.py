@@ -28,8 +28,8 @@
 # making unreliable inferences about messages within payloads.
 #
 # This module serves an illustrative purpose. But if ever you need a netcat
-# server such as this, please example solent.lc.spin_line_console. You may
-# find it does what you need.
+# server such as this, please example solent.util.rail_line_console. It does
+# pretty much the same as below, and saves you having to type it in.
 
 from solent import Engine
 from solent import RailLineFinder
