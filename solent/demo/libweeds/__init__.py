@@ -16,14 +16,6 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-class Directive:
-    def __init__(self, h, description):
-        self.h = h
-        self.description = description
-
-def directive_new(h, description):
-    ob = Directive(
-        h=h,
-        description=description)
-    return ob
+from .rail_message_feed import RailMessageFeed
+from .rail_roguebox import RailRoguebox
 
