@@ -11,6 +11,10 @@ The big-ticket item is satisfying issue 103. There is now a means to
 initialise logging to network. Import solent.init_network_logging. To see the
 results, run solent.tools.udpcat.
 
+The old init_logging_to_udp method is gone. That approach tried to redirect
+stdout and stderr. We no longer do this, we just encourage the user to use
+solent.log for everything they need to log.
+
 Some unrelated tweaks are going in also,
 
 - Added some obscure keycodes to solent_keycode.
