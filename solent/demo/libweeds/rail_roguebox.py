@@ -22,7 +22,6 @@
 from solent import solent_cpair
 from solent.console import Cgrid
 from solent import log
-from solent.rogue import directive_new
 
 from collections import deque
 import random
@@ -37,17 +36,22 @@ I_NEARCAST = '''
         field grid_width
 '''
 
-DIRECTIVE_HELP = directive_new('help', 'show help message')
-DIRECTIVE_BX = directive_new('a', 'button')
-DIRECTIVE_BY = directive_new('b', 'button')
-DIRECTIVE_NW = directive_new('nw', 'move/act in this direction')
-DIRECTIVE_NN = directive_new('nn', 'move/act in this direction')
-DIRECTIVE_NE = directive_new('ne', 'move/act in this direction')
-DIRECTIVE_SW = directive_new('sw', 'move/act in this direction')
-DIRECTIVE_SS = directive_new('ss', 'move/act in this direction')
-DIRECTIVE_SE = directive_new('se', 'move/act in this direction')
-DIRECTIVE_WW = directive_new('ww', 'move/act in this direction')
-DIRECTIVE_EE = directive_new('ee', 'move/act in this direction')
+class Directive:
+    def __init__(self, h, description):
+        self.h = h
+        self.description = description
+
+DIRECTIVE_HELP = Directive('help', 'show help message')
+DIRECTIVE_BX = Directive('a', 'button')
+DIRECTIVE_BY = Directive('b', 'button')
+DIRECTIVE_NW = Directive('nw', 'move/act in this direction')
+DIRECTIVE_NN = Directive('nn', 'move/act in this direction')
+DIRECTIVE_NE = Directive('ne', 'move/act in this direction')
+DIRECTIVE_SW = Directive('sw', 'move/act in this direction')
+DIRECTIVE_SS = Directive('ss', 'move/act in this direction')
+DIRECTIVE_SE = Directive('se', 'move/act in this direction')
+DIRECTIVE_WW = Directive('ww', 'move/act in this direction')
+DIRECTIVE_EE = Directive('ee', 'move/act in this direction')
 
 HELP = '''Hit things with your crowbar. Survive.
 
@@ -79,8 +83,11 @@ class CogBridge:
             grid_height=grid_height,
             grid_width=grid_width)
 
-class SpinSimple:
-    def __init__(self, engine, grid_height, grid_width, cb_ready_alert, cb_grid_alert, cb_mail_alert, cb_over_alert):
+class RailRoguebox:
+    def __init__(self):
+        pass
+    def zero(self, rail_h, engine, grid_height, grid_width, cb_ready_alert, cb_grid_alert, cb_mail_alert, cb_over_alert):
+        self.rail_h = rail_h
         self.engine = engine
         self.grid_height = grid_height
         self.grid_width = grid_width
@@ -314,33 +321,4 @@ class SpinSimple:
                 rest=rest,
                 s=c,
                 cpair=cpair)
-
-def spin_simple_new(engine, grid_height, grid_width, cb_ready_alert, cb_grid_alert, cb_mail_alert, cb_over_alert):
-    '''
-    cb_grid_alert. No arguments. This is called whenver the grid has been
-    updated. The container will probably want to know the difference between
-    updates and no updates, but will probably not want to display every
-    update. They can get the current grid with get_grid.
-
-    cb_mail_alert. No arguments. This is called whenever a new mail message
-    is waiting (e.g. status messages, but mail is fewer characters). The
-    container then knows to run a collect at the next appropriate time. They
-    can get new mail with get_mail
-
-    cb_ready_alert. No arguments. This is called to notify the container that
-    a new game is ready. Typically, this would be some time after a call to
-    new_game.
-
-    cb_over_alert. No arguments. Tells the container that we are at 'game
-    over'.
-    '''
-    ob = SpinSimple(
-        engine=engine,
-        grid_height=grid_height,
-        grid_width=grid_width,
-        cb_ready_alert=cb_ready_alert,
-        cb_grid_alert=cb_grid_alert,
-        cb_mail_alert=cb_mail_alert,
-        cb_over_alert=cb_over_alert)
-    return ob
 

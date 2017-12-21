@@ -19,6 +19,9 @@
 # // overview
 # Nearcast that is contains a simple roguelike game.
 
+from .libweeds import RailMessageFeed
+from .libweeds import RailRoguebox
+
 from solent import Engine
 from solent import log
 from solent import solent_cpair
@@ -27,8 +30,6 @@ from solent import SolentQuitException
 from solent import uniq
 from solent.console import Cgrid
 from solent.console import RailMenu
-from solent.rogue import spin_message_feed_new
-from solent.rogue.simple_00_weed_the_garden import spin_simple_new
 from solent.util import SpinSelectionUi
 
 from collections import deque
@@ -316,7 +317,7 @@ class CogInterpreter:
                 self.nearcast.o_game_keycode(
                     keycode=keycode)
 
-class CogTerm:
+class CogToTerm:
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
@@ -356,7 +357,7 @@ class CogTerm:
         #
         pass
 
-class CogMenu:
+class CogToMenu:
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
@@ -430,7 +431,7 @@ class CogMenu:
     def _mi_quit(self):
         raise SolentQuitException()
 
-class CogRoguebox:
+class CogToRoguebox:
     '''
     Contains a roguelike game, and offers controls. The roguelike itself
     is contained to a 23x23 box in the top-left sector.
@@ -444,8 +445,8 @@ class CogRoguebox:
         self.track_prime_console = orb.track(TrackPrimeConsole)
         self.track_containment_mode = orb.track(TrackContainmentMode)
         #
-        self.spin_roguelike = None
-        self.spin_message_feed = None
+        self.rail_roguebox = RailRoguebox()
+        self.rail_message_feed = RailMessageFeed()
         self.cgrid_last = None
         self.cgrid_next = None
         self.d_keycode_to_directive = {}
@@ -455,7 +456,7 @@ class CogRoguebox:
         self.b_mail_waiting = False
         self.b_refresh_needed = False
     def orb_turn(self, activity):
-        if None == self.spin_roguelike:
+        if None == self.rail_roguebox:
             return
         if not self.track_containment_mode.is_focus_on_game():
             return
@@ -463,10 +464,10 @@ class CogRoguebox:
             activity.mark(
                 l=self,
                 s='mail processing')
-            for message in self.spin_roguelike.retrieve_mail():
-                self.spin_message_feed.accept(
+            for message in self.rail_roguebox.retrieve_mail():
+                self.rail_message_feed.accept(
                     message=message,
-                    turn=self.spin_roguelike.get_turn())
+                    turn=self.rail_roguebox.get_turn())
             self.b_mail_waiting = False
             self.b_refresh_needed = True
         #
@@ -484,7 +485,10 @@ class CogRoguebox:
         if console_width < ROGUEBOX_GAMEBOX_WIDTH:
             raise Exception("console width %s too small for game width %s."%(
                 console_width, ROGUEBOX_GAMEBOX_WIDTH))
-        self.spin_roguelike = spin_simple_new(
+        #
+        rail_h = '%s/roguebox'%(self.cog_h)
+        self.rail_roguebox.zero(
+            rail_h=rail_h,
             engine=self.engine,
             grid_height=ROGUEBOX_GAMEBOX_HEIGHT,
             grid_width=ROGUEBOX_GAMEBOX_WIDTH,
@@ -492,7 +496,10 @@ class CogRoguebox:
             cb_grid_alert=self._rl_grid_alert,
             cb_mail_alert=self._rl_mail_alert,
             cb_over_alert=self._rl_over_alert)
-        self.spin_message_feed = spin_message_feed_new(
+        #
+        rail_h = '%s/message_feed'%(self.cog_h)
+        self.rail_message_feed.zero(
+            rail_h=rail_h,
             height=ROGUEBOX_MFEED_HEIGHT,
             width=ROGUEBOX_MFEED_WIDTH,
             cpair_new=solent_cpair('teal'),
@@ -508,7 +515,7 @@ class CogRoguebox:
         # give this outer core the opportunity to match directives it
         # recognises to keycodes. in the future, you could imagine being able
         # to configure user keystrokes using this data.
-        for directive in self.spin_roguelike.get_supported_directives():
+        for directive in self.rail_roguebox.get_supported_directives():
             self.nearcast.directive(
                 directive_h=directive.h,
                 description=directive.description)
@@ -519,8 +526,8 @@ class CogRoguebox:
         self.b_game_started = True
         self.nearcast.o_game_focus()
     def on_o_game_new(self):
-        self.spin_message_feed.clear()
-        self.spin_roguelike.new_game()
+        self.rail_message_feed.clear()
+        self.rail_roguebox.new_game()
     def on_x_game_mail(self):
         self.b_mail_waiting = True
     def on_x_game_grid(self):
@@ -529,10 +536,10 @@ class CogRoguebox:
         if keycode not in self.d_keycode_to_directive:
             return
         directive_h = self.d_keycode_to_directive[keycode]
-        self.spin_roguelike.directive(
+        self.rail_roguebox.directive(
             directive_h=directive_h)
-        self.spin_message_feed.scroll_past(
-            turn=self.spin_roguelike.get_turn()-3)
+        self.rail_message_feed.scroll_past(
+            turn=self.rail_roguebox.get_turn()-3)
         self.b_refresh_needed = True
     def on_o_game_focus(self):
         if not self.b_game_started:
@@ -554,11 +561,11 @@ class CogRoguebox:
         self.cgrid_last.clear()
         self._diff_display_refresh()
     def _diff_display_refresh(self):
-        self.spin_roguelike.get_cgrid(
+        self.rail_roguebox.get_cgrid(
             cgrid=self.cgrid_next,
             nail=ROGUEBOX_GAMEBOX_NAIL,
             peri=ROGUEBOX_GAMEBOX_PERI)
-        for idx, message in enumerate(self.spin_message_feed.list_messages()):
+        for idx, message in enumerate(self.rail_message_feed.list_messages()):
             self.cgrid_next.put(
                 drop=idx,
                 rest=0,
@@ -596,9 +603,9 @@ def game(console_type):
             i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
         #orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
-        orb.init_cog(CogTerm)
-        orb.init_cog(CogMenu)
-        orb.init_cog(CogRoguebox)
+        orb.init_cog(CogToTerm)
+        orb.init_cog(CogToMenu)
+        orb.init_cog(CogToRoguebox)
         #
         bridge = orb.init_autobridge()
         bridge.nearcast.prime_console(

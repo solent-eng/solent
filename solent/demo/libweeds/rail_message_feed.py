@@ -1,16 +1,3 @@
-#
-# spin_message_feed
-#
-# // overview
-# This accepts text messages, and then renders them to a cgrid. Imagine text
-# as it is coming out of an old-fashioned printer, on a feed of paper.
-#
-# There are two general use-cases for retrieving data from this:
-# * You can call list_messages, and get back a list of current messages
-# * You can call get_cgrid, and it will populate your supplied grid
-#
-# xxx needs a refactor: remove spin from the naming
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -28,14 +15,28 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# This accepts text messages, and then renders them to a cgrid. Imagine text
+# as it is coming out of an old-fashioned printer, on a feed of paper.
+#
+# There are two general use-cases for retrieving data from this:
+# * You can call list_messages, and get back a list of current messages
+# * You can call get_cgrid, and it will populate your supplied grid
+#
+# xxx needs a refactor: remove spin from the naming
+#
 
 from solent.console import Cgrid
 from solent import log
 
 from collections import deque
 
-class SpinMessageFeed:
-    def __init__(self, height, width, cpair_new, cpair_old):
+class RailMessageFeed:
+    def __init__(self):
+        pass
+    def zero(self, rail_h, height, width, cpair_new, cpair_old):
+        self.rail_h = rail_h
         self.height = height
         self.width = width
         self.cpair_new = cpair_new
@@ -97,12 +98,4 @@ class SpinMessageFeed:
         self.q_lines.append( (text, turn) )
         while len(self.q_lines) > self.height:
             self.q_lines.popleft()
-
-def spin_message_feed_new(height, width, cpair_new, cpair_old):
-    ob = SpinMessageFeed(
-        height=height,
-        width=width,
-        cpair_new=cpair_new,
-        cpair_old=cpair_old)
-    return ob
 
