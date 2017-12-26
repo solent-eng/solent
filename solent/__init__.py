@@ -27,6 +27,8 @@ from .paths import dget_wres
 from .base import uniq
 from .base import ns
 from .base import SolentQuitException
+# pool
+from .base import pool_rail_class
 # log
 from .base import hexdump_bytes
 from .base import hexdump_string
@@ -51,6 +53,10 @@ from .base import RailLineFinder
 from .base import parse_line_to_tokens
 from .base import init_interface_script_parser
 from .base import SignalConsumer
+# access to solent-extensions
+from .base import solent_ext
+from .base import load_clib
+from .base import init_ext_fn
 
 from .eng import Clock
 from .eng import Engine

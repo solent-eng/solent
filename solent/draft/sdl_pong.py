@@ -15,14 +15,20 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // installation notes
+# You will need,
+#   * pysdl2
+#   * SDL2.dll or SDL2.so for your platform (e.g. put in the root of solent)
 
 from solent import Engine
 from solent import SolentQuitException
 from solent import log
 
-import sys
 import sdl2
 import sdl2.ext
+
+import sys
 
 
 # --------------------------------------------------------

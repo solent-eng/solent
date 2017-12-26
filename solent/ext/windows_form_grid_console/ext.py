@@ -16,39 +16,24 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import ref_create
-from solent import ref_lookup
-from solent import ref_acquire
-from solent import ref_release
+from .impl_grid_console import ImplGridConsole
+
 from solent import log
-from solent import run_tests
-from solent import test
 
-@test
-def should_acquire_and_release():
-    source = 'abc'
-    ref = ref_create(
-        bb=source)
-    ref_acquire(
-        ref=ref)
-    taken = ref_lookup(
-        ref=ref)
-    assert taken == source
+def init_ext(zero_h, cb_grid_console_splat, cb_grid_console_resize, cb_grid_console_kevent, cb_grid_console_mevent, cb_grid_console_closed, engine, width, height):
+    log('init_ext')
     #
-    # see that it gets cleaned up
-    ref_release(
-        ref=ref)
-    b_exception = False
-    try:
-        ref_lookup(
-            ref=ref)
-    except:
-        b_exception = True
-    if not b_exception:
-        raise Exception("looks like it did not get cleaed up")
+    impl_grid_console = ImplGridConsole()
+    impl_grid_console.zero(
+        zero_h=zero_h,
+        cb_grid_console_splat=cb_grid_console_splat,
+        cb_grid_console_resize=cb_grid_console_resize,
+        cb_grid_console_kevent=cb_grid_console_kevent,
+        cb_grid_console_mevent=cb_grid_console_mevent,
+        cb_grid_console_closed=cb_grid_console_closed,
+        engine=engine,
+        width=width,
+        height=height)
     #
-    return True
-
-if __name__ == '__main__':
-    run_tests()
+    return impl_grid_console.form
 

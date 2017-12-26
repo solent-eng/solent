@@ -1,0 +1,9 @@
+from
+https://opengameart.org/content/ascii-bitmap-font-oldschool
+
+"Each character is 5 x 7 pixels in size and they all sit in one png with a total size of 128 x 64 pixel. You can easily isolate / rearrange the characters if you need to."
+
+In the version here, I have redone it as a monochrome BMP.
+
+
+

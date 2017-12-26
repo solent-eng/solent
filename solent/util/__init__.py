@@ -19,5 +19,5 @@ from .cformat import cformat
 from .rail_bytesetter import RailBytesetter
 from .rail_line_console import RailLineConsole
 from .spin_selection_ui import SpinSelectionUi
-from .wrap_shared_lib import wrap_so_fn
+from .spin_rough_alarm import SpinRoughAlarm
 

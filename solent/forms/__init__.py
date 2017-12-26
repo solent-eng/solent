@@ -1,9 +1,3 @@
-#
-# wrap_shared_lib
-#
-# // overview
-# Tools for wrapping share library code so you can access it from python.
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -22,14 +16,5 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import ns
-
-def wrap_so_fn(so_fn, argtypes, restype):
-    '''
-    Useful for wrapping share library functions with ctypes.
-    '''
-    fn = so_fn
-    fn.argypes = argtypes
-    fn.restype = restype
-    return fn
+from .form_grid_console import FormGridConsole
 

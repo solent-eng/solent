@@ -24,7 +24,6 @@
 
 import logging
 import socket
-import struct
 import sys
 
 LOGGER = None

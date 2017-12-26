@@ -62,8 +62,8 @@ QUIT_KEYCODES = (
     solent_keycode('etx'),
     solent_keycode('dc1'))
 
-#CONSOLE_TYPE = 'pygame'
-CONSOLE_TYPE = 'curses'
+CONSOLE_TYPE = 'pygame'
+#CONSOLE_TYPE = 'curses'
 CONSOLE_WIDTH = 78
 CONSOLE_HEIGHT = 24
 
