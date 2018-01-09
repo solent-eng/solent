@@ -26,9 +26,22 @@ import inspect
 import os
 import platform
 
+SYSTEM = platform.system()
+
 def solent_ext(ext, **args):
-    python_path = 'solent.ext.%s.ext'%(ext)
-    m = import_module(python_path)
+    """
+    Python path should use dot notation to name the base path of the extension
+    module directory. We will then load the 'ext' submodule of that path.
+
+    Example.
+    * You give python_path as 'solent.ext.windows_form_grid_console'.
+    * This loads 'solent.ext.windows_form_grid_console.ext'.
+
+    This steers people to create a single entrypoint for any modules they
+    build: the 'ext' submodule.
+    """
+    ext_path = '%s.ext'%(ext)
+    m = import_module(ext_path)
     result = m.init_ext(**args)
     return result
 
@@ -38,8 +51,7 @@ def load_clib(ob):
     class_module = cl.__module__
     #
     api_filename = None
-    system = platform.system()
-    if system == 'Windows':
+    if SYSTEM == 'Windows':
         api_filename = 'api.dll'
     else:
         api_filename = 'api.so'
@@ -53,10 +65,11 @@ def load_clib(ob):
         raise Exception("Api file does not exist at {%s}"%(
             path_so))
     #
+    # We are using cdll even in the Windows setting. Reason is comment here,
+    # https://stackoverflow.com/questions/41760830/ctypes-procedure-probably-called-with-too-many-arguments-92-bytes-in-excess
+    # Want to get advice from someone who groks C better than me on how to
+    # standardise all this.
     clib = ctypes.cdll.LoadLibrary(path_so)
-    log('clib')
-    print(dir(clib))
-    log('.')
     return clib
 
 def init_ext_fn(rtype, so_fn, alist):

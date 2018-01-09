@@ -70,4 +70,5 @@ from .eng import Engine
 from .cpair import solent_cpair
 from .cpair import solent_cpair_pairs
 from .keycode import solent_keycode
+from .keycode import e_keycode
 

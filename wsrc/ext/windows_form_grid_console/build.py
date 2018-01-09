@@ -66,6 +66,7 @@ def create_windows_build_script(wsrc_path, wres_path):
         set PATH=%PATH%;%MINGW%\bin
 
         cd $wsrc_path
+
         mingw32-g++ -c -DBUILDING_DLL api.c -o obj\api.o
         mingw32-g++ -shared -o $wres_path/api.dll obj\api.o -lgdi32 -luser32 -lkernel32 -lcomctl32 -lwinmm -mwindows -Wl,--out-implib,$wres_path/libapi_dll.a
     ''').safe_substitute(

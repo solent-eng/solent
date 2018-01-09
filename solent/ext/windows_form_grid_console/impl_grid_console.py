@@ -6,16 +6,17 @@ from solent import load_clib
 from solent import log
 from solent import ns
 from solent import SolentQuitException
+from solent import e_keycode
 
 from ctypes import c_char_p
 from ctypes import c_int
-from ctypes import c_ulong
+from ctypes import c_uint64
 from ctypes import c_void_p
 from ctypes import pointer
 import ctypes
 import struct
 
-c_ulong_p = ctypes.POINTER(ctypes.c_ulong)
+c_uint64_p = ctypes.POINTER(ctypes.c_uint64)
 
 class SpinWindowsEvents:
     def __init__(self, spin_h, engine, cb_windows_event_quit, cb_windows_event_kevent, api):
@@ -27,8 +28,8 @@ class SpinWindowsEvents:
         #
         self.cs_windows_event_quit = ns()
         self.cs_windows_event_kevent = ns()
-        self.event = c_ulong()
-        self.ptr_event = c_ulong_p(self.event)
+        self.event = c_uint64()
+        self.ptr_event = c_uint64_p(self.event)
     def call_windows_event_quit(self, zero_h):
         self.cs_windows_event_quit.zero_h = zero_h
         self.cb_windows_event_quit(
@@ -40,6 +41,7 @@ class SpinWindowsEvents:
             cs_windows_event_kevent=self.cs_windows_event_kevent)
     def eng_turn(self, activity):
         log('turn')
+        #
         b_keep_running = self.api.process_windows_events()
         if not b_keep_running:
             activity.mark(
@@ -53,27 +55,127 @@ class SpinWindowsEvents:
         b_another = True
         while b_another:
             self.api.get_next_event(self.ptr_event)
-            (b0, b1, b2, b3) = struct.unpack('bbbb', self.event)
-            log('%s|%s|%s|%s'%(b0, b1, b2, b3))
+            (b0, b1, b2, b3, b4, b5, b6, b7) = struct.unpack(
+                'bbbbbbbb', self.event)
             if b0 == 0:
+                # Setting b0 to 0 is the API's way of communicating to
+                # us that there are no characters to consume.
                 b_another = False
                 continue
-            else:
-                activity.mark(
-                    l=self,
-                    s='handling input')
-                if b0 == 1:
-                    # kevent
-                    k = b1
+            #
+            activity.mark(
+                l=self,
+                s='handling input')
+            log('%s|%s|%s|%s|%s|%s|%s|%s'%(
+                b0, b1, b2, b3, b4, b5, b6, b7))
+            if b0 == 1:
+                # Keystroke event. In this section we will translate [the
+                # uint64_t that the api supplied] to a [solent-convention
+                # keystroke enumeration that is suitable for the callback.]
+                #
+                # byte1: bitfield
+                ks_bitfield = b1
+                # byte2: windows-convention keystroke code that appeared in
+                # a WM_KEYDOWN wParam.
+                wink = b2
+                #
+                # unpack the bitfield into values we understand
+                b_shift = False
+                b_control = False
+                n = 128
+                if ks_bitfield >= n:
+                    ks_bitfield -= n
+                    log("Warning. Unhandled bitfield value %s."%n)
+                n = 64
+                if ks_bitfield >= n:
+                    ks_bitfield -= n
+                    log("Warning. Unhandled bitfield value %s."%n)
+                n = 32
+                if ks_bitfield >= n:
+                    ks_bitfield -= n
+                    log("Warning. Unhandled bitfield value %s."%n)
+                n = 16
+                if ks_bitfield >= n:
+                    ks_bitfield -= n
+                    log("Warning. Unhandled bitfield value %s."%n)
+                n = 8
+                if ks_bitfield >= n:
+                    ks_bitfield -= n
+                    log("Warning. Unhandled bitfield value %s."%n)
+                n = 4
+                if ks_bitfield >= n:
+                    ks_bitfield -= n
+                    log("Warning. Unhandled bitfield value %s."%n)
+                n = 2
+                if ks_bitfield >= n:
+                    ks_bitfield -= n
+                    b_control = True
+                n = 1
+                if ks_bitfield >= n:
+                    ks_bitfield -= n
+                    b_shift = True
+                #
+                # arrow handling
+                # 0-9 handling
+                if wink >= 48 and wink <= 57:
+                    # Source character relative to zero
+                    zero_offset = wink - 48
+                    # xxx Concerns:
+                    # - We have no handling for ctrl+numbers at the moment. We
+                    #   will want to add this in the future, but needs more
+                    #   thought about what codes these translate to. At the
+                    #   time of writing, I am tempted to have extension
+                    #   characters that pop out the end of the 7-bit ascii
+                    #   range, and into the second half of the 8-bit ascii
+                    #   range. Mouseclicks could be relocated into this space.
+                    # - We are not handling shift+numbers correctly here
+                    #   either. There is an awkward keyboard-i18n angle to
+                    #   this. For example, shift+2 means different things
+                    #   between us-english and uk-english keyboards. Maybe
+                    #   we will need to have the C API convey several bytes
+                    #   through to us, representing different keycode
+                    #   interpretations.
+                    n = e_keycode.n0.value + zero_offset
                     #
-                    zero_h = self.spin_h
-                    self.call_windows_event_kevent(
-                        zero_h=zero_h,
-                        k=k)
+                    k = e_keycode(n)
+                # a-z handling
+                elif wink >= 65 and wink <= 90:
+                    # Source character relative to lower-case a
+                    a_offset = wink - 65
+                    if b_control:
+                        n = e_keycode.lmousedown.value + a_offset
+                    elif b_shift:
+                        n = e_keycode.A.value + a_offset
+                    else:
+                        # Lower A is 97
+                        n = e_keycode.a.value + a_offset
+                    k = e_keycode(n)
                 else:
-                    raise Exception('unhandled leading byte |%s|'%(b0))
+                    # xxx
+                    log("Unhandled %s"%(wink))
+                    n = wink
+                    #
+                    k = e_keycode(n)
+                #
+                zero_h = self.spin_h
+                self.call_windows_event_kevent(
+                    zero_h=zero_h,
+                    k=k)
+            else:
+                raise Exception('unhandled leading byte |%s|'%(b0))
     def eng_close(self):
         log('eng_close')
+
+# ctypes magic to allow the C layer to call-back to our python layer. The 'ca'
+# form here is like a callback, but takes explicit arguments rather than a
+# callback structure.
+CC_LOG_T = ctypes.WINFUNCTYPE(None, ctypes.c_char_p)
+
+def ca_log(msg):
+    s = msg.decode('utf8')
+    log("[ca_log] %s"%(s))
+
+cc_log = CC_LOG_T(ca_log)
 
 class ImplGridConsole:
     def __init__(self):
@@ -82,12 +184,14 @@ class ImplGridConsole:
         clib = load_clib(self)
         #
         self.api = ns()
+        self.api.set_cc_log = init_ext_fn(
+            None, clib.set_cc_log, [CC_LOG_T])
         self.api.create_screen = init_ext_fn(
             None, clib.create_screen, [c_int, c_int])
         self.api.process_windows_events = init_ext_fn(
             c_int, clib.process_windows_events, [])
         self.api.get_next_event = init_ext_fn(
-            None, clib.get_next_event, [c_ulong_p])
+            None, clib.get_next_event, [c_uint64_p])
         self.api.set = init_ext_fn(
             None, clib.set, [])
         self.api.redraw = init_ext_fn(
@@ -105,12 +209,15 @@ class ImplGridConsole:
         self.width = width
         self.height = height
         #
-        log('before')
+        # Emphasis: do not use named parameters for this, or the variable
+        # holding the logger will get garbage-collected. You must directly
+        # refer to cc_log.
+        self.api.set_cc_log(cc_log)
+        #
         self.api.create_screen(
             width=self.width,
             height=self.height)
         self.api.process_windows_events()
-        log('after')
         #
         self.spin_windows_events = self.engine.init_spin(
             construct=SpinWindowsEvents,

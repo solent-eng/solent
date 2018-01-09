@@ -25,9 +25,6 @@ import subprocess
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-LAUNCH = "run_tests"
-#LAUNCH = "solent.demo.snake"
-
 def read_file(path):
     f_ptr = open(path)
     data = f_ptr.read()
@@ -39,12 +36,13 @@ def pause():
     print('')
     input()
 
-def run(launch):
+def run(launch_args):
     venv_python = os.path.join(BASE_DIR, 'venv', 'Scripts', 'python.exe')
     if not os.path.exists(venv_python):
         raise Exception("Assumes venv. (Create venv under the base dir)")
     #
-    args = [venv_python, '-B', '-m', launch]
+    args = [venv_python, '-B', '-m']
+    args.extend(launch_args)
     print(args)
     p = subprocess.Popen(
         args=args,
@@ -62,10 +60,11 @@ def main():
         if not python_mod:
             raise Exception("No module enabled in %s"%(path_launch))
         #
-        for launch in python_mod:
+        for line in python_mod:
+            launch_args = line.split(' ')
             print('')
-            print(':: %s'%launch)
-            run(launch)
+            print(':: %s'%launch_args)
+            run(launch_args)
             pause()
 
 if __name__ == '__main__':

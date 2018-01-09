@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include <tchar.h>
 #include <Windows.h>
@@ -8,6 +9,11 @@
 /* --------------------------------------------------------
   windows magic
 -------------------------------------------------------- */
+/* This allows us to get the HModule, which we are going
+to need if we are launching windows. This has been an obstacle
+because we are inside a dll, rather than writing a standalone
+Windows app. */
+
 /* from https://www.codeguru.com/cpp/w-p/dll/tips/article.php/c3635/Tip-Detecting-a-HMODULEHINSTANCE-Handle-Within-the-Module-Youre-Running-In.htm */
 
 #if _MSC_VER >= 1300    // for VC 7.0
@@ -17,10 +23,6 @@
   #endif
 #endif
 
-/* This allows us to get the HModule, which we are going
-to need if we are launching windows. This has been an obstacle
-because we are inside a dll, rather than writing a standalone
-Windows app. */
 HMODULE get_current_module()
 {
 #if _MSC_VER < 1300    // earlier than .NET compiler (VC 6.0)
@@ -48,7 +50,7 @@ HMODULE get_current_module()
 #define MAX_COLS 230
 #define MAX_ROWS 70
 
-#define RING_BUFFER_SIZE 3
+#define RING_BUFFER_SIZE 10
 
 /* We do not put the nothing input type into the input ring-buffer, but we do
  * return 0 from the API when there is no new input to consider. Hence, it is
@@ -81,10 +83,21 @@ typedef struct Console_st {
 
     Row row[MAX_ROWS];
 
-    uint32_t ring[RING_BUFFER_SIZE];
+    uint64_t ring[RING_BUFFER_SIZE];
     int r_idx; // next read
     int w_idx; // next write
 } Console;
+
+typedef struct KsMetaStatus_st {
+    uint8_t shift : 1;
+    uint8_t ctrl : 1;
+} KsMetaStatus;
+
+typedef struct MsMetaStatus_st {
+    uint8_t mb0 : 1;
+    uint8_t mb1 : 1;
+    uint8_t mb2 : 1;
+} MsMetaStatus;
 
 
 /* --------------------------------------------------------
@@ -96,7 +109,44 @@ MSG messages; /* Here messages to the application are saved */
 
 HBRUSH HBRUSH_BLACK = CreateSolidBrush(0x00000000) ;
 
-uint32_t NO_EVENT = 0;
+uint64_t NO_EVENT = 0;
+
+uint8_t KS_BITFIELD_BYTE = 0;
+KsMetaStatus* KS_META_STATUS = (KsMetaStatus*) &KS_BITFIELD_BYTE;
+
+uint8_t MS_BITFIELD_BYTE = 0;
+MsMetaStatus* MS_META_STATUS = (MsMetaStatus*) &MS_BITFIELD_BYTE;
+
+
+/* --------------------------------------------------------
+  logging
+-------------------------------------------------------- */
+typedef void (*cc_log_t) (char*);
+
+cc_log_t CF_LOG = NULL;
+
+#define ARR_SIZE 50
+char ARR[ARR_SIZE];
+
+void log(char* msg) {
+    if (CF_LOG == NULL) {
+        return;
+    }
+    CF_LOG(msg);
+}
+
+void log(int i) {
+    snprintf(ARR, ARR_SIZE-1, "%d", i);
+    log(ARR);
+}
+
+void log(const char* msg) {
+    char* s;
+    s = (char*) malloc(strlen(msg)+1);
+    strcpy(s, msg);
+    log(s);
+    free(s);
+}
 
 
 /* --------------------------------------------------------
@@ -104,7 +154,7 @@ uint32_t NO_EVENT = 0;
 -------------------------------------------------------- */
 void buffer_kevent(uint8_t c) {
     int w_next;
-    uint32_t* event ;
+    uint64_t* event ;
     uint8_t* u8 ;
 
     // Work out what the next write point would be if we did
@@ -116,7 +166,6 @@ void buffer_kevent(uint8_t c) {
 
     // Cover the case that we have run out of buffer space.
     if (w_next == CONSOLE->r_idx) {
-        exit(1);
         return ;
     }
 
@@ -125,16 +174,17 @@ void buffer_kevent(uint8_t c) {
     // Rotate the write pointer ready for next time.
     CONSOLE->w_idx = w_next;
 
-    // Cram the kevent into our uint32_t
+    // Cram the kevent into our uint64_t
     //
     // byte 0: Input-type
     u8 = (uint8_t*) event;
     *u8 = INPUT_TYPE_KEVENT;
-    // byte 1: Keystroke-value
+    // byte 1: Bitfield indicating status of ctrl, shift, etc
+    u8++;
+    *u8 = KS_BITFIELD_BYTE;
+    // byte 2: Keystroke-value
     u8++;
     *u8 = c;
-    // byte 2: Unused by this event-type
-    u8++;
     // byte 3: Unused by this event-type
     u8++;
 }
@@ -269,11 +319,32 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
         return 0 ;
 
     case WM_KEYDOWN:
-        switch (wParam) {
+        ch = (TCHAR) wParam;
+        switch (ch) {
+        case 16: // shift
+            KS_META_STATUS->shift = 1;
+            break;
+        case 17: // ctrl
+            KS_META_STATUS->ctrl = 1;
+            break;
         default:
-            ch = (TCHAR) wParam;
             buffer_kevent(
                 (unsigned char) ch) ;
+        }
+        return 0 ;
+
+    case WM_KEYUP:
+        ch = (TCHAR) wParam;
+        switch (ch) {
+        case 16: // shift
+            KS_META_STATUS->shift = 0;
+            break;
+        case 17: // ctrl
+            KS_META_STATUS->ctrl = 0;
+            break;
+        default:
+            // Do nothing. This is WM_KEYUP.
+            break;
         }
         return 0 ;
 
@@ -291,10 +362,16 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 /* --------------------------------------------------------
   api
 -------------------------------------------------------- */
+extern "C" void set_cc_log(cc_log_t cc_log) {
+    CF_LOG = cc_log;
+}
+
 extern "C" void create_screen(int width, int height) {
     int i, j, res;
     Row* row;
     Cell* cell;
+
+    log("Creating screen");
 
     CONSOLE = (Console*) malloc(sizeof(Console));
 
@@ -312,12 +389,13 @@ extern "C" void create_screen(int width, int height) {
     CONSOLE->r_idx = 0;
     CONSOLE->w_idx = 0;
 
-    init_window();
+    init_window ();
 }
 
 #define WINDOW_EVENTS_PER_CALL 10
 
-/* Returns 0 when the process has closed. */
+/* You need to call this regularly so that Windows keeps processing events.
+ * This returns 0 when the process has closed. */
 extern "C" int process_windows_events() {
     int i, res;
 
@@ -346,7 +424,28 @@ extern "C" int process_windows_events() {
     return CONSOLE->keep_running;
 }
 
-extern "C" void get_next_event(uint32_t* event)
+/*
+ * This will put a uint64_t value into *event. Here is a rough
+ * guide to interpreting these four bytes,
+ *
+ * Byte 0, this will tell you whether or not there is activity,
+ * and the type of activity. See the INPUT_TYPE_* defines above. 
+ *
+ * Byte 1,
+ *  when INPUT_TYPE_NO_EVENT:       irrelevant
+ *  when INPUT_TYPE_KEVENT:         current value of KS_BITFIELD_BYTE
+ *  when INPUT_TYPE_MEVENT_BUTTON:  current value of MS_BITFIELD_BYTE
+ *
+ * Byte 2,
+ *  when INPUT_TYPE_NO_EVENT:       irrelevant
+ *  when INPUT_TYPE_KEVENT:         windows keystroke code
+ *  when INPUT_TYPE_MEVENT_BUTTON:  xxx tbd
+ *
+ * Byte 3-7,
+ *  xxx tbd
+ *
+ */
+extern "C" void get_next_event(uint64_t* event)
 {
     if (CONSOLE->r_idx == CONSOLE->w_idx) {
         *event = NO_EVENT;

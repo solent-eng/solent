@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent import e_keycode
+from solent import hexdump_bytes
 from solent import Engine
 from solent import log
 from solent import solent_ext
@@ -98,7 +100,7 @@ class CogToGridConsole:
     def on_init(self):
         zero_h = 'main/form_grid_console'
         form_grid_console = solent_ext(
-            ext='windows_form_grid_console',
+            ext='solent.ext.windows_form_grid_console',
             zero_h=zero_h,
             cb_grid_console_splat=self.cb_grid_console_splat,
             cb_grid_console_resize=self.cb_grid_console_resize,
@@ -123,7 +125,10 @@ class CogToGridConsole:
         zero_h = cs_grid_console_kevent.zero_h
         keycode = cs_grid_console_kevent.keycode
         #
-        log('received keycode |%s|'%(keycode))
+        log('received keycode |%s| {%s}'%(keycode, e_keycode(keycode)))
+        #
+        if keycode == e_keycode.Q:
+            raise SolentQuitException()
     def cb_grid_console_mevent(self, cs_grid_console_mevent):
         zero_h = cs_grid_console_mevent.zero_h
         #

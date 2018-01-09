@@ -12,6 +12,7 @@
 #solent.demo.snake
 #solent.draft.draft_rough_alarm
 #solent.draft.wrap_c_code
+#solent.draft.console_demo --pygame
 
 # --------------------------------------------------------
 #   script
