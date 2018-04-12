@@ -17,11 +17,11 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import Engine
+from solent import e_keycode
 from solent import init_network_logging
 from solent import log
 from solent import ns
 from solent import solent_cpair
-from solent import solent_keycode
 from solent import SolentQuitException
 from solent import uniq
 
@@ -344,9 +344,9 @@ class TrackPrimeMenuTitle:
     def on_prime_menu_title(self, text):
         self.text = text
 
-MENU_KEYCODE_NEW_GAME = solent_keycode('n')
-MENU_KEYCODE_CONTINUE = solent_keycode('c')
-MENU_KEYCODE_QUIT = solent_keycode('q')
+MENU_KEYCODE_NEW_GAME = e_keycode.n
+MENU_KEYCODE_CONTINUE = e_keycode.c
+MENU_KEYCODE_QUIT = e_keycode.q
 
 def t100():
     return time.time() * 100
@@ -383,14 +383,14 @@ class CogInterpreter:
         self.track_containment_mode = orb.track(TrackContainmentMode)
     def on_keystroke(self, keycode):
         if self.track_containment_mode.is_focus_on_menu():
-            if keycode == solent_keycode('tab'):
+            if keycode == e_keycode.tab:
                 self.b_in_menu = False
                 self.nearcast.game_focus()
             else:
                 self.nearcast.menu_select(
                     menu_keycode=keycode)
         else:
-            if keycode == solent_keycode('tab'):
+            if keycode == e_keycode.tab:
                 self.b_in_menu = True
                 self.nearcast.menu_focus()
             else:
@@ -427,6 +427,8 @@ class CogTerm:
     #
     def cb_selui_keycode(self, cs_selui_keycode):
         keycode = cs_selui_keycode.keycode
+        #
+        keycode = e_keycode(keycode)
         self.nearcast.keystroke(
             keycode=keycode)
     def cb_selui_lselect(self, cs_selui_lselect):
@@ -435,7 +437,7 @@ class CogTerm:
         c = cs_selui_lselect.c
         cpair = cs_selui_lselect.cpair
         #
-        # user makes a selection
+        pass
         log('xxx cb_selui_lselect drop %s rest %s c %s cpair %s'%(drop, rest, c, cpair))
 
 class CogToMenu:
@@ -544,16 +546,16 @@ class CogSnakeGame:
             cb_game_instructs_clear=self.cb_game_instructs_clear,
             cb_game_instructs_write=self.cb_game_instructs_write)
     def on_game_input(self, keycode):
-        if keycode == solent_keycode('a'):
+        if keycode == e_keycode.a:
             self.rail_snake_game.steer(
                 cardinal='w')
-        elif keycode == solent_keycode('w'):
+        elif keycode == e_keycode.w:
             self.rail_snake_game.steer(
                 cardinal='n')
-        elif keycode == solent_keycode('d'):
+        elif keycode == e_keycode.d:
             self.rail_snake_game.steer(
                 cardinal='e')
-        elif keycode in (solent_keycode('x'), solent_keycode('s')):
+        elif keycode in (e_keycode.x, e_keycode.s):
             self.rail_snake_game.steer(
                 cardinal='s')
     def on_game_focus(self):

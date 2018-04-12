@@ -67,8 +67,9 @@ def create_windows_build_script(wsrc_path, wres_path):
 
         cd $wsrc_path
 
+        mingw32-g++ -c -DBUILDING_DLL winplace.c -o obj\winplace.o
         mingw32-g++ -c -DBUILDING_DLL api.c -o obj\api.o
-        mingw32-g++ -shared -o $wres_path/api.dll obj\api.o -lgdi32 -luser32 -lkernel32 -lcomctl32 -lwinmm -mwindows -Wl,--out-implib,$wres_path/libapi_dll.a
+        mingw32-g++ -shared -o $wres_path/api.dll obj\winplace.o obj\api.o -lgdi32 -luser32 -lkernel32 -lcomctl32 -lwinmm -mwindows -Wl,--out-implib,$wres_path/libapi_dll.a
     ''').safe_substitute(
         wsrc_path=wsrc_path,
         wres_path=wres_path)

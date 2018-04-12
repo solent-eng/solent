@@ -23,7 +23,6 @@ class FormGridConsole:
         self.impl = impl
         #
         self.cs_grid_console_splat = ns()
-        self.cs_grid_console_resize = ns()
         self.cs_grid_console_kevent = ns()
         self.cs_grid_console_mevent = ns()
         self.cs_grid_console_closed = ns()
@@ -32,12 +31,6 @@ class FormGridConsole:
         self.cs_grid_console_splat.msg = msg
         self.impl.cb_grid_console_splat(
             cs_grid_console_splat=self.cs_grid_console_splat)
-    def call_grid_console_resize(self, zero_h, width, height):
-        self.cs_grid_console_resize.zero_h = zero_h
-        self.cs_grid_console_resize.width = width
-        self.cs_grid_console_resize.height = height
-        self.impl.cb_grid_console_resize(
-            cs_grid_console_resize=self.cs_grid_console_resize)
     def call_grid_console_kevent(self, zero_h, keycode):
         # Key event. Keycode needs to reflect the values used by
         # solent_keycode.
@@ -61,11 +54,13 @@ class FormGridConsole:
         self.impl.cb_grid_console_closed(
             cs_grid_console_closed=self.cs_grid_console_closed)
     #
-    def set(self, cgrid):
-        return self.impl.set(
+    def send(self, cgrid):
+        """
+        Ensure the contents of the supplied cgrid are shown on
+        the grid.
+        """
+        return self.impl.send(
             cgrid=cgrid)
-    def redraw(self):
-        return self.impl.screen_update()
     def close(self):
         return self.impl.close()
 

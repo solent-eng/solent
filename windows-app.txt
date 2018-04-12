@@ -21,6 +21,8 @@
 # Put the stuff to run under here.
 #
 wsrc.build_all
-solent.draft.ext_windows_form_grid_console
+#solent.draft.ext_windows_form_grid_console
+solent.draft.winsnake
+#solent.demo.snake
 
 

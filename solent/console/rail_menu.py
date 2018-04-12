@@ -57,15 +57,18 @@ class RailMenu:
         self.d_menu = od()
     #
     def has_menu_keycode(self, menu_keycode):
-        return menu_keycode in self.d_menu
+        c = menu_keycode.name
+        return c in self.d_menu
     def add_menu_item(self, menu_keycode, text):
-        if menu_keycode in self.d_menu:
-            raise Exception('menu_keycode %s is already in menu')
-        self.d_menu[menu_keycode] = text
+        c = menu_keycode.name
+        if c in self.d_menu:
+            raise Exception('Menu character [%s] is already in menu'%(c))
+        self.d_menu[c] = text
     def select(self, menu_keycode):
-        if menu_keycode not in self.d_menu:
+        c = menu_keycode.name
+        if c not in self.d_menu:
             return
-        text = self.d_menu[menu_keycode]
+        text = self.d_menu[c]
         self.call_menu_selection(
             rail_h=self.rail_h,
             keycode=menu_keycode,
@@ -78,9 +81,10 @@ class RailMenu:
             drop=0,
             rest=0,
             s=self.title)
-        for idx, (menu_keycode, text) in enumerate(self.d_menu.items()):
+        for idx, (c, text) in enumerate(self.d_menu.items()):
             self.call_menu_asks_display_to_write(
                 rail_h=self.rail_h,
                 drop=idx+2,
                 rest=0,
-                s="[%s] %s"%(chr(menu_keycode), text))
+                s="[%s] %s"%(c, text))
+

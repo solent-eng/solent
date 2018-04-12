@@ -22,6 +22,7 @@
 
 import os
 import subprocess
+import sys
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -49,23 +50,26 @@ def run(launch_args):
         cwd=BASE_DIR)
     p.wait()
 
+def cycle():
+    path_launch = os.path.join(BASE_DIR, 'windows-app.txt')
+    python_mod = [line
+        for line
+        in read_file(path_launch).split('\n')
+        if len(line.strip()) > 0
+        and not line.strip().startswith('#')]
+    if not python_mod:
+        raise Exception("No module enabled in %s"%(path_launch))
+    #
+    for line in python_mod:
+        launch_args = line.split(' ')
+        print('')
+        print(':: %s'%launch_args)
+        run(launch_args)
+        pause()
+
 def main():
     while True:
-        path_launch = os.path.join(BASE_DIR, 'windows-app.txt')
-        python_mod = [line
-            for line
-            in read_file(path_launch).split('\n')
-            if len(line.strip()) > 0
-            and not line.strip().startswith('#')]
-        if not python_mod:
-            raise Exception("No module enabled in %s"%(path_launch))
-        #
-        for line in python_mod:
-            launch_args = line.split(' ')
-            print('')
-            print(':: %s'%launch_args)
-            run(launch_args)
-            pause()
+        cycle()
 
 if __name__ == '__main__':
     main()

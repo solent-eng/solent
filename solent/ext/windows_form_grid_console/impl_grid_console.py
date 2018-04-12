@@ -7,6 +7,7 @@ from solent import log
 from solent import ns
 from solent import SolentQuitException
 from solent import e_keycode
+from solent.console import Cgrid
 
 from ctypes import c_char_p
 from ctypes import c_int
@@ -16,7 +17,12 @@ from ctypes import pointer
 import ctypes
 import struct
 
-c_uint64_p = ctypes.POINTER(ctypes.c_uint64)
+c_uint8 = ctypes.c_uint8
+c_uint32 = ctypes.c_uint32
+c_uint64 = ctypes.c_uint64
+
+c_uint32_p = ctypes.POINTER(c_uint32)
+c_uint64_p = ctypes.POINTER(c_uint64)
 
 class SpinWindowsEvents:
     def __init__(self, spin_h, engine, cb_windows_event_quit, cb_windows_event_kevent, api):
@@ -40,7 +46,7 @@ class SpinWindowsEvents:
         self.cb_windows_event_kevent(
             cs_windows_event_kevent=self.cs_windows_event_kevent)
     def eng_turn(self, activity):
-        log('turn')
+        #log('turn') # xxx
         #
         b_keep_running = self.api.process_windows_events()
         if not b_keep_running:
@@ -193,15 +199,14 @@ class ImplGridConsole:
         self.api.get_next_event = init_ext_fn(
             None, clib.get_next_event, [c_uint64_p])
         self.api.set = init_ext_fn(
-            None, clib.set, [])
+            None, clib.set, [c_int, c_int, c_int, c_int])
         self.api.redraw = init_ext_fn(
             None, clib.redraw, [])
         self.api.close = init_ext_fn(
             None, clib.close, [])
-    def zero(self, zero_h, cb_grid_console_splat, cb_grid_console_resize, cb_grid_console_kevent, cb_grid_console_mevent, cb_grid_console_closed, engine, width, height):
+    def zero(self, zero_h, cb_grid_console_splat, cb_grid_console_kevent, cb_grid_console_mevent, cb_grid_console_closed, engine, width, height):
         self.zero_h = zero_h
         self.cb_grid_console_splat = cb_grid_console_splat
-        self.cb_grid_console_resize = cb_grid_console_resize
         self.cb_grid_console_kevent = cb_grid_console_kevent
         self.cb_grid_console_mevent = cb_grid_console_mevent
         self.cb_grid_console_closed = cb_grid_console_closed
@@ -209,14 +214,25 @@ class ImplGridConsole:
         self.width = width
         self.height = height
         #
+        if self.width > 200 or self.height > 100:
+            # Note that width and height are by character, not by screen
+            # dimension.
+            log("Warning. Have seen crashes as screen dimensions become vast.")
+            log('width %s %s'%(self.width, type(self.width)))
+            log('height %s %s'%(self.height, type(self.height)))
+        #
+        self.cgrid = Cgrid(
+            width=width,
+            height=height)
+        #
         # Emphasis: do not use named parameters for this, or the variable
         # holding the logger will get garbage-collected. You must directly
         # refer to cc_log.
+        # xxx rename api to c_api
         self.api.set_cc_log(cc_log)
         #
-        self.api.create_screen(
-            width=self.width,
-            height=self.height)
+        log('impl_grid_console w:%s h:%s'%(self.width, self.height))
+        self.api.create_screen(self.width, self.height)
         self.api.process_windows_events()
         #
         self.spin_windows_events = self.engine.init_spin(
@@ -240,13 +256,31 @@ class ImplGridConsole:
             zero_h=self.zero_h,
             keycode=keycode)
     #
-    def set(self, cgrid):
-        log('get_grid_display')
-        raise Exception('nyi')
-        #return self.api.set
-    def redraw(self):
-        log('screen_update')
-        return self.api.redraw()
+    def send(self, cgrid):
+        cur_dim = (self.cgrid.width, self.cgrid.height)
+        new_dim = (cgrid.width, cgrid.height)
+        if cur_dim != new_dim:
+            self.cgrid.set_dimensions(
+                width=cgrid.width,
+                height=cgrid.height)
+        updates = []
+        o_spots = self.cgrid.spots
+        n_spots = cgrid.spots
+        for cgrid_idx, (o_spot, n_spot) in enumerate(zip(o_spots, n_spots)):
+            if not o_spot.compare(n_spot):
+                updates.append(cgrid_idx)
+                o_spot.mimic(n_spot)
+        log('send')
+        for cgrid_idx in updates:
+            spot = self.cgrid.spots[cgrid_idx]
+            #
+            drop = int(cgrid_idx/self.cgrid.width)
+            rest = int(cgrid_idx%self.cgrid.width)
+            c = ord(spot.c)
+            o = 0 # xxx
+            log('update %s %s %s %s'%(drop, rest, c, o))
+            self.api.set(drop, rest, c, o)
+        self.api.redraw()
     def close(self):
         log('close')
         return self.api.close()

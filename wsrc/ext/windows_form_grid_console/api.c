@@ -5,6 +5,8 @@
 #include <tchar.h>
 #include <Windows.h>
 
+#include "winplace.h"
+
 
 /* --------------------------------------------------------
   windows magic
@@ -83,6 +85,7 @@ typedef struct Console_st {
 
     Row row[MAX_ROWS];
 
+    // ring buffer for input
     uint64_t ring[RING_BUFFER_SIZE];
     int r_idx; // next read
     int w_idx; // next write
@@ -117,6 +120,13 @@ KsMetaStatus* KS_META_STATUS = (KsMetaStatus*) &KS_BITFIELD_BYTE;
 uint8_t MS_BITFIELD_BYTE = 0;
 MsMetaStatus* MS_META_STATUS = (MsMetaStatus*) &MS_BITFIELD_BYTE;
 
+int ROW_COUNT = 4;
+int COL_COUNT = 10;
+int N_DROP;
+int N_REST;
+Row* ROW;
+Cell* CELL;
+
 
 /* --------------------------------------------------------
   logging
@@ -125,8 +135,7 @@ typedef void (*cc_log_t) (char*);
 
 cc_log_t CF_LOG = NULL;
 
-#define ARR_SIZE 50
-char ARR[ARR_SIZE];
+static char WORKING_S[400];
 
 void log(char* msg) {
     if (CF_LOG == NULL) {
@@ -135,8 +144,10 @@ void log(char* msg) {
     CF_LOG(msg);
 }
 
+#define LOG_I_ARR_SIZE 50
 void log(int i) {
-    snprintf(ARR, ARR_SIZE-1, "%d", i);
+    static char ARR[LOG_I_ARR_SIZE];
+    snprintf(ARR, LOG_I_ARR_SIZE-1, "%d", i);
     log(ARR);
 }
 
@@ -199,12 +210,16 @@ LRESULT CALLBACK WindowProcedure (HWND, UINT, WPARAM, LPARAM);
 /*  Make the class name into a global variable  */
 TCHAR szClassName[ ] = _T("windows_form_grid_console");
 
+HWND OUR_HWND;
+
 int init_window() {
     HWND hWnd; /* This is the handle for our window */
     HMODULE hModule;
     HINSTANCE hInstance;
     int nCmdShow;
     WNDCLASSEX wincl;        /* Data structure for the windowclass */
+    int height_in_pixels;
+    int width_in_pixels;
 
     hModule = get_current_module();
     hInstance = GetModuleHandle(NULL);
@@ -225,25 +240,48 @@ int init_window() {
     /* Use Windows's default colour as the background of the window */
     //wincl.hbrBackground = (HBRUSH) COLOR_BACKGROUND;
     wincl.hbrBackground = HBRUSH_BLACK ;
+
+    // xxx adapt path to relpath
+    HICON hIcon = (HICON) LoadImage(
+        0,
+        (char*) "C:\\saga\\007.solent\\solent\\wres\\ext\\windows_form_grid_console\\sail_SFT_icon.ico",
+        IMAGE_ICON,
+        48,
+        48,
+        LR_LOADFROMFILE | LR_DEFAULTSIZE | LR_DEFAULTCOLOR);
+    if (NULL == hIcon) {
+        printf("Icon is null\n"); // xxx
+    }
+    else {
+        printf("Setting icon\n"); // xxx
+        wincl.hIcon = hIcon;
+        wincl.hIconSm = hIcon;
+    }
+
     /* Register the window class, and if it fails quit the program */
     if (!RegisterClassEx (&wincl)) {
         return -1;
     }
     
+    // xxx set program width and height dynamically.
+    height_in_pixels = winplace_determine_screen_pixel_drop(ROW_COUNT);
+    width_in_pixels = winplace_determine_screen_pixel_rest(COL_COUNT);
     hWnd = CreateWindowEx (
-           0,                   /* Extended possibilites for variation */
-           szClassName,         /* Classname */
-           _T("Title Text"),    /* Title Text */
-           WS_OVERLAPPEDWINDOW, /* default window */
-           CW_USEDEFAULT,       /* Windows decides the position */
-           CW_USEDEFAULT,       /* where the window ends up on the screen */
-           544,                 /* The programs width */
-           375,                 /* and height in pixels */
-           HWND_DESKTOP,        /* The window is a child-window to desktop */
-           NULL,                /* No menu */
-           hInstance,           /* Program Instance handler */
-           NULL                 /* No Window Creation data */
+           0,                   // dwExStyle, Extended possibilites for variation
+           szClassName,         // lpClassName
+           _T("Title Text"),    // lpWindowName, Title Text
+           WS_OVERLAPPEDWINDOW, // dwStyle, default window
+           CW_USEDEFAULT,       // x, Windows decides the position
+           CW_USEDEFAULT,       // y, where the window ends up on the screen
+           width_in_pixels,     // nWidth, in pixels
+           height_in_pixels,    // nHeight, in pixels
+           HWND_DESKTOP,        // The window is a child-window to desktop
+           NULL,                // No menu
+           hInstance,           // Program Instance handler
+           NULL                 // No Window Creation data
            );
+
+    OUR_HWND = hWnd;
 
     nCmdShow = SW_SHOW;
     ShowWindow(hWnd, nCmdShow);
@@ -251,17 +289,53 @@ int init_window() {
     return 0;
 }
 
+void repaint_window()
+{
+    HDC hdc;
+    PAINTSTRUCT ps;
+
+    printf("repaint_window()\n");
+
+    hdc = BeginPaint(OUR_HWND, &ps);
+    winplace_paint_begin(hdc);
+    {
+        unsigned char c;
+        int i, level;
+
+        for (N_DROP=0; N_DROP<ROW_COUNT; N_DROP++) {
+            ROW = &(CONSOLE->row[N_DROP]);
+            for (N_REST=0; N_REST<COL_COUNT; N_REST++) {
+                CELL = &(ROW->col[N_REST]);
+                c = CELL->c;
+                //printf("c %3d %3d|%c|\n", N_DROP, N_REST, c); // xxx
+                winplace_paint_c(
+                    hdc,
+                    N_DROP,
+                    N_REST,
+                    c,
+                    64,
+                    128,
+                    192);
+            }
+        }
+    }
+    DeleteDC(hdc);
+    winplace_paint_end();
+    EndPaint(OUR_HWND, &ps);
+}
+
 /* This function is called by the Windows function DispatchMessage()  */
 LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static int  cx_char, cx_caps, char_width, col_count, row_count ;
+    static int  cx_char, cx_caps, char_width;
     static HFONT hFont;
     
     HDC         hdc;
-    int         i, col, row ;
+    int         i;
     PAINTSTRUCT ps ;
     TCHAR       szBuffer [10] ;
     TCHAR       ch ;
+    TCHAR*      tchar ;
     TEXTMETRIC  tm ;
     LPCTSTR     lpString ;
 
@@ -288,10 +362,6 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
             TEXT("Courier New"));   // lpszFace
         SelectObject(hdc, hFont);
 
-        // xxx
-        col_count = 10;
-        row_count = 4;
-
         GetTextMetrics (hdc, &tm) ;
         cx_char = tm.tmAveCharWidth ;
         cx_caps = (tm.tmPitchAndFamily & 1 ? 3 : 2) * cx_char / 2 ;
@@ -301,21 +371,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
         return 0 ;
 
     case WM_PAINT:
-        hdc = BeginPaint (hwnd, &ps) ;
-
-        // Text will be drawn with a black background
-        SetBkColor(hdc, RGB(0, 0, 0)) ;
-        // Set font
-        SelectObject(hdc, hFont);
-
-        SetTextColor(hdc, RGB(255, 25, 2)) ;
-        lpString = _T("@ Here is some text") ;
-        for (row = 0; row < row_count ; row++) {
-            TextOut (hdc, 0, char_width * row,
-                     lpString, lstrlen(lpString)) ;
-        }
-
-        EndPaint(hwnd, &ps) ;
+        repaint_window();
         return 0 ;
 
     case WM_KEYDOWN:
@@ -353,7 +409,7 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
         PostQuitMessage(0) ;
         return 0 ;
 
-    default:                      /* for messages that we don't deal with */
+    default: /* for messages that we don't deal with */
         return DefWindowProc (hwnd, message, wParam, lParam);
     }
 }
@@ -366,30 +422,46 @@ extern "C" void set_cc_log(cc_log_t cc_log) {
     CF_LOG = cc_log;
 }
 
-extern "C" void create_screen(int width, int height) {
-    int i, j, res;
-    Row* row;
-    Cell* cell;
+extern "C" void create_screen(int char_cols, int char_rows) {
+    sprintf(WORKING_S, "create_screen %d %d", char_cols, char_rows);
+    log(WORKING_S);
 
-    log("Creating screen");
+    if (char_rows > MAX_ROWS) {
+        log("Error! Width exceeds MAX_COLS");
+        return;
+    }
+    if (char_cols > MAX_COLS) {
+        log("Error! Width exceeds MAX_COLS");
+        return;
+    }
+
+    ROW_COUNT = char_rows;
+    COL_COUNT = char_cols;
+
+    // xxx need to find a better way to do this
+    const char* path_codepath =
+        "c:\\saga\\017.bitmap.display\\img\\Codepage-850.mono.bmp";
+    winplace_init((char*) path_codepath);
 
     CONSOLE = (Console*) malloc(sizeof(Console));
 
     CONSOLE->keep_running = 1;
 
-    for (i=0; i<MAX_ROWS; i++) {
-        row = &(CONSOLE->row[i]);
-        for (j=0; j<MAX_COLS; j++) {
-            cell = &(row->col[j]);
-            cell->c = ' ';
-            cell->o = 0;
+    // hammer the cells to be empty
+    for (N_DROP=0; N_DROP<ROW_COUNT; N_DROP++) {
+        ROW = &(CONSOLE->row[N_DROP]);
+        for (N_REST=0; N_REST<COL_COUNT; N_REST++) {
+            CELL = &(ROW->col[N_REST]);
+            CELL->c = ' ';
+            CELL->o = 0;
         }
     }
+    CONSOLE->row[N_DROP-1].col[N_REST-1].c = '+';
 
     CONSOLE->r_idx = 0;
     CONSOLE->w_idx = 0;
 
-    init_window ();
+    init_window();
 }
 
 #define WINDOW_EVENTS_PER_CALL 10
@@ -464,6 +536,9 @@ extern "C" void set(int drop, int rest, int c, int o)
 {
     Row* row;
     Cell* cell;
+
+    sprintf(WORKING_S, "set %d %d %d %d\n", drop, rest, c, o);
+    log(WORKING_S);
     
     row = &(CONSOLE->row[drop]);
     cell = &(row->col[rest]);
@@ -473,6 +548,9 @@ extern "C" void set(int drop, int rest, int c, int o)
 
 extern "C" void redraw()
 {
+    printf("** redraw()\n"); // xxx
+    RedrawWindow(OUR_HWND, NULL, NULL, RDW_INVALIDATE);
+    repaint_window();
 }
 
 extern "C" void close()

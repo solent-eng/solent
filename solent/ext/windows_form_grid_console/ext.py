@@ -20,14 +20,11 @@ from .impl_grid_console import ImplGridConsole
 
 from solent import log
 
-def init_ext(zero_h, cb_grid_console_splat, cb_grid_console_resize, cb_grid_console_kevent, cb_grid_console_mevent, cb_grid_console_closed, engine, width, height):
-    log('init_ext')
-    #
+def init_ext(zero_h, cb_grid_console_splat, cb_grid_console_kevent, cb_grid_console_mevent, cb_grid_console_closed, engine, width, height):
     impl_grid_console = ImplGridConsole()
     impl_grid_console.zero(
         zero_h=zero_h,
         cb_grid_console_splat=cb_grid_console_splat,
-        cb_grid_console_resize=cb_grid_console_resize,
         cb_grid_console_kevent=cb_grid_console_kevent,
         cb_grid_console_mevent=cb_grid_console_mevent,
         cb_grid_console_closed=cb_grid_console_closed,
@@ -35,5 +32,6 @@ def init_ext(zero_h, cb_grid_console_splat, cb_grid_console_resize, cb_grid_cons
         width=width,
         height=height)
     #
-    return impl_grid_console.form
+    form_grid_console = impl_grid_console.form
+    return form_grid_console
 
