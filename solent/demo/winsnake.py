@@ -650,13 +650,21 @@ def init_nearcast(engine, game_name):
 # --------------------------------------------------------
 #   bootstrap
 # --------------------------------------------------------
-PLATFORM_SYSTEM = platform.system()
-
-GAME_NAME = 'snake'
+GAME_NAME = 'winsnake'
 
 MTU = 1500
 
 def main():
+    p = sys.platform
+    #
+    if p not in ('msys', 'win32', 'win64'):
+        m = ' '.join(
+            [ "ERROR: winsnake only works on windows."
+            , "Try solent.demo.snake for other platforms."
+            , "(sys.platform: |%s|)"%(p)])
+        print(m)
+        sys.exit(1)
+    #
     engine = Engine(
         mtu=MTU)
     engine.default_timeout = 0.01

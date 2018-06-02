@@ -616,8 +616,6 @@ def init_nearcast(engine, console_type):
 # --------------------------------------------------------
 #   bootstrap
 # --------------------------------------------------------
-PLATFORM_SYSTEM = platform.system()
-
 GAME_NAME = 'snake'
 
 MTU = 1500
@@ -626,18 +624,14 @@ def main():
     console_type = 'curses'
     if '--pygame' in sys.argv:
         console_type = 'pygame'
-    if PLATFORM_SYSTEM == 'Windows':
-        console_type = 'pygame'
-    #
-    # Snake is a good go-to program for testing. Hence, I like to leave this
-    # in, commented out.
-    '''
-    init_network_logging(
-        mtu=MTU,
-        addr='127.255.255.255',
-        port=7789,
-        label='snake')
-    '''
+    elif sys.platform in ('msys', 'win32', 'win64'):
+        b_ok = True
+        try:
+            import pygame
+            console_type = 'pygame'
+        except:
+            print("[!] On Windows, snake needs pygame. (But, try winsnake!).")
+            sys.exit(1)
     #
     engine = Engine(
         mtu=MTU)
