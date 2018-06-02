@@ -11,7 +11,7 @@ The goal here is to create a flexible systems-programming platform.
 
 # Platform Goal
 
-Become the leading foundation for concurrent systems development.
+Become the leading foundation for the development of concurrent systems.
 
 
 # Qualities
@@ -33,16 +33,17 @@ anything else (e.g. Android, Haiku).
 Zero-dependency. This library should be useful as a go-to tool even in tight
 situations.
 
-## Comment
+## Expand
 
 Performance. We will need to be able to create engines that support kqueue,
 epoll and IO completion ports.
 
 Zero-dependency. Some features that stand out,
 
-* We need a standard terminal which supports ncurses (done) and a Windows native console. (in progress)
+- We need a standard terminal which supports ncurses (done) and a Windows
+  native console. (in progress)
 
-* A lowest-common-denominator network engine uses select(2). (done)
+- A lowest-common-denominator network engine uses select(2). (done)
 
 License: The core is LGPL. This is a "free-software" license. It encourages
 the community to feed solent improvements back into our codebase. It gives the
@@ -55,8 +56,42 @@ Performance, zero-dependency: implement a solent compiler frontend to LLVM.
 Move off python. In the meantime, reduce dependence on garbage collection or
 rich python features.
 
+## Principle of "Bolts on the outside"
 
-## Learning about solent
+We construct systems so that user-developers can methodically reason about
+what is going on.
+
+Code should be readable, but if the design is good, it should be possible to
+speculate about the behaviour of subsystems without source diving. Solent
+evolves this way, and its design steers user-developers to build enclosing
+systems that way too.
+
+We follow a guiding principle is "bolts on the outside".
+
+Sometimes this will lead us to do unconventional things.
+
+Example: The user will frequenly find themselves reasoning about the order of
+events in the central event loop. Users with a background in green-threads may
+find this laborious. But green-threads systems are prone to this situation:
+your app was running fine. There have been some minor changes over the last
+few months. At some point, nobody is quite sure when, it started to show
+strange behaviour, intermittently. It is difficult to know when this is
+happening, when the strage behaviour started, and whether it is a result of
+code changes or increased system activity. You do not understand the magic
+that is powering your green-threads event-loop. You have no idea how you
+should even start an investigation into this problem.
+
+Example: Our use of handles is unconventional (e.g. `zero_h`). This will jar
+with some newcomers. These handles communicate your intent, and are incredibly
+useful for later troubleshooting. Bolts on the outside.
+
+We attach a high priority to ability-to-reason.
+
+This principle should not be used to justify bad abstraction. Bad abstraction
+makes systems hard to reason about. Hence, bad abstraction fails the core
+intent behind this principle.
+
+# Learning about solent
 
 You can see examples of solent in use in solent.demo, solent.tools and
 scenarios.
@@ -90,7 +125,7 @@ https://www.youtube.com/watch?v=b1e4t2k2KJY
 
 These ideas have not yet gained widespread use. The author believes that
 something like solent will prove to be 'The Railroad of the Digital
-Revolution'.
+Revolution'. (xxx locate inspiring paper and link to it)
 
 
 "What is 'sequencer architecture' all about?"

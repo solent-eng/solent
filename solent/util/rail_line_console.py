@@ -143,7 +143,15 @@ class RailLineConsole:
         accept_sid = cs_tcp_accept_recv.accept_sid
         bb = cs_tcp_accept_recv.bb
         #
-        s = bb.decode('utf8')
+        try:
+            s = bb.decode('utf8')
+        except UnicodeDecodeError as e:
+            hexdump(bb)
+            log('ERROR: unicode decode error. |%s|'%(accept_sid))
+            engine.close_tcp_accept(
+                accept_sid=accept_sid)
+            return
+        #
         for c in s:
             if c == '\n':
                 line = ''.join(self.c_buffer)

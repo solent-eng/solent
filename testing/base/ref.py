@@ -1,6 +1,3 @@
-#
-# ref_store
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #

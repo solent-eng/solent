@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <sys/ioctl.h>
+// #include <sys/ioctl.h>
 
 static const int ARR_SIZE = 100;
 
-char* hello(char * what)
+extern "C" char* hello(char * what)
 {
     int offset = 0;
     int len = 0;
@@ -35,4 +35,5 @@ char* hello(char * what)
 
     return mem;
 }
+
 

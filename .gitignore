@@ -9,6 +9,11 @@
 # libsoundio. Put it in artifact.
 wres/[a-z]*
 poke
+api.dll
+api.so
+libapi_dll.a
+obj
+*.o
 
 
 # --------------------------------------------------------

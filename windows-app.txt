@@ -1,0 +1,28 @@
+#
+# This is used by windows-app.py to determine the python-module-path that it should launch.
+#
+
+# --------------------------------------------------------
+#   library
+# --------------------------------------------------------
+#
+# Leave these commented out, and in alphabetical order.
+#
+#run_tests
+#solent.demo.snake
+#solent.draft.draft_rough_alarm
+#solent.draft.wrap_c_code
+#solent.draft.console_demo --pygame
+
+# --------------------------------------------------------
+#   script
+# --------------------------------------------------------
+#
+# Put the stuff to run under here.
+#
+wsrc.build_all
+#solent.draft.ext_windows_form_grid_console
+solent.demo.winsnake
+#solent.demo.snake
+
+

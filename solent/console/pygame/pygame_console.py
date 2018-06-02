@@ -1,9 +1,3 @@
-#
-# window_console
-#
-# // overview
-# Pygame wrapper. Provides devices for keystroke and rogue display
-#
 # // license
 # Copyright 2016, Free Software Foundation.
 #
@@ -21,6 +15,9 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
+#
+# // overview
+# Pygame wrapper. Provides devices for keystroke and rogue display
 
 from solent import dget_static
 from solent import log

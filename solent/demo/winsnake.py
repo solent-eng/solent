@@ -17,15 +17,17 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import Engine
-from solent import e_keycode
 from solent import init_network_logging
 from solent import log
 from solent import ns
 from solent import solent_cpair
+from solent import solent_ext
+from solent import e_keycode
 from solent import SolentQuitException
 from solent import uniq
 
 from solent.console import RailMenu
+from solent.console import Cgrid
 from solent.util import SpinSelectionUi
 
 from collections import deque
@@ -178,26 +180,32 @@ class RailSnakeGame:
     def __init__(self):
         self.cs_game_instructs_clear = ns()
         self.cs_game_instructs_write = ns()
+        self.cs_game_tick_over = ns()
         #
         self.b_running = False
-    def call_game_instructs_clear(self, rail_h):
-        self.cs_game_instructs_clear.rail_h = rail_h
+    def call_game_instructs_clear(self, zero_h):
+        self.cs_game_instructs_clear.zero_h = zero_h
         self.cb_game_instructs_clear(
             cs_game_instructs_clear=self.cs_game_instructs_clear)
-    def call_game_instructs_write(self, rail_h, drop, rest, s, cpair):
-        self.cs_game_instructs_write.rail_h = rail_h
+    def call_game_instructs_write(self, zero_h, drop, rest, s, cpair):
+        self.cs_game_instructs_write.zero_h = zero_h
         self.cs_game_instructs_write.drop = drop
         self.cs_game_instructs_write.rest = rest
         self.cs_game_instructs_write.s = s
         self.cs_game_instructs_write.cpair = cpair
         self.cb_game_instructs_write(
             cs_game_instructs_write=self.cs_game_instructs_write)
-    def zero(self, rail_h, height, width, cb_game_instructs_clear, cb_game_instructs_write):
-        self.rail_h = rail_h
+    def call_game_tick_over(self, zero_h):
+        self.cs_game_tick_over.zero_h = zero_h
+        self.cb_game_tick_over(
+            cs_game_tick_over=self.cs_game_tick_over)
+    def zero(self, zero_h, height, width, cb_game_instructs_clear, cb_game_instructs_write, cb_game_tick_over):
+        self.zero_h = zero_h
         self.height = height
         self.width = width
         self.cb_game_instructs_clear = cb_game_instructs_clear
         self.cb_game_instructs_write = cb_game_instructs_write
+        self.cb_game_tick_over = cb_game_tick_over
         #
         self.b_running = True
         #
@@ -227,6 +235,9 @@ class RailSnakeGame:
             self.board.tick_n()
         #
         self.render()
+        #
+        self.call_game_tick_over(
+            zero_h=self.zero_h)
     def steer(self, cardinal):
         if len(cardinal) != 1 or cardinal not in 'nsew':
             raise Exception('invalid cardinal %s'%(cardinal))
@@ -248,11 +259,11 @@ class RailSnakeGame:
         self.steer_orders.append(cardinal)
     def render(self):
         self.call_game_instructs_clear(
-            rail_h=self.rail_h)
+            zero_h=self.zero_h)
         for spot in self.board.wall_spots:
             (drop, rest) = spot
             self.call_game_instructs_write(
-                rail_h=self.rail_h,
+                zero_h=self.zero_h,
                 drop=drop,
                 rest=rest,
                 s='.',
@@ -260,7 +271,7 @@ class RailSnakeGame:
         for spot in self.board.egg_spots:
             (drop, rest) = spot
             self.call_game_instructs_write(
-                rail_h=self.rail_h,
+                zero_h=self.zero_h,
                 drop=drop,
                 rest=rest,
                 s='O',
@@ -274,14 +285,14 @@ class RailSnakeGame:
         for spot in self.board.snake_spots:
             (drop, rest) = spot
             self.call_game_instructs_write(
-                rail_h=self.rail_h,
+                zero_h=self.zero_h,
                 drop=drop,
                 rest=rest,
                 s='O',
                 cpair=cpair)
         # replace the head with a new character
         self.call_game_instructs_write(
-            rail_h=self.rail_h,
+            zero_h=self.zero_h,
             drop=drop,
             rest=rest,
             s='X',
@@ -303,7 +314,6 @@ I_NEARCAST = '''
     schema nc.snake
 
     message prime_console
-        field console_type
         field height
         field width
     message prime_menu_title
@@ -319,11 +329,12 @@ I_NEARCAST = '''
         field keycode
 
     message term_clear
-    message term_write
+    message term_put
         field drop
         field rest
         field s
         field cpair
+    message term_render
 
     message menu_focus
     message menu_select
@@ -333,8 +344,7 @@ I_NEARCAST = '''
 class TrackPrimeConsole:
     def __init__(self, orb):
         self.orb = orb
-    def on_prime_console(self, console_type, height, width):
-        self.console_type = console_type
+    def on_prime_console(self, height, width):
         self.height = height
         self.width = width
 
@@ -397,7 +407,7 @@ class CogInterpreter:
                 self.nearcast.game_input(
                     keycode=keycode)
 
-class CogTerm:
+class CogToFormGrid:
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
@@ -405,40 +415,59 @@ class CogTerm:
         #
         self.track_prime_console = orb.track(TrackPrimeConsole)
         #
-        self.spin_term = None
+        self.form_grid_console = None
+        self.cgrid = None
     #
     def on_init(self):
-        self.spin_term = self.engine.init_spin(
-            construct=SpinSelectionUi,
-            console_type=self.track_prime_console.console_type,
-            cb_selui_keycode=self.cb_selui_keycode,
-            cb_selui_lselect=self.cb_selui_lselect)
-        self.spin_term.open_console(
+        self.cgrid = Cgrid(
+            width=self.track_prime_console.width,
+            height=self.track_prime_console.height)
+        #
+        zero_h = '%s/form_grid_console'%(self.cog_h)
+        self.form_grid_console = solent_ext(
+            ext='solent.ext.windows_form_grid_console',
+            zero_h=zero_h,
+            cb_grid_console_splat=self.cb_grid_console_splat,
+            cb_grid_console_kevent=self.cb_grid_console_kevent,
+            cb_grid_console_mevent=self.cb_grid_console_mevent,
+            cb_grid_console_closed=self.cb_grid_console_closed,
+            engine=self.engine,
             width=self.track_prime_console.width,
             height=self.track_prime_console.height)
     def on_term_clear(self):
-        self.spin_term.clear()
-    def on_term_write(self, drop, rest, s, cpair):
-        self.spin_term.write(
+        self.cgrid.clear()
+    def on_term_put(self, drop, rest, s, cpair):
+        self.cgrid.put(
             drop=drop,
             rest=rest,
             s=s,
             cpair=cpair)
+    def on_term_render(self):
+        self.form_grid_console.send(
+            cgrid=self.cgrid)
     #
-    def cb_selui_keycode(self, cs_selui_keycode):
-        keycode = cs_selui_keycode.keycode
+    def cb_grid_console_splat(self, cs_grid_console_splat):
+        zero_h = cs_grid_console_splat.zero
+        msg = cs_grid_console_splat.msg
         #
-        keycode = e_keycode(keycode)
+        self.nearcast.splat(
+            zero_h=zero_h,
+            msg=msg)
+    def cb_grid_console_kevent(self, cs_grid_console_kevent):
+        zero_h = cs_grid_console_kevent.zero_h
+        keycode = cs_grid_console_kevent.keycode
+        #
+        log('received keycode %s'%(keycode))
         self.nearcast.keystroke(
             keycode=keycode)
-    def cb_selui_lselect(self, cs_selui_lselect):
-        drop = cs_selui_lselect.drop
-        rest = cs_selui_lselect.rest
-        c = cs_selui_lselect.c
-        cpair = cs_selui_lselect.cpair
+    def cb_grid_console_mevent(self, cs_grid_console_mevent):
+        zero_h = cs_grid_console_mevent.zero_h
         #
-        pass
-        log('xxx cb_selui_lselect drop %s rest %s c %s cpair %s'%(drop, rest, c, cpair))
+        xxx
+    def cb_grid_console_closed(self, cs_grid_console_closed):
+        zero_h = cs_grid_console_closed.zero_h
+        #
+        xxx
 
 class CogToMenu:
     def __init__(self, cog_h, engine, orb):
@@ -475,8 +504,14 @@ class CogToMenu:
             , MENU_KEYCODE_CONTINUE: self._mi_continue
             , MENU_KEYCODE_QUIT: self._mi_quit
             }
+        log('here |%s|'%(menu_keycode))
+        log(str(d))
         if menu_keycode not in d:
+            log('menu none') # xxx
             return
+        # xxx
+        else:
+            log('menu doing something')
         fn = d[menu_keycode]
         fn()
     def on_game_new(self):
@@ -498,11 +533,12 @@ class CogToMenu:
         rest = cs_menu_asks_display_to_write.rest
         s = cs_menu_asks_display_to_write.s
         #
-        self.nearcast.term_write(
+        self.nearcast.term_put(
             drop=drop,
             rest=rest,
             s=s,
             cpair=solent_cpair('blue'))
+        self.nearcast.term_render()
     #
     def _mi_new_game(self):
         self.nearcast.game_new()
@@ -512,7 +548,7 @@ class CogToMenu:
     def _mi_quit(self):
         raise SolentQuitException()
 
-class CogSnakeGame:
+class CogToSnakeGame:
     def __init__(self, cog_h, engine, orb):
         self.cog_h = cog_h
         self.engine = engine
@@ -538,13 +574,14 @@ class CogSnakeGame:
     def on_init(self):
         pass
     def on_game_new(self):
-        rail_h = '%s/snake_game'%(self.cog_h)
+        zero_h = '%s/snake_game'%(self.cog_h)
         self.rail_snake_game.zero(
-            rail_h=rail_h,
+            zero_h=zero_h,
             height=self.track_prime_console.height,
             width=self.track_prime_console.width,
             cb_game_instructs_clear=self.cb_game_instructs_clear,
-            cb_game_instructs_write=self.cb_game_instructs_write)
+            cb_game_instructs_write=self.cb_game_instructs_write,
+            cb_game_tick_over=self.cb_game_tick_over)
     def on_game_input(self, keycode):
         if keycode == e_keycode.a:
             self.rail_snake_game.steer(
@@ -576,38 +613,35 @@ class CogSnakeGame:
         s = cs_game_instructs_write.s
         cpair = cs_game_instructs_write.cpair
         #
-        self.nearcast.term_write(
+        self.nearcast.term_put(
             drop=drop,
             rest=rest,
             s=s,
             cpair=cpair)
+    def cb_game_tick_over(self, cs_game_tick_over):
+        self.nearcast.term_render()
 
 class CogBridge:
     def __init__(self, cog_h, orb, engine):
         self.cog_h = cog_h
         self.orb = orb
         self.engine = engine
-    def nc_init(self, console_type, height, width):
-        self.nearcast.init(
-            console_type=console_type,
-            height=height,
-            width=width)
 
-def init_nearcast(engine, console_type):
+def init_nearcast(engine, game_name):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
     orb.init_cog(CogInterpreter)
-    orb.init_cog(CogTerm)
+    orb.init_cog(CogToFormGrid)
     orb.init_cog(CogToMenu)
-    orb.init_cog(CogSnakeGame)
+    orb.init_cog(CogToSnakeGame)
+    #orb.add_log_snoop()
     #
     bridge = orb.init_cog(CogBridge)
     bridge.nearcast.prime_console(
-        console_type=console_type,
         height=24,
         width=78)
     bridge.nearcast.prime_menu_title(
-        text=GAME_NAME)
+        text=game_name)
     bridge.nearcast.init()
     #
     return bridge
@@ -616,31 +650,29 @@ def init_nearcast(engine, console_type):
 # --------------------------------------------------------
 #   bootstrap
 # --------------------------------------------------------
-GAME_NAME = 'snake'
+GAME_NAME = 'winsnake'
 
 MTU = 1500
 
 def main():
-    console_type = 'curses'
-    if '--pygame' in sys.argv:
-        console_type = 'pygame'
-    elif sys.platform in ('msys', 'win32', 'win64'):
-        b_ok = True
-        try:
-            import pygame
-            console_type = 'pygame'
-        except:
-            print("[!] On Windows, snake needs pygame. (But, try winsnake!).")
-            sys.exit(1)
+    p = sys.platform
+    #
+    if p not in ('msys', 'win32', 'win64'):
+        m = ' '.join(
+            [ "ERROR: winsnake only works on windows."
+            , "Try solent.demo.snake for other platforms."
+            , "(sys.platform: |%s|)"%(p)])
+        print(m)
+        sys.exit(1)
     #
     engine = Engine(
         mtu=MTU)
+    engine.default_timeout = 0.01
+    #
     try:
-        engine.default_timeout = 0.01
         init_nearcast(
             engine=engine,
-            console_type=console_type)
-        #
+            game_name=GAME_NAME)
         engine.event_loop()
     except SolentQuitException:
         pass
@@ -649,4 +681,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
 

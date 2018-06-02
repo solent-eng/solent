@@ -20,21 +20,22 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import dget_wres
+from solent import init_ext_fn
 from solent import log
-from solent.util import wrap_so_fn
 
 from ctypes import *
 
-PATH_SO = dget_wres('draft', 'wrap', 'api.so')
+#PATH_SO = dget_wres('draft', 'wrap', 'api.so')
+PATH_SO = dget_wres('draft', 'wrap', 'api.dll')
 
 class Wrap:
     def __init__(self):
         self.clib = cdll.LoadLibrary(PATH_SO)
         #
-        self.fn_hello = wrap_so_fn(
+        self.fn_hello = init_ext_fn(
+            rtype=c_char_p,
             so_fn=self.clib.hello,
-            argtypes=[c_char_p],
-            restype=c_char_p)
+            alist=[c_char_p])
     def hello(self, what):
         return self.fn_hello(what)
 

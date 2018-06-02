@@ -25,6 +25,8 @@ from .libtest import have_tests
 from .libtest import run_tests
 from .libtest import test
 
+from .pool import pool_rail_class
+
 from .small import ns
 from .small import uniq
 from .small import SolentQuitException
@@ -47,4 +49,8 @@ from .rail_line_finder import RailLineFinder
 from .interface_script import parse_line_to_tokens
 from .interface_script import init_interface_script_parser
 from .interface_script import SignalConsumer
+
+from .libext import solent_ext
+from .libext import load_clib
+from .libext import init_ext_fn
 
