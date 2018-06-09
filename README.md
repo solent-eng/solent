@@ -67,6 +67,9 @@ python -m scenarios.eng_10_orb_nearcast_and_cog_basics
 
 ```bash
 # In Windows, you will need python3 and git-for-windows
+# (The Windows native console is not working at the time of writing, and these
+# steps will fail. This is due to the build process for the DLLs being too
+# tightly tied to my dev environment. Covered in issue #139).
 
 git clone https://github.com/cratuki/solent.git
 cd solent
@@ -76,7 +79,7 @@ venv\Scripts\activate
 pip install pygame
 
 # Use keys around 's' to navigate.
-python -m solent.demo.snake
+python -m solent.demo.winsnake
 python -m solent.demo.weeds
 
 # There are many more scenarios in this directory
