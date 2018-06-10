@@ -17,7 +17,6 @@
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
 from solent import e_keycode
-from solent import hexdump_bytes
 from solent import Engine
 from solent import log
 from solent import ns as Ns

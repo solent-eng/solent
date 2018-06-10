@@ -41,8 +41,7 @@ from .ref import ref_release
 from .liblog import init_logging
 from .liblog import init_network_logging
 from .liblog import log
-from .liblog import hexdump_bytes
-from .liblog import hexdump_string
+from .liblog import hexdump
 
 from .rail_line_finder import RailLineFinder
 

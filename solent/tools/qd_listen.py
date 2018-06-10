@@ -22,7 +22,7 @@
 
 from solent import Engine
 from solent import log
-from solent import hexdump_bytes
+from solent import hexdump
 
 import sys
 import traceback
@@ -105,7 +105,7 @@ class CogUdpListener(object):
     def cb_udp_bb(self, cs_udp_bb):
         bb = cs_udp_bb.bb
         #
-        hexdump_bytes(
+        hexdump(
             bb=bb,
             title='Received')
 

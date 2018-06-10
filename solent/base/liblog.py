@@ -96,16 +96,7 @@ def init_network_logging(mtu, addr, port, label):
         label=label)
     LOGGER = net_logger.send
 
-def hexdump_string(s, title='hexdump'):
-    int_buffer = []
-    for c in s:
-        int_buffer.append(ord(c))
-    bb = bytearray(int_buffer)
-    hexdump_bytes(
-        bb=bb,
-        title=title)
-
-def hexdump_bytes(bb, title='hexdump'):
+def hexdump(bb, title='hexdump'):
     #
     # Awkward implementation of. Mixes up print-as-you-go (for the bytes
     # on the left) with buffer-building (for the displayable characters
@@ -165,5 +156,5 @@ def hexdump_bytes(bb, title='hexdump'):
     print()
 
 if __name__ == '__main__':
-    hexdump_string('abc')
+    hexdump(bytes('abc', 'ascii'))
 

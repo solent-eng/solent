@@ -1,7 +1,6 @@
 from solent.forms import FormGridConsole
 
 from solent import init_ext_fn
-from solent import hexdump_bytes
 from solent import load_clib
 from solent import log
 from solent import ns

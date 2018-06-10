@@ -23,7 +23,7 @@ from solent import ref_lookup
 from solent import ref_acquire
 from solent import ref_release
 from solent import log
-from solent import hexdump_bytes
+from solent import hexdump
 from solent import run_tests
 from solent import test
 
@@ -175,8 +175,8 @@ def should_clone_equivalent_sip():
     sip_b = Sip(10)
     sip_b.clone(
         bb=content)
-    hexdump_bytes(content, title='content')
-    hexdump_bytes(sip_b.arr, title='sip_b')
+    hexdump(content, title='content')
+    hexdump(sip_b.arr, title='sip_b')
     assert sip_b.arr == content
     #
     return True
@@ -188,8 +188,8 @@ def should_clone_shorter_sip():
     sip = Sip(100)
     sip.clone(
         bb=content)
-    hexdump_bytes(content, title='content')
-    hexdump_bytes(sip.arr, title='sip')
+    hexdump(content, title='content')
+    hexdump(sip.arr, title='sip')
     assert sip.arr[:clen] == content
     #
     return True

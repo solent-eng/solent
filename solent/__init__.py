@@ -30,8 +30,7 @@ from .base import SolentQuitException
 # pool
 from .base import pool_rail_class
 # log
-from .base import hexdump_bytes
-from .base import hexdump_string
+from .base import hexdump
 from .base import log
 from .base import init_logging
 from .base import init_network_logging

@@ -24,7 +24,7 @@
 # you probably have something else handy.
 
 from solent import Engine
-from solent import hexdump_bytes
+from solent import hexdump
 from solent import log
 from solent import init_network_logging
 from solent import solent_cpair
@@ -183,7 +183,7 @@ class CogTerm:
         self.rest = 0
         self.spin_term.refresh_console()
     def on_net_recv(self, bb):
-        hexdump_bytes(bb)
+        hexdump(bb)
         for keycode in bb:
             self._print(
                 keycode=keycode,

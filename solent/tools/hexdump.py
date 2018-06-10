@@ -19,7 +19,7 @@
 # // overview
 
 from solent import Engine
-from solent import hexdump_bytes
+from solent import hexdump
 from solent import log
 from solent import SolentQuitException
 
@@ -58,7 +58,7 @@ def main():
     #
     bb = read_file_binary(fname)
     print('len %s'%len(bb))
-    hexdump_bytes(
+    hexdump(
         bb=bb,
         title=fname)
 
