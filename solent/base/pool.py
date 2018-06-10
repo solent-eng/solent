@@ -1,5 +1,3 @@
-from .small import ns
-
 import inspect
 
 def pool_rail_class(rail_class):

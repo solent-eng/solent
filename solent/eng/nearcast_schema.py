@@ -29,7 +29,7 @@
 
 from .testbridge import init_testbridge_class
 
-from solent import ns
+from solent import Ns
 from solent import log
 from solent import init_interface_script_parser
 from solent import SignalConsumer

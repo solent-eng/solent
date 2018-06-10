@@ -18,7 +18,7 @@
 
 from solent import Engine
 from solent import log
-from solent import ns
+from solent import Ns
 from solent import solent_cpair
 from solent import solent_keycode
 from solent import SolentQuitException
@@ -45,8 +45,8 @@ def create_spot(drop, rest):
 
 class RailDrawSurface:
     def __init__(self):
-        self.cs_draw_surface_clear = ns()
-        self.cs_draw_surface_write = ns()
+        self.cs_draw_surface_clear = Ns()
+        self.cs_draw_surface_write = Ns()
         #
         self.b_started = False
     def call_draw_surface_clear(self, rail_h):

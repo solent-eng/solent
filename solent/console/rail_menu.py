@@ -21,13 +21,13 @@
 
 from collections import OrderedDict as od
 
-from solent import ns
+from solent import Ns
 
 class RailMenu:
     def __init__(self):
-        self.cs_menu_asks_display_to_clear = ns()
-        self.cs_menu_asks_display_to_write = ns()
-        self.cs_menu_selection = ns()
+        self.cs_menu_asks_display_to_clear = Ns()
+        self.cs_menu_asks_display_to_write = Ns()
+        self.cs_menu_selection = Ns()
     def call_menu_selection(self, rail_h, keycode, text):
         self.cs_menu_selection.rail_h = rail_h
         self.cs_menu_selection.keycode = keycode

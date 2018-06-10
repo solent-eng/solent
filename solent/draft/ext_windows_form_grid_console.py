@@ -19,7 +19,6 @@
 from solent import e_keycode
 from solent import Engine
 from solent import log
-from solent import ns as Ns
 from solent import solent_cpair
 from solent import solent_ext
 from solent import SolentQuitException

@@ -23,9 +23,9 @@
 # able to transform those definitions into call_type and cb_type methods. That
 # is what this tool does. These days, we have eliminated those structures from
 # almost everywhere (although not the engine yet), and replaced them with
-# solent.ns. The main API for callbacks is now the call methods themselves.
+# solent.Ns. The main API for callbacks is now the call methods themselves.
 
-from solent import ns
+from solent import Ns
 from solent import uniq
 
 import re
@@ -57,8 +57,8 @@ PATTERN_FIELD = re.compile('^ *self.[a-z0-9_]* = None$')
 
 class RailCsParser:
     def __init__(self):
-        self.cs_rcp_error = ns()
-        self.cs_rcp_found = ns()
+        self.cs_rcp_error = Ns()
+        self.cs_rcp_found = Ns()
     def call_rcp_error(self, rail_h, msg):
         self.cs_rcp_error.rail_h = rail_h
         self.cs_rcp_error.msg = msg

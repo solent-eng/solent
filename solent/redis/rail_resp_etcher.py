@@ -21,7 +21,7 @@
 # https://redis.io/topics/protocol
 #
 
-from solent import ns
+from solent import Ns
 from solent.util import RailBytesetter
 
 class CsEtchHead(object):

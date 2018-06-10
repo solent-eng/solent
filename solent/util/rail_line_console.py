@@ -21,7 +21,7 @@
 # interact with a solent application.
 
 from solent import log
-from solent import ns
+from solent import Ns
 from solent import parse_line_to_tokens
 
 def tokenise_line(line):
@@ -30,9 +30,9 @@ def tokenise_line(line):
 
 class RailLineConsole:
     def __init__(self):
-        self.cs_line_console_connect = ns()
-        self.cs_line_console_condrop = ns()
-        self.cs_line_console_command = ns()
+        self.cs_line_console_connect = Ns()
+        self.cs_line_console_condrop = Ns()
+        self.cs_line_console_command = Ns()
     def call_line_console_connect(self, rail_h, addr, port):
         self.cs_line_console_connect.rail_h = rail_h
         self.cs_line_console_connect.addr = addr

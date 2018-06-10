@@ -20,7 +20,7 @@ from solent import Engine
 from solent import e_keycode
 from solent import init_network_logging
 from solent import log
-from solent import ns
+from solent import Ns
 from solent import solent_cpair
 from solent import SolentQuitException
 from solent import uniq
@@ -176,8 +176,8 @@ SPOT_EGG = 'O'
 
 class RailSnakeGame:
     def __init__(self):
-        self.cs_game_instructs_clear = ns()
-        self.cs_game_instructs_write = ns()
+        self.cs_game_instructs_clear = Ns()
+        self.cs_game_instructs_write = Ns()
         #
         self.b_running = False
     def call_game_instructs_clear(self, rail_h):

@@ -25,7 +25,7 @@ from .paths import dget_wres
 
 # small
 from .base import uniq
-from .base import ns
+from .base import Ns
 from .base import SolentQuitException
 # pool
 from .base import pool_rail_class

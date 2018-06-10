@@ -1,6 +1,5 @@
 from solent import Engine
 from solent import log
-from solent import ns
 from solent import SolentQuitException
 from solent.util import SpinRoughAlarm
 

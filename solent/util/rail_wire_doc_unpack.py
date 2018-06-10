@@ -20,7 +20,7 @@
 # This is a simple unpacker for {wire string form}. Wire string form is a
 # uint64 indicating length, followed by that number of bytes.
 
-from solent import ns as Ns
+from solent import Ns
 
 import struct
 

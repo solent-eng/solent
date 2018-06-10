@@ -3,7 +3,7 @@ from solent.forms import FormGridConsole
 from solent import init_ext_fn
 from solent import load_clib
 from solent import log
-from solent import ns
+from solent import Ns
 from solent import SolentQuitException
 from solent import e_keycode
 from solent.console import Cgrid
@@ -31,8 +31,8 @@ class SpinWindowsEvents:
         self.cb_windows_event_kevent = cb_windows_event_kevent
         self.api = api
         #
-        self.cs_windows_event_quit = ns()
-        self.cs_windows_event_kevent = ns()
+        self.cs_windows_event_quit = Ns()
+        self.cs_windows_event_kevent = Ns()
         self.event = c_uint64()
         self.ptr_event = c_uint64_p(self.event)
     def call_windows_event_quit(self, zero_h):
@@ -188,7 +188,7 @@ class ImplGridConsole:
         #
         clib = load_clib(self)
         #
-        self.api = ns()
+        self.api = Ns()
         self.api.set_cc_log = init_ext_fn(
             None, clib.set_cc_log, [CC_LOG_T])
         self.api.create_screen = init_ext_fn(

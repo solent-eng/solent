@@ -29,7 +29,7 @@
 # RailRecvBulkProtocol could now be refactored out and replaced by
 # solent.util.RailWireDocUnpack
 
-from solent import ns as Ns
+from solent import Ns
 from solent import Engine
 from solent import log
 from solent.util import RailWireStringUnpack

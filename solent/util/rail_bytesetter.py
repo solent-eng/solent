@@ -22,15 +22,15 @@
 # bytes to a series of fixed-size network packets.
 
 from solent import log
-from solent import ns
+from solent import Ns
 
 from collections import deque
 
 class RailBytesetter:
     def __init__(self):
         self.blst = deque()
-        self.cs_bytesetter_pack = ns()
-        self.cs_bytesetter_fini = ns()
+        self.cs_bytesetter_pack = Ns()
+        self.cs_bytesetter_fini = Ns()
     def call_bytesetter_pack(self, rail_h, bytesetter_h, bb):
         self.cs_bytesetter_pack.rail_h = rail_h
         self.cs_bytesetter_pack.bytesetter_h = bytesetter_h

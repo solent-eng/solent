@@ -6,7 +6,7 @@ def uniq():
     UNIQ += 1
     return UNIQ
 
-def ns():
+def Ns():
     ob = types.ModuleType(str(uniq()))
     return ob
 

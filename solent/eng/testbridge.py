@@ -47,7 +47,7 @@
 # See testing/lconsole/spin_line_console.py for an example of this being
 # used in anger.
 
-from solent import ns
+from solent import Ns
 from solent import log
 
 import os

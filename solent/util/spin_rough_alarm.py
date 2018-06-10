@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import ns
+from solent import Ns
 from solent import pool_rail_class
 
 class RailAlarmBooking:
@@ -34,7 +34,7 @@ class SpinRoughAlarm:
         self.spin_h = spin_h
         self.engine = engine
         #
-        self.cs_alarm_event = ns()
+        self.cs_alarm_event = Ns()
         #
         self.pool_alarm_booking = pool_rail_class(RailAlarmBooking)
         self.work = []

@@ -27,7 +27,7 @@ from .libtest import test
 
 from .pool import pool_rail_class
 
-from .small import ns
+from .small import Ns
 from .small import uniq
 from .small import SolentQuitException
 

@@ -16,16 +16,16 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
-from solent import ns
+from solent import Ns
 
 class FormGridConsole:
     def __init__(self, impl):
         self.impl = impl
         #
-        self.cs_grid_console_splat = ns()
-        self.cs_grid_console_kevent = ns()
-        self.cs_grid_console_mevent = ns()
-        self.cs_grid_console_closed = ns()
+        self.cs_grid_console_splat = Ns()
+        self.cs_grid_console_kevent = Ns()
+        self.cs_grid_console_mevent = Ns()
+        self.cs_grid_console_closed = Ns()
     def call_grid_console_splat(self, zero_h, msg):
         self.cs_grid_console_splat.zero_h = zero_h
         self.cs_grid_console_splat.msg = msg
