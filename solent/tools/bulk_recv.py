@@ -32,7 +32,6 @@
 from solent import Ns
 from solent import Engine
 from solent import log
-from solent.util import RailWireStringUnpack
 
 import os
 import struct
