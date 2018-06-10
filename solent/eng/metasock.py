@@ -392,7 +392,7 @@ class Metasock(object):
                 raise MetasockCloseCondition(r)
             return
         try:
-            while self.send_buf:
+            if self.send_buf:
                 sip = self.send_buf.popleft()
                 bb = sip.get()
                 send_size = self.sock.send(bb)
@@ -400,13 +400,11 @@ class Metasock(object):
                     # Ideal situation: our send was successful
                     self.mempool.free(
                         sip=sip)
-                    continue
                 elif 0 == send_size:
                     # Network conjestion or slow throughput by the reader
                     # is causing things to back up. This will happen from
                     # time to time in normal operation.
                     self.send_buf.appendleft(sip)
-                    break
                 else:
                     # This is weird. Since our bb must be smaller than
                     # the MTU size, this should never happen.

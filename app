@@ -23,7 +23,7 @@ popd
 
 #
 # Test launchers
-#python -B -m run_tests
+python -B -m run_tests
 
 #
 # Scenarios
@@ -38,7 +38,7 @@ popd
 #
 # Demo
 #python -B -m solent.demo.draw
-python -B -m solent.demo.snake
+#python -B -m solent.demo.snake
 #python -B -m solent.demo.weeds
 
 #
@@ -46,6 +46,8 @@ python -B -m solent.demo.snake
 #python -B -m solent.tools.qd_listen 127.255.255.255 50000
 #python -B -m solent.tools.qd_poll 127.255.255.255 50000
 #python -B -m solent.tools.tclient localhost 5001 # nc -l -p 5001
+#python -B -m solent.tools.bulk_recv /tmp/bulk 127.0.0.1 8000
+#python -B -m solent.tools.bulk_send 127.0.0.1 8000
 
 #
 # Wrapping C

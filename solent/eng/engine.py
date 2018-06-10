@@ -191,14 +191,13 @@ class Engine(object):
         del self.spins[spin_h]
     def turn(self, timeout=0):
         b_any_activity_at_all = False
-        #
-        # Caller's callback
+
         spins_in_this_loop = list(self.spins.values())
         for spin in spins_in_this_loop:
             spin.eng_turn(
                 activity=self.activity)
-        #
-        # Determine if there was activity
+
+        # Determine if there was activity from the spins
         lst_orb_activity = self.activity.get()
         if lst_orb_activity:
             self.activity.clear()
@@ -206,14 +205,14 @@ class Engine(object):
             if self.b_debug_eloop:
                 for s in lst_orb_activity:
                     eloop_debug('*ACTIVITY* %s'%(s))
-        #
+
         # Select
         activity_from_select = self._call_select(timeout)
         if activity_from_select:
             b_any_activity_at_all = True
             if self.b_debug_eloop:
                 eloop_debug('select activity')
-        #
+
         # If we have activity, we don't want select jamming
         # things up with delays.
         if b_any_activity_at_all:
