@@ -245,7 +245,10 @@ class CogNetwork:
 
         self.accept_sid = accept_sid
 
-        fingerprint = '%s.%s.%s'%(server_sid, accept_addr, accept_port)
+        fingerprint = 'accept%s_%s_%s'%(
+            accept_sid,
+            accept_addr,
+            accept_port)
         log('[tcp accept connect, %s]'%(fingerprint))
 
         kilobyte = 1024
@@ -260,10 +263,9 @@ class CogNetwork:
             cb_recv_bulk_protocol_done=self.cb_recv_bulk_protocol_done,
             block_size=block_size)
 
-        now = time.strftime('%s')
         self.path = os.path.join(
             self.track_prime.dir_save,
-            '%s.%s.bin'%(now, fingerprint))
+            '%s.bin'%(fingerprint))
 
         self.f_ptr = open(self.path, 'wb+')
 
