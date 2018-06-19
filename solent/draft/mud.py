@@ -28,11 +28,13 @@ from solent.util import RailLinetalk
 # --------------------------------------------------------
 #   game model
 # --------------------------------------------------------
-class Session:
+class RailGame:
 
-    def __init__(self, user):
-        self.name = user
-        self.inv = []
+    def __init__(self):
+        pass
+
+    def zero(self, zero_h):
+        self.zero_h = zero_h
 
 
 # --------------------------------------------------------
@@ -66,6 +68,13 @@ class TrackPrime:
     def on_prime_linetalk(self, addr, port):
         self.linetalk_addr = addr
         self.linetalk_port = port
+
+
+class Session:
+
+    def __init__(self, user):
+        self.name = user
+        self.inv = []
 
 
 class CogLinetalk:
@@ -113,8 +122,9 @@ class CogLinetalk:
         port = cs_linetalk_conauth.port
         user = cs_linetalk_conauth.user
 
-        self.d_session[accept_sid] = Session(
+        session = Session(
             user=user)
+        self.d_session[accept_sid] = session
 
     def cb_linetalk_condrop(self, cs_linetalk_condrop):
         accept_sid = cs_linetalk_condrop.accept_sid
@@ -130,10 +140,27 @@ class CogLinetalk:
 
         log('linetalk command |%s|'%(tokens))
 
+
+class CogGame:
+    
+    def __init__(self, cog_h, orb, engine):
+        self.cog_h = cog_h
+        self.orb = orb
+        self.engine = engine
+
+        self.rail_game = RailGame()
+
+    def on_init(self):
+        zero_h = '%s.game'%(self.cog_h)
+        self.rail_game.zero(
+            zero_h=zero_h)
+
+
 def init_nearcast(engine, linetalk_addr, linetalk_port):
     orb = engine.init_orb(
         i_nearcast=I_NEARCAST)
     orb.init_cog(CogLinetalk)
+    orb.init_cog(CogGame)
     #
     bridge = orb.init_autobridge()
     bridge.nearcast.prime_linetalk(
