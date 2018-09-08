@@ -21,15 +21,17 @@ from solent import SolentQuitException
 from solent import log
 from solent.util import RailLinetalk
 
-LC_ADDR = 'localhost'
-LC_PORT = 8200
 
-MTU = 1490
-
+# --------------------------------------------------------
+#   alg
+# --------------------------------------------------------
 I_NEARCAST = '''
     i message h
     i field h
 
+    message prime
+        field username
+        field password
     message init
 
     message linetalk_connect
@@ -54,6 +56,13 @@ I_NEARCAST = '''
         field accept_sid
         field msg
 '''
+
+class TrackPrime:
+    def __init__(self, orb):
+        self.orb = orb
+    def on_prime(self, username, password):
+        self.username = username
+        self.password = password
 
 class CogInterpret:
     def __init__(self, cog_h, orb, engine):
@@ -82,6 +91,8 @@ class CogToLinetalk:
         self.orb = orb
         self.engine = engine
         #
+        self.track_prime = orb.track(TrackPrime)
+        #
         self.rail_linetalk = RailLinetalk()
     #
     def on_init(self):
@@ -89,10 +100,14 @@ class CogToLinetalk:
         self.rail_linetalk.zero(
             zero_h=zero_h,
             cb_linetalk_connect=self.cb_linetalk_connect,
+            cb_linetalk_conauth=self.cb_linetalk_conauth,
             cb_linetalk_condrop=self.cb_linetalk_condrop,
             cb_linetalk_command=self.cb_linetalk_command,
             engine=self.engine)
-        self.rail_linetalk.set_login('uu', 'pp')
+        #
+        username = self.track_prime.username
+        password = self.track_prime.password
+        self.rail_linetalk.set_login(username, password)
         #
         self.rail_linetalk.start(
             ip=LC_ADDR,
@@ -100,7 +115,7 @@ class CogToLinetalk:
     def on_result(self, accept_sid, msg):
         self.rail_linetalk.send(
             accept_sid=accept_sid,
-            msg='%s\n'%msg)
+            msg='  %s\n'%msg)
     #
     def cb_linetalk_connect(self, cs_linetalk_connect):
         accept_sid = cs_linetalk_connect.accept_sid
@@ -111,6 +126,10 @@ class CogToLinetalk:
             accept_sid=accept_sid,
             addr=addr,
             port=port)
+    def cb_linetalk_conauth(self, cs_linetalk_conauth):
+        accept_sid = cs_linetalk_conauth
+        #
+        log('received conauth')
     def cb_linetalk_condrop(self, cs_linetalk_condrop):
         accept_sid = cs_linetalk_condrop.accept_sid
         msg = cs_linetalk_condrop.msg
@@ -125,7 +144,7 @@ class CogToLinetalk:
         def complain(msg):
             self.rail_linetalk.send(
                 accept_sid=accept_sid,
-                msg='%s\n'%msg)
+                msg='  %s\n'%msg)
         #
         log('tokens |%s|'%(str(tokens)))
         if 0 == len(tokens):
@@ -154,13 +173,14 @@ class CogToLinetalk:
             complain('??')
             return
 
-class CogBridge:
-    def __init__(self, cog_h, orb, engine):
-        self.cog_h = cog_h
-        self.orb = orb
-        self.engine = engine
-    def nc_init(self):
-        self.nearcast.init()
+
+# --------------------------------------------------------
+#   boostrap
+# --------------------------------------------------------
+LC_ADDR = 'localhost'
+LC_PORT = 8200
+
+MTU = 1490
 
 def main():
     engine = Engine(
@@ -171,7 +191,10 @@ def main():
         orb.add_log_snoop()
         orb.init_cog(CogInterpret)
         orb.init_cog(CogToLinetalk)
-        bridge = orb.init_cog(CogBridge)
+        bridge = orb.init_autobridge()
+        bridge.nc_prime(
+            username='uu',
+            password='pp')
         bridge.nc_init()
         engine.event_loop()
     except SolentQuitException:

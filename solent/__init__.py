@@ -71,3 +71,5 @@ from .cpair import solent_cpair_pairs
 from .keycode import solent_keycode
 from .keycode import e_keycode
 
+from .util import RailLinetalk
+

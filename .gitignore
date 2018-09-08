@@ -19,6 +19,8 @@ obj
 # compare unix behaviour at speed.
 pull_macos*
 push_macos*
+macos_solent
+macos_testing
 
 
 # --------------------------------------------------------
