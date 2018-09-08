@@ -68,10 +68,6 @@ def Console(console_type, height, width, **kwargs):
     elif console_type == CONSOLE_TYPE_WAYLAND:
         raise Exception("Not yet implemented.")
     elif console_type == CONSOLE_TYPE_WINDOWS:
-        import solent.console.windows as m
-        return m.console_new(
-            width=width,
-            height=height)
         raise Exception("Not yet implemented.")
     elif console_type == CONSOLE_TYPE_WSOCKET:
         raise Exception("Not yet implemented.")

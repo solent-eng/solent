@@ -33,19 +33,22 @@ class RailLineConsole:
         self.cs_line_console_connect = Ns()
         self.cs_line_console_condrop = Ns()
         self.cs_line_console_command = Ns()
-    def call_line_console_connect(self, rail_h, addr, port):
+    def call_line_console_connect(self, rail_h, accept_sid, addr, port):
         self.cs_line_console_connect.rail_h = rail_h
+        self.cs_line_console_connect.accept_sid = accept_sid
         self.cs_line_console_connect.addr = addr
         self.cs_line_console_connect.port = port
         self.cb_line_console_connect(
             cs_line_console_connect=self.cs_line_console_connect)
-    def call_line_console_condrop(self, rail_h, msg):
+    def call_line_console_condrop(self, rail_h, accept_sid, msg):
         self.cs_line_console_condrop.rail_h = rail_h
+        self.cs_line_console_condrop.accept_sid = accept_sid
         self.cs_line_console_condrop.msg = msg
         self.cb_line_console_condrop(
             cs_line_console_condrop=self.cs_line_console_condrop)
-    def call_line_console_command(self, rail_h, tokens):
+    def call_line_console_command(self, rail_h, accept_sid, tokens):
         self.cs_line_console_command.rail_h = rail_h
+        self.cs_line_console_command.accept_sid = accept_sid
         self.cs_line_console_command.tokens = tokens
         self.cb_line_console_command(
             cs_line_console_command=self.cs_line_console_command)
@@ -125,6 +128,7 @@ class RailLineConsole:
         self.c_buffer = []
         self.call_line_console_connect(
             rail_h=self.rail_h,
+            accept_sid=accept_sid,
             addr=accept_addr,
             port=accept_port)
     def cb_tcp_accept_condrop(self, cs_tcp_accept_condrop):
@@ -135,6 +139,7 @@ class RailLineConsole:
         self.accept_sid = None
         self.call_line_console_condrop(
             rail_h=self.rail_h,
+            accept_sid=accept_sid,
             msg=message)
         if self.b_active:
             self.start_server()
@@ -160,6 +165,7 @@ class RailLineConsole:
                     line=line)
                 self.call_line_console_command(
                     rail_h=self.rail_h,
+                    accept_sid=accept_sid,
                     tokens=tokens)
             elif c == '\r':
                 continue

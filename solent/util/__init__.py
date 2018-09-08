@@ -18,6 +18,7 @@
 from .cformat import cformat
 from .rail_bytesetter import RailBytesetter
 from .rail_line_console import RailLineConsole
+from .rail_linetalk import RailLinetalk
 from .rail_wire_doc_unpack import RailWireDocUnpack
 from .spin_selection_ui import SpinSelectionUi
 from .spin_rough_alarm import SpinRoughAlarm

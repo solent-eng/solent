@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Solent. If not, see <http://www.gnu.org/licenses/>.
 
+from solent import e_keycode
 from solent import Engine
 from solent import log
 from solent import Ns
@@ -151,9 +152,9 @@ class TrackPrimeConsole:
         self.height = height
         self.width = width
 
-MENU_KEYCODE_NEW_GAME = solent_keycode('n')
-MENU_KEYCODE_CONTINUE = solent_keycode('c')
-MENU_KEYCODE_QUIT = solent_keycode('q')
+MENU_KEYCODE_NEW_GAME = e_keycode.n
+MENU_KEYCODE_CONTINUE = e_keycode.c
+MENU_KEYCODE_QUIT = e_keycode.q
 
 def t100():
     return time.time() * 100
@@ -192,14 +193,14 @@ class CogInterpreter:
         raise SolentQuitException('Quit message on stream')
     def on_keystroke(self, keycode):
         if self.track_containment_mode.is_focus_on_menu():
-            if keycode == solent_keycode('tab'):
+            if keycode == e_keycode.tab:
                 self.b_in_menu = False
                 self.nearcast.game_focus()
             else:
                 self.nearcast.menu_select(
                     menu_keycode=keycode)
         else:
-            if keycode == solent_keycode('tab'):
+            if keycode == e_keycode.tab:
                 self.b_in_menu = True
                 self.nearcast.menu_focus()
             else:
@@ -245,6 +246,7 @@ class CogToTerm:
     def cb_selui_keycode(self, cs_selui_keycode):
         keycode = cs_selui_keycode.keycode
         #
+        keycode = e_keycode(keycode)
         self.nearcast.keystroke(
             keycode=keycode)
     def cb_selui_lselect(self, cs_selui_lselect):
