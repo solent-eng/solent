@@ -14,6 +14,11 @@ api.so
 libapi_dll.a
 obj
 *.o
+#
+# This is a tool I use for importing a tree from a macos system so I can
+# compare unix behaviour at speed.
+pull_macos*
+push_macos*
 
 
 # --------------------------------------------------------

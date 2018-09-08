@@ -68,6 +68,7 @@ class SpinSelectionUi:
         self.cs_selui_keycode = CsSeluiKeycode()
         self.cs_selui_lselect = CsSeluiLselect()
         #
+        self.b_selection_supported = True
         self.width = None
         self.height = None
         self.cgrid = None
@@ -102,6 +103,8 @@ class SpinSelectionUi:
                 keycode=keycode)
         #
         self.refresh_console()
+    def disable_selection(self):
+        self.b_selection_supported = False
     def eng_close(self):
         if None != self.console:
             self.console.close()
@@ -204,7 +207,7 @@ class SpinSelectionUi:
                     self.select_cursor_on = True
                     self.select_cursor_t100 = time.time() * 100
         elif self.mode == MODE_STANDARD:
-            if keycode == solent_keycode('esc'):
+            if self.b_selection_supported and keycode == solent_keycode('esc'):
                 self.to_mode_select()
             else:
                 if keycode == solent_keycode('lmouseup'):

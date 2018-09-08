@@ -19,10 +19,9 @@
 # // overview
 # Nearcast that is contains a simple roguelike game.
 
-from .libweeds import RailMessageFeed
-from .libweeds import RailRoguebox
-
 from solent import Engine
+from solent import e_keycode
+from solent import init_network_logging
 from solent import log
 from solent import solent_cpair
 from solent import solent_keycode
@@ -34,13 +33,385 @@ from solent.util import SpinSelectionUi
 
 from collections import deque
 import os
+import platform
 import random
 import sys
 import time
 import traceback
 
-MTU = 1500
 
+# --------------------------------------------------------
+#   utility rails
+# --------------------------------------------------------
+class RailMessageFeed:
+    '''
+    This accepts text messages, and then renders them to a cgrid. Imagine text
+    as it is coming out of an old-fashioned printer, on a feed of paper.
+
+    There are two general use-cases for retrieving data from this:
+    * You can call list_messages, and get back a list of current messages
+    * You can call get_cgrid, and it will populate your supplied grid
+    '''
+
+    def __init__(self):
+        pass
+    def zero(self, rail_h, height, width, cpair_new, cpair_old):
+        self.rail_h = rail_h
+        self.height = height
+        self.width = width
+        self.cpair_new = cpair_new
+        self.cpair_old = cpair_old
+        #
+        self.cgrid = Cgrid(
+            height=height,
+            width=width)
+        self.q_lines = deque()
+    def clear(self):
+        while self.q_lines:
+            self.scroll()
+    def accept(self, message, turn):
+        nail = 0
+        peri = nail+self.width
+        while len(message) > peri:
+            self._write(
+                text=message[nail:peri],
+                turn=turn)
+            nail = peri
+            peri = peri + self.width
+        self._write(
+            text=message[nail:peri],
+            turn=turn)
+    def scroll(self):
+        self.q_lines.popleft()
+    def scroll_past(self, turn):
+        while self.q_lines:
+            first_pair = self.q_lines[0]
+            message_turn = first_pair[1]
+            if message_turn <= turn:
+                self.scroll()
+            else:
+                break
+    def get_height(self):
+        return len(self.q_lines)
+    def list_messages(self):
+        sb = []
+        for (message, turn) in self.q_lines:
+            sb.append(message)
+        return sb
+    def get_cgrid(self, cgrid, nail, peri, turn):
+        self.cgrid.clear()
+        for idx, (line, mturn) in enumerate(self.q_lines):
+            if mturn == turn:
+                cpair = self.cpair_new
+            else:
+                cpair = self.cpair_old
+            self.cgrid.put(
+                drop=idx,
+                rest=0,
+                s=line,
+                cpair=cpair)
+        cgrid.blit(
+            self.cgrid,
+            nail=nail,
+            peri=peri)
+    def _write(self, text, turn):
+        self.q_lines.append( (text, turn) )
+        while len(self.q_lines) > self.height:
+            self.q_lines.popleft()
+
+
+# --------------------------------------------------------
+#   roguebox
+# --------------------------------------------------------
+#
+# This section contains the logic of the game board.
+#
+
+class Directive:
+    def __init__(self, h, description):
+        self.h = h
+        self.description = description
+
+# We reflect against global to get these
+DIRECTIVE_HELP = Directive('help', 'show help message')
+DIRECTIVE_BX = Directive('a', 'button')
+DIRECTIVE_BY = Directive('b', 'button')
+DIRECTIVE_NW = Directive('nw', 'move/act in this direction')
+DIRECTIVE_NN = Directive('nn', 'move/act in this direction')
+DIRECTIVE_NE = Directive('ne', 'move/act in this direction')
+DIRECTIVE_SW = Directive('sw', 'move/act in this direction')
+DIRECTIVE_SS = Directive('ss', 'move/act in this direction')
+DIRECTIVE_SE = Directive('se', 'move/act in this direction')
+DIRECTIVE_WW = Directive('ww', 'move/act in this direction')
+DIRECTIVE_EE = Directive('ee', 'move/act in this direction')
+
+HELP = '''Hit things with your crowbar. Survive.
+
+Movement:
+ q w e      7 8 9       y k u
+ a   d      4   6       h   l
+ z x d      1 2 3       b j n
+
+Buttons
+a:  s          5           space
+b:  r          plus        slash
+
+(Tab returns to the main menu.)
+'''
+
+PAIR_WALL = ('.', solent_cpair('blue'))
+PAIR_PLAYER = ('@', solent_cpair('green'))
+PAIR_WEED = ('t', solent_cpair('red'))
+
+class RailRoguebox:
+    def __init__(self):
+        pass
+    def zero(self, rail_h, engine, grid_height, grid_width, cb_ready_alert, cb_grid_alert, cb_mail_alert, cb_over_alert):
+        self.rail_h = rail_h
+        self.engine = engine
+        self.grid_height = grid_height
+        self.grid_width = grid_width
+        self.cb_grid_alert = cb_grid_alert
+        self.cb_mail_alert = cb_mail_alert
+        self.cb_ready_alert = cb_ready_alert
+        self.cb_over_alert = cb_over_alert
+
+        self.turn = 0
+        self.b_game_alive = False
+
+        #
+        # coordinate pools
+        self.cpool_spare = None
+        self.cpool_wall = None
+        self.cpool_player = None
+        self.cpool_weed = None
+
+        self.supported_directives = None
+        self._init_supported_directives()
+
+        self.cgrid = Cgrid(
+            height=grid_height,
+            width=grid_width)
+        self.q_mail_messages = deque()
+
+        self.orb = None
+        self._init_orb()
+
+        self.bridge = self.orb.init_autobridge()
+        self.bridge.nc_init(
+            grid_height=self.grid_height,
+            grid_width=self.grid_width)
+
+    def _init_supported_directives(self):
+        self.supported_directives = [
+            globals()[key] for key
+            in globals().keys()
+            if key.startswith('DIRECTIVE_')]
+
+    def _init_orb(self):
+        i_nearcast = '''
+            i message h
+                i field h
+
+            message init
+                field grid_height
+                field grid_width
+        '''
+        self.orb = self.engine.init_orb(
+            i_nearcast=i_nearcast)
+        self.orb.set_spin_h('swamp_monster_orb')
+        #self.orb.add_log_snoop()
+
+    def get_supported_directives(self):
+        '''
+        Returns list of instances of solent.rogue.directive representing
+        the directives that this instance cares about. The reason for this
+        design is that it allows the container to handle input configuration.
+        For example, if you want the number 7 to mean north-east, you will
+        want to be able to configure that. And it would be a distraction from
+        the game engine itself.
+        '''
+        return self.supported_directives[:]
+
+    def new_game(self):
+        self.turn = 0
+        self.b_game_alive = True
+
+        self._zero_coord_pools()
+        self._create_board()
+
+        self.cb_ready_alert()
+
+        self._announce("You are in the garden. Eliminate those evil weeds!")
+        self._announce("[Press ? for help]")
+
+    def _zero_coord_pools(self):
+        self.cpool_spare = []
+        self.cpool_wall = []
+        self.cpool_player = []
+        self.cpool_weed = []
+
+        room_width = 10
+        room_height = 10
+        nail_drop = int( (self.grid_height / 2) - (room_height / 2) )
+        nail_rest = int( (self.grid_width / 2) - (room_width / 2) )
+        peri_drop = nail_drop + room_width + 1
+        peri_rest = nail_rest + room_height + 1
+        for drop in range(nail_drop, peri_drop):
+            for rest in range(nail_rest, peri_rest):
+                self.cpool_spare.append( (drop, rest) )
+
+    def get_turn(self):
+        return self.turn
+
+    def get_cgrid(self, cgrid, nail, peri):
+        self._render_cgrid()
+        cgrid.blit(
+            src_cgrid=self.cgrid,
+            nail=nail,
+            peri=peri)
+
+    def retrieve_mail(self):
+        l = []
+        while self.q_mail_messages:
+            l.append(self.q_mail_messages.popleft())
+        return l
+
+    def directive(self, directive_h):
+        if directive_h == 'help':
+            for line in HELP.split('\n'):
+                self._announce(line)
+            return
+        if False == self.b_game_alive:
+            return
+        else:
+            self.turn += 1
+
+            player_spot = self.cpool_player[0]
+            target_spot = list(player_spot)
+            if directive_h in 'nw|ww|sw'.split('|'):
+                target_spot[1] -= 1
+            if directive_h in 'ne|ee|se'.split('|'):
+                target_spot[1] += 1
+            if directive_h in 'nw|nn|ne'.split('|'):
+                target_spot[0] -= 1
+            if directive_h in 'sw|ss|se'.split('|'):
+                target_spot[0] += 1
+            self._player_move(
+                player_spot=player_spot,
+                target_spot=tuple(target_spot))
+            if 0 == len(self.cpool_weed):
+                self._announce('You win!')
+                self._game_over()
+
+    def _player_move(self, player_spot, target_spot):
+        if target_spot in self.cpool_spare:
+            self.cpool_player.remove(player_spot)
+            self.cpool_spare.append(player_spot)
+            self.cpool_spare.remove(target_spot)
+            self.cpool_player.append(target_spot)
+            self.cb_grid_alert()
+            return
+        elif target_spot in self.cpool_weed:
+            self._announce(
+                message='You slash angrily at the weed!')
+            self.cpool_player.remove(player_spot)
+            self.cpool_spare.append(player_spot)
+            self.cpool_weed.remove(target_spot)
+            self.cpool_player.append(target_spot)
+            self.cb_grid_alert()
+
+    def _announce(self, message):
+        self.q_mail_messages.append(message)
+        self.cb_mail_alert()
+
+    def _game_over(self):
+        self.b_game_alive = False
+        self.cb_over_alert()
+
+    def _create_board(self):
+        coord = ( int(self.grid_height/2), int(self.grid_width/2) )
+        self.cpool_spare.remove(coord)
+        self.cpool_player.append(coord)
+        #
+        # create the walls
+        room_width = 10
+        room_height = 10
+        nail_drop = int( (self.grid_height / 2) - (room_height / 2) )
+        nail_rest = int( (self.grid_width / 2) - (room_width / 2) )
+        peri_drop = nail_drop + room_width + 1
+        peri_rest = nail_rest + room_height + 1
+        # horizontal walls, including corners
+        for rest in range(nail_rest, peri_rest):
+            coord = (nail_drop, rest)
+            self.cpool_spare.remove(coord)
+            self.cpool_wall.append(coord)
+            coord = (nail_drop+room_height, rest)
+            self.cpool_spare.remove(coord)
+            self.cpool_wall.append(coord)
+        # vertical walls, except corners
+        for drop in range(nail_drop+1, peri_drop-1):
+            coord = (drop, nail_rest)
+            self.cpool_spare.remove(coord)
+            self.cpool_wall.append(coord)
+            coord = (drop, nail_rest+room_width)
+            self.cpool_spare.remove(coord)
+            self.cpool_wall.append(coord)
+        #
+        # place weeds
+        # (we need at least one.)
+        while not self.cpool_weed:
+            for coord in self.cpool_spare:
+                (drop, rest) = coord
+                if drop < 8 or drop > 16:
+                    continue
+                if rest < 34 or rest > 46:
+                    continue
+                if random.random() > 0.98:
+                    self.cpool_spare.remove(coord)
+                    self.cpool_weed.append(coord)
+
+    def _render_cgrid(self):
+        self.cgrid.clear()
+        for coord in self.cpool_spare:
+            (drop, rest) = coord
+            (c, cpair) = (' ', solent_cpair('teal'))
+            self.cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=c,
+                cpair=cpair)
+        for coord in self.cpool_wall:
+            (drop, rest) = coord
+            (c, cpair) = PAIR_WALL
+            self.cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=c,
+                cpair=cpair)
+        for coord in self.cpool_player:
+            (drop, rest) = coord
+            (c, cpair) = PAIR_PLAYER
+            if not self.b_game_alive:
+                cpair = solent_cpair('blue')
+            self.cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=c,
+                cpair=cpair)
+        for coord in self.cpool_weed:
+            (drop, rest) = coord
+            (c, cpair) = PAIR_WEED
+            self.cgrid.put(
+                drop=drop,
+                rest=rest,
+                s=c,
+                cpair=cpair)
+
+
+# --------------------------------------------------------
+#   main nearcast
+# --------------------------------------------------------
 # Containment consists of a menu system, a terminal, and cogs that
 # encapsulate games.
 I_CONTAINMENT_NEARCAST_SCHEMA = '''
@@ -83,7 +454,7 @@ I_CONTAINMENT_NEARCAST_SCHEMA = '''
     message x_game_mail
     message x_game_over
     message o_game_focus
-    message o_game_keycode
+    message game_input
         field keycode
 '''
 
@@ -108,9 +479,9 @@ CONSOLE_WIDTH = 76
 
 GAME_NAME = 'Weed the Garden'
 
-MENU_KEYCODE_NEW_GAME = solent_keycode('n')
-MENU_KEYCODE_CONTINUE = solent_keycode('c')
-MENU_KEYCODE_QUIT = solent_keycode('q')
+MENU_KEYCODE_NEW_GAME = e_keycode.n
+MENU_KEYCODE_CONTINUE = e_keycode.c
+MENU_KEYCODE_QUIT = e_keycode.q
 
 ROGUEBOX_ORIGIN_DROP = 0
 ROGUEBOX_ORIGIN_REST = 0
@@ -167,154 +538,154 @@ class CogInterpreter:
         if directive_h == 'nw':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=solent_keycode('q'),
+                keycode=e_keycode.q,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=solent_keycode('n7'),
+                keycode=e_keycode.n7,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('y'),
+                keycode=e_keycode.y,
                 directive_h=directive_h)
         elif directive_h == 'nn':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=solent_keycode('w'),
+                keycode=e_keycode.w,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=solent_keycode('n8'),
+                keycode=e_keycode.n8,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('k'),
+                keycode=e_keycode.k,
                 directive_h=directive_h)
         elif directive_h == 'ne':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=solent_keycode('e'),
+                keycode=e_keycode.e,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=solent_keycode('n9'),
+                keycode=e_keycode.n9,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('u'),
+                keycode=e_keycode.u,
                 directive_h=directive_h)
         elif directive_h == 'sw':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=solent_keycode('z'),
+                keycode=e_keycode.z,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=solent_keycode('n1'),
+                keycode=e_keycode.n1,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('b'),
+                keycode=e_keycode.b,
                 directive_h=directive_h)
         elif directive_h == 'ss':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=solent_keycode('x'),
+                keycode=e_keycode.x,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=solent_keycode('n2'),
+                keycode=e_keycode.n2,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('j'),
+                keycode=e_keycode.j,
                 directive_h=directive_h)
         elif directive_h == 'se':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=solent_keycode('c'),
+                keycode=e_keycode.c,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=solent_keycode('n3'),
+                keycode=e_keycode.n3,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('n'),
+                keycode=e_keycode.n,
                 directive_h=directive_h)
         elif directive_h == 'ww':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=solent_keycode('a'),
+                keycode=e_keycode.a,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=solent_keycode('n4'),
+                keycode=e_keycode.n4,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('h'),
+                keycode=e_keycode.h,
                 directive_h=directive_h)
         elif directive_h == 'ee':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=solent_keycode('d'),
+                keycode=e_keycode.d,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=solent_keycode('n6'),
+                keycode=e_keycode.n6,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('l'),
+                keycode=e_keycode.l,
                 directive_h=directive_h)
         elif directive_h == 'a':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=solent_keycode('s'),
+                keycode=e_keycode.s,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=solent_keycode('n5'),
+                keycode=e_keycode.n5,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('space'),
+                keycode=e_keycode.space,
                 directive_h=directive_h)
         elif directive_h == 'b':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_GOLLOP,
-                keycode=solent_keycode('r'),
+                keycode=e_keycode.r,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_KEYPAD,
-                keycode=solent_keycode('n0'),
+                keycode=e_keycode.n0,
                 directive_h=directive_h)
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('slash'),
+                keycode=e_keycode.slash,
                 directive_h=directive_h)
         elif directive_h == 'help':
             self.nearcast.keycode_to_directive(
                 control_scheme_h=CONTROL_SCHEME_H_VI,
-                keycode=solent_keycode('qmark'),
+                keycode=e_keycode.qmark,
                 directive_h=directive_h)
         else:
             raise Exception('Unhandled directive %s'%(directive.h))
     def on_keystroke(self, keycode):
         if self.track_containment_mode.is_focus_on_menu():
-            if keycode == solent_keycode('tab'):
+            if keycode in (e_keycode.tab, e_keycode.esc):
                 self.b_in_menu = False
                 self.nearcast.o_game_focus()
             else:
                 self.nearcast.menu_select(
                     menu_keycode=keycode)
         else:
-            if keycode == solent_keycode('tab'):
+            if keycode in (e_keycode.tab, e_keycode.esc):
                 self.b_in_menu = True
                 self.nearcast.menu_focus()
             else:
-                self.nearcast.o_game_keycode(
+                self.nearcast.game_input(
                     keycode=keycode)
 
 class CogToTerm:
@@ -332,6 +703,7 @@ class CogToTerm:
             console_type=self.track_prime_console.ctype,
             cb_selui_keycode=self.cb_selui_keycode,
             cb_selui_lselect=self.cb_selui_lselect)
+        self.spin_term.disable_selection()
         self.spin_term.open_console(
             width=self.track_prime_console.width,
             height=self.track_prime_console.height)
@@ -347,6 +719,7 @@ class CogToTerm:
     def cb_selui_keycode(self, cs_selui_keycode):
         keycode = cs_selui_keycode.keycode
         #
+        keycode = e_keycode(keycode)
         self.nearcast.keystroke(
             keycode=keycode)
     def cb_selui_lselect(self, cs_selui_lselect):
@@ -532,7 +905,7 @@ class CogToRoguebox:
         self.b_mail_waiting = True
     def on_x_game_grid(self):
         self.b_refresh_needed = True
-    def on_o_game_keycode(self, keycode):
+    def on_game_input(self, keycode):
         if keycode not in self.d_keycode_to_directive:
             return
         directive_h = self.d_keycode_to_directive[keycode]
@@ -591,7 +964,27 @@ class CogToRoguebox:
         self.cgrid_last.blit(
             src_cgrid=self.cgrid_next)
 
-def game(console_type):
+
+# --------------------------------------------------------
+#   bootstrap
+# --------------------------------------------------------
+MTU = 1500
+
+def get_broadcast():
+    if platform.system() == 'Darwin':
+        return '127.0.0.1'
+    else:
+        return '127.255.255.255'
+
+def main():
+    console_type = 'curses'
+    init_network_logging(
+        mtu=1490,
+        addr=get_broadcast(),
+        port=4999,
+        label=__name__)
+    log("Log opened.")
+
     engine = None
     try:
         engine = Engine(
@@ -601,7 +994,7 @@ def game(console_type):
         #
         orb = engine.init_orb(
             i_nearcast=I_CONTAINMENT_NEARCAST_SCHEMA)
-        #orb.add_log_snoop()
+        orb.add_log_snoop()
         orb.init_cog(CogInterpreter)
         orb.init_cog(CogToTerm)
         orb.init_cog(CogToMenu)
@@ -622,11 +1015,6 @@ def game(console_type):
     finally:
         if engine != None:
             engine.close()
-
-def main():
-    console_type = 'curses'
-    game(
-        console_type=console_type)
 
 if __name__ == '__main__':
     main()

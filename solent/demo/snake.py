@@ -205,7 +205,7 @@ class RailSnakeGame:
             height=height,
             width=width)
         #
-        # this is a list so we can effectively ignore conflicting keystrokes.
+        # This is a list so we can effectively ignore conflicting keystrokes.
         # (Avoiding the player from turning back on themselves in the same
         # space is more of a problem than I first expected.)
         self.snake_direction = 'e'
@@ -383,14 +383,14 @@ class CogInterpreter:
         self.track_containment_mode = orb.track(TrackContainmentMode)
     def on_keystroke(self, keycode):
         if self.track_containment_mode.is_focus_on_menu():
-            if keycode == e_keycode.tab:
+            if keycode in (e_keycode.tab, e_keycode.esc):
                 self.b_in_menu = False
                 self.nearcast.game_focus()
             else:
                 self.nearcast.menu_select(
                     menu_keycode=keycode)
         else:
-            if keycode == e_keycode.tab:
+            if keycode in (e_keycode.tab, e_keycode.esc):
                 self.b_in_menu = True
                 self.nearcast.menu_focus()
             else:
@@ -413,6 +413,7 @@ class CogTerm:
             console_type=self.track_prime_console.console_type,
             cb_selui_keycode=self.cb_selui_keycode,
             cb_selui_lselect=self.cb_selui_lselect)
+        self.spin_term.disable_selection()
         self.spin_term.open_console(
             width=self.track_prime_console.width,
             height=self.track_prime_console.height)
@@ -620,8 +621,7 @@ GAME_NAME = 'snake'
 
 MTU = 1500
 
-def main():
-    console_type = 'curses'
+def launch(console_type):
     if '--pygame' in sys.argv:
         console_type = 'pygame'
     elif sys.platform in ('msys', 'win32', 'win64'):
@@ -646,6 +646,20 @@ def main():
         pass
     finally:
         engine.close()
+
+def main():
+    console_type = 'curses'
+    if '--pygame' in sys.argv:
+        console_type = 'pygame'
+    elif sys.platform in ('msys', 'win32', 'win64'):
+        b_ok = True
+        try:
+            import pygame
+            console_type = 'pygame'
+        except:
+            print("[!] On Windows, snake needs pygame. (But, try winsnake!).")
+            sys.exit(1)
+    launch(console_type)
 
 if __name__ == '__main__':
     main()
