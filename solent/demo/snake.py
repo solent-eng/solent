@@ -622,17 +622,6 @@ GAME_NAME = 'snake'
 MTU = 1500
 
 def launch(console_type):
-    if '--pygame' in sys.argv:
-        console_type = 'pygame'
-    elif sys.platform in ('msys', 'win32', 'win64'):
-        b_ok = True
-        try:
-            import pygame
-            console_type = 'pygame'
-        except:
-            print("[!] On Windows, snake needs pygame. (But, try winsnake!).")
-            sys.exit(1)
-    #
     engine = Engine(
         mtu=MTU)
     try:
