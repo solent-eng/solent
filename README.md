@@ -2,8 +2,8 @@
 
 Solent is a toolkit for creating event-driven systems.
 
-Solent is currently implemented mostly in python3, with small amounts of C and
-C++. When the model is stable, we will lift-and-shift it to become its own
+Solent is currently implemented mostly in python3, with small amounts of
+C/C++. When the model is stable, we will lift-and-shift it to become its own
 language, with an independent ecosystem.
 
 The goal here is to create a flexible systems-programming platform.
@@ -51,7 +51,7 @@ This will get you seeing some basic stuff
 ```bash
 # In unix, you will need python3 and git
 
-git clone https://github.com/cratuki/solent.git
+git clone https://github.com/solent-eng/solent.git
 cd solent
 python3 -m venv venv
 
@@ -71,7 +71,7 @@ python -m scenarios.eng_10_orb_nearcast_and_cog_basics
 # steps will fail. This is due to the build process for the DLLs being too
 # tightly tied to my dev environment. Covered in issue #139).
 
-git clone https://github.com/cratuki/solent.git
+git clone https://github.com/solent-eng/solent.git
 cd solent
 python3 -m venv venv
 
@@ -197,5 +197,12 @@ than IO-completion-sockets on Windows, kevent on BSD, epoll on linux.
 There is nothing inherently slow in the Solent design. In time we may replace
 the internals of Engine with a solution taken from asyncio, twisted or libuv.
 Or we may rewrite the engine in C++ and offer python wrappers to it.
+
+
+"Any notable flaws?"
+
+It is unfortunate that the current user interface system is essentially
+synchronous. It would be better as an event-driven settlement.
+
 
 

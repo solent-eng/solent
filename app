@@ -62,7 +62,7 @@ popd
 #
 # Drafting
 #python -B -m solent.draft.demonstrate_line_console
-python -B -m solent.draft.demonstrate_linetalk
+#python -B -m solent.draft.demonstrate_linetalk
 #python -B -m solent.draft.gollop_box
 #python -B -m solent.draft.mountain_box --pygame
 #python -B -m solent.draft.mud
