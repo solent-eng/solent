@@ -1,3 +1,11 @@
+# Obsolete
+
+20201014 Update. Now that the Rust language supports coroutines, this points
+to a better way of building event-driven distributed systems than the path
+that I was carving out with Solent. Regard solent as obsolete. Instead, see
+cthulix.com/preview.html
+
+
 # Overview
 
 Solent is a toolkit for creating event-driven systems.
