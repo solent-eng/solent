@@ -13,6 +13,10 @@ def dyn_import(pkg):
 def main():
     for (relpath, subdirs, files) in sorted(os.walk('wsrc')):
         if MAGIC_NAME_FOR_BUILD_PY in files:
+            print()
+            print(f"** {relpath}")
+            print()
+
             package = '.'.join(relpath.split(os.sep))
             build_within_package = MAGIC_NAME_FOR_BUILD_PY[:-3]
             pname = '%s.%s'%(package, build_within_package)

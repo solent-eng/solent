@@ -61,9 +61,11 @@ def load_clib(ob):
     wres_tokens.append(api_filename)
     path_so = dget_wres(*wres_tokens)
     #
+    print(f"Path to API sp: {path_so}")
     if not os.path.exists(path_so):
         raise Exception("Api file does not exist at {%s}"%(
             path_so))
+    print("path_so: %s"%(path_so)) # xxx
     #
     # We are using cdll even in the Windows setting. Reason is comment here,
     # https://stackoverflow.com/questions/41760830/ctypes-procedure-probably-called-with-too-many-arguments-92-bytes-in-excess

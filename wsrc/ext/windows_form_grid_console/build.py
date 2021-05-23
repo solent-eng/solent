@@ -52,7 +52,12 @@ def create_unix_build_script(wsrc_path, wres_path):
     #
     return path
 
-def create_windows_build_script(wsrc_path, wres_path):
+def create_windows_build_script_mingw32(wsrc_path, wres_path):
+    # @20210503, at time of writing, I have found that files that have been
+    # compiled this way will not open from python ctypes. It is likely that this
+    # is because of 32-bit/64-bit differences.
+
+    # I can't use python to open files when I build the DLL from mingw32-g++.
     content = string.Template(r'''
         @echo off
 
@@ -78,6 +83,33 @@ def create_windows_build_script(wsrc_path, wres_path):
     #
     return path
 
+def create_windows_build_script_vs(wsrc_path, wres_path):
+    # @20210503, this is not working at time of writing. This is not the same
+    # as the original msvc compiler I did in Andalucia.
+    content = string.Template('''
+        @echo off
+        cd $wsrc_path
+
+        rem --------------------------------------------------------
+        rem Create the lib
+        rem --------------------------------------------------------
+        rem create object file
+        cl -c winplace.c api.c
+        rem create lib file reference
+        lib /out:$wres_path/api.dll api.obj winplace.obj
+
+        rem --------------------------------------------------------
+        rem Create the DLL
+        rem --------------------------------------------------------
+        link /dll /out:$wres_path/api.dll api.obj winplace.obj Gdi32.lib User32.lib
+    ''').safe_substitute(
+        wsrc_path=wsrc_path,
+        wres_path=wres_path)
+    path = r'c:\temp\build.bat'
+    write_file(path, content)
+    #
+    return path
+
 def main():
     package_elements = __package__.split('.')
     wsrc_path = dget_root(*package_elements)
@@ -86,7 +118,7 @@ def main():
     #
     system = platform.system()
     if system == 'Windows':
-        path_build_script = create_windows_build_script(
+        path_build_script = create_windows_build_script_vs(
             wsrc_path=wsrc_path,
             wres_path=wres_path)
     else:

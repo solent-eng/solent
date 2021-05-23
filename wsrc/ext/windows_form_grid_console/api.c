@@ -8,43 +8,9 @@
 #include "winplace.h"
 
 
-/* --------------------------------------------------------
-  windows magic
--------------------------------------------------------- */
-/* This allows us to get the HModule, which we are going
-to need if we are launching windows. This has been an obstacle
-because we are inside a dll, rather than writing a standalone
-Windows app. */
-
-/* from https://www.codeguru.com/cpp/w-p/dll/tips/article.php/c3635/Tip-Detecting-a-HMODULEHINSTANCE-Handle-Within-the-Module-Youre-Running-In.htm */
-
-#if _MSC_VER >= 1300    // for VC 7.0
-  // from ATL 7.0 sources
-  #ifndef _delayimp_h
-  extern "C" IMAGE_DOS_HEADER __ImageBase;
-  #endif
+#ifdef __cplusplus
+extern "C" {
 #endif
-
-HMODULE get_current_module()
-{
-#if _MSC_VER < 1300    // earlier than .NET compiler (VC 6.0)
-  // Here's a trick that will get you the handle of the module
-  // you're running in without any a-priori knowledge:
-  // http://www.dotnet247.com/247reference/msgs/13/65259.aspx
- 
-  MEMORY_BASIC_INFORMATION mbi;
-  static int dummy;
-  VirtualQuery( &dummy, &mbi, sizeof(mbi) );
- 
-  return reinterpret_cast<HMODULE>(mbi.AllocationBase);
- 
-#else    // VC 7.0
-  // from ATL 7.0 sources
- 
-  return reinterpret_cast<HMODULE>(&__ImageBase);
-#endif
-}
-
 
 /* --------------------------------------------------------
   config
@@ -110,8 +76,6 @@ Console* CONSOLE;
 
 MSG messages; /* Here messages to the application are saved */
 
-HBRUSH HBRUSH_BLACK = CreateSolidBrush(0x00000000) ;
-
 uint64_t NO_EVENT = 0;
 
 uint8_t KS_BITFIELD_BYTE = 0;
@@ -142,21 +106,6 @@ void log(char* msg) {
         return;
     }
     CF_LOG(msg);
-}
-
-#define LOG_I_ARR_SIZE 50
-void log(int i) {
-    static char ARR[LOG_I_ARR_SIZE];
-    snprintf(ARR, LOG_I_ARR_SIZE-1, "%d", i);
-    log(ARR);
-}
-
-void log(const char* msg) {
-    char* s;
-    s = (char*) malloc(strlen(msg)+1);
-    strcpy(s, msg);
-    log(s);
-    free(s);
 }
 
 
@@ -221,8 +170,10 @@ int init_window() {
     int height_in_pixels;
     int width_in_pixels;
 
-    hModule = get_current_module();
     hInstance = GetModuleHandle(NULL);
+    hModule = hInstance;
+
+    HBRUSH HBRUSH_BLACK = CreateSolidBrush(0x00000000) ;
 
     /* The Window structure */
     wincl.hInstance = hInstance;
@@ -293,8 +244,6 @@ void repaint_window()
 {
     HDC hdc;
     PAINTSTRUCT ps;
-
-    printf("repaint_window()\n");
 
     hdc = BeginPaint(OUR_HWND, &ps);
     winplace_paint_begin(hdc);
@@ -418,11 +367,13 @@ LRESULT CALLBACK WindowProcedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 /* --------------------------------------------------------
   api
 -------------------------------------------------------- */
-extern "C" void set_cc_log(cc_log_t cc_log) {
+#define DLLX __declspec(dllexport)
+
+DLLX void set_cc_log(cc_log_t cc_log) {
     CF_LOG = cc_log;
 }
 
-extern "C" void create_screen(int char_cols, int char_rows) {
+DLLX void create_screen(int char_cols, int char_rows) {
     sprintf(WORKING_S, "create_screen %d %d", char_cols, char_rows);
     log(WORKING_S);
 
@@ -468,7 +419,7 @@ extern "C" void create_screen(int char_cols, int char_rows) {
 
 /* You need to call this regularly so that Windows keeps processing events.
  * This returns 0 when the process has closed. */
-extern "C" int process_windows_events() {
+DLLX int process_windows_events() {
     int i, res;
 
     if (!CONSOLE->keep_running) {
@@ -517,7 +468,7 @@ extern "C" int process_windows_events() {
  *  xxx tbd
  *
  */
-extern "C" void get_next_event(uint64_t* event)
+DLLX void get_next_event(uint64_t* event)
 {
     if (CONSOLE->r_idx == CONSOLE->w_idx) {
         *event = NO_EVENT;
@@ -532,28 +483,28 @@ extern "C" void get_next_event(uint64_t* event)
     }
 }
 
-extern "C" void set(int drop, int rest, int c, int o)
+DLLX void set(int drop, int rest, int c, int o)
 {
     Row* row;
     Cell* cell;
 
-    sprintf(WORKING_S, "set %d %d %d %d\n", drop, rest, c, o);
-    log(WORKING_S);
-    
     row = &(CONSOLE->row[drop]);
     cell = &(row->col[rest]);
     cell->c = c;
     cell->o = o;
 }
 
-extern "C" void redraw()
+DLLX void redraw()
 {
-    printf("** redraw()\n"); // xxx
     RedrawWindow(OUR_HWND, NULL, NULL, RDW_INVALIDATE);
     repaint_window();
 }
 
-extern "C" void close()
+DLLX void close()
 {
 }
 
+
+#ifdef __cplusplus
+}
+#endif

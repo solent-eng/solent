@@ -269,7 +269,6 @@ class ImplGridConsole:
             if not o_spot.compare(n_spot):
                 updates.append(cgrid_idx)
                 o_spot.mimic(n_spot)
-        log('send')
         for cgrid_idx in updates:
             spot = self.cgrid.spots[cgrid_idx]
             #
@@ -277,7 +276,7 @@ class ImplGridConsole:
             rest = int(cgrid_idx%self.cgrid.width)
             c = ord(spot.c)
             o = 0 # xxx
-            log('update %s %s %s %s'%(drop, rest, c, o))
+            #log('update %s %s %s %s'%(drop, rest, c, o))
             self.api.set(drop, rest, c, o)
         self.api.redraw()
     def close(self):

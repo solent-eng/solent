@@ -51,6 +51,8 @@ def run(launch_args):
     p.wait()
 
 def cycle():
+    os.system('cls')
+
     path_launch = os.path.join(BASE_DIR, 'windows-app.txt')
     python_mod = [line
         for line
