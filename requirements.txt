@@ -1,4 +1,4 @@
-PyInstaller==3.2
+PyInstaller==3.6
 autopep8==1.2.4
 pep8==1.7.0
 pygame==1.9.2b8
